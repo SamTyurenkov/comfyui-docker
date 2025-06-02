@@ -1,0 +1,14 @@
+.env
+models/
+docker-built/
+venv/
+ComfyUI/
+user/
+output/
+docker/comfyui/ComfyUI/
+docker/comfyui/Python-3.12.0/
+docker/comfyui/venv/
+r2_cache
+models
+output
+user

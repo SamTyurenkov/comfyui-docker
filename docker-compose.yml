@@ -1,0 +1,64 @@
+services:
+  nginx-comfyui:
+    image: nginx-comfyui:latest
+    container_name: nginx-comfyui
+    build:
+      context: docker/nginx/
+    restart: always
+    depends_on:
+      - comfyui
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - '80'
+      - '443'
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      comfy-network:
+        aliases:
+          - ${SITE_DOMAIN}
+
+  comfyui:
+    image: comfyui:latest
+    container_name: comfyui
+    build:
+      context: docker/comfyui/
+      target: builder
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    restart: always
+    volumes:
+      - /dev:/dev
+      - ./r2_cache/:/mnt/r2_cache
+      - ./output/:/home/comfyuser/ComfyUI/output
+      - ./user/:/home/comfyuser/ComfyUI/user
+    devices:
+      - /dev/fuse:/dev/fuse  # Mount FUSE device
+    cap_add:
+      - SYS_ADMIN  # Required for mounting FUSE filesystems      
+    environment:
+      USER_ID: ${USER_ID}
+      GROUP_ID: ${GROUP_ID}
+      R2_ID: ${R2_ID}
+      R2_KEY: ${R2_KEY}
+      NVIDIA_VISIBLE_DEVICES: all
+      COMMAND: 'python ComfyUI/main.py --listen 0.0.0.0 --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 8188:8188
+      - 8080:8080
+    expose:
+      - '8188'
+      - '8080'
+    networks:
+      - comfy-network
+
+networks:
+  comfy-network:
+    name: comfy-network
