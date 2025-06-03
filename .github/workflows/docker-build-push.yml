@@ -24,6 +24,15 @@ jobs:
           username: samtyurenkov
           password: ${{ secrets.SAM_DOCKERHUB }}
 
+      - name: Get changed files
+        id: changed
+        uses: dorny/actions-changed-files@v1
+        with:
+          files: |
+            docker/nginx/**
+            docker/comfyui/**
+            docker/runpod/**
+
       - name: Set changed flags
         id: flags
         run: |
