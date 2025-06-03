@@ -30,9 +30,9 @@ jobs:
           echo "nginx=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/nginx/' && echo 'true' || echo 'false')"
           echo "comfyui=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/comfyui/' && echo 'true' || echo 'false')"
           echo "runpod=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/runpod/' && echo 'true' || echo 'false')"
-          echo "::set-output name=nginx_changed::$nginx"
-          echo "::set-output name=comfyui_changed::$comfyui"
-          echo "::set-output name=runpod_changed::$runpod"
+          echo "nginx_changed=$nginx" >> $GITHUB_OUTPUT
+          echo "comfyui_changed=$comfyui" >> $GITHUB_OUTPUT
+          echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
 
       - name: Build and push Nginx Image
         if: steps.flags.outputs.nginx_changed == 'true'
