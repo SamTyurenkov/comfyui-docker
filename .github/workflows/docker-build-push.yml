@@ -24,29 +24,34 @@ jobs:
           username: samtyurenkov
           password: ${{ secrets.SAM_DOCKERHUB }}
 
-      - name: Get all changed nginx files
-        id: changed-nginx-files
-        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46
-        with:
-          files: |
-            docker/nginx/**
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
 
-      - name: Get all changed comfyui files
-        id: changed-comfyui-files
-        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46
-        with:
-          files: |
-            docker/comfyui/**
+      - name: Set changed flags
+        id: flags
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          # Initialize flags
+          nginx=false
+          comfyui=false
+          runpod=false
 
-      - name: Get all changed comfyui files
-        id: changed-runpod-files
-        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46
-        with:
-          files: |
-            docker/runpod/**
+          # Loop through all changed files
+          IFS=' ' read -r -a files <<< "$CHANGED_FILES"
+          for file in "${files[@]}"; do
+            [[ "$file" == docker/nginx/* ]] && nginx=true
+            [[ "$file" == docker/comfyui/* ]] && comfyui=true
+            [[ "$file" == docker/runpod/* ]] && runpod=true
+          done
+
+          echo "nginx_changed=$nginx" >> $GITHUB_OUTPUT
+          echo "comfyui_changed=$comfyui" >> $GITHUB_OUTPUT
+          echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
 
       - name: Build and push Nginx Image
-        if: steps.flags.changed-nginx-files.outputs.any_changed == 'true'
+        if: steps.flags.outputs.nginx_changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./docker/nginx
@@ -55,7 +60,7 @@ jobs:
           tags: samtyurenkov/nginx-comfyui:latest
 
       - name: Build and push Comfyui image
-        if: steps.flags.changed-comfyui-files.outputs.any_changed == 'true'
+        if: steps.flags.outputs.comfyui_changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./docker/comfyui
@@ -64,7 +69,7 @@ jobs:
           tags: samtyurenkov/comfyui:latest
 
       - name: Build and push Runpod Image
-        if: steps.flags.changed-runpod-files.outputs.any_changed == 'true'
+        if: steps.flags.outputs.runpod_changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./docker/runpod
