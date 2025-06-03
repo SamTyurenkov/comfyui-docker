@@ -25,20 +25,28 @@ jobs:
           password: ${{ secrets.SAM_DOCKERHUB }}
 
       - name: Get changed files
-        id: changed
-        uses: dorny/actions-changed-files@v1
-        with:
-          files: |
-            docker/nginx/**
-            docker/comfyui/**
-            docker/runpod/**
+        run: echo "All changed files: ${{ toJson(github.event.head_commit.modified) }}"
 
       - name: Set changed flags
         id: flags
         run: |
-          echo "nginx=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/nginx/' && echo 'true' || echo 'false')"
-          echo "comfyui=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/comfyui/' && echo 'true' || echo 'false')"
-          echo "runpod=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/runpod/' && echo 'true' || echo 'false')"
+          # Get list of modified files from GitHub event
+          IFS=' ' read -r -a modified_files <<< "${{ join(github.event.head_commit.modified, ' ') }}"
+
+          nginx=false
+          comfyui=false
+          runpod=false
+
+          for file in "${modified_files[@]}"; do
+            if [[ "$file" == docker/nginx/* ]]; then
+              nginx=true
+            elif [[ "$file" == docker/comfyui/* ]]; then
+              comfyui=true
+            elif [[ "$file" == docker/runpod/* ]]; then
+              runpod=true
+            fi
+          done
+
           echo "nginx_changed=$nginx" >> $GITHUB_OUTPUT
           echo "comfyui_changed=$comfyui" >> $GITHUB_OUTPUT
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
