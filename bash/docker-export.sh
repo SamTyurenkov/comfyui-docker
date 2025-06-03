@@ -19,4 +19,4 @@ endpoint = https://c45a8b257df7bbf1fb0c4fb396042547.r2.cloudflarestorage.com
 acl = private
 EOF
 
-rclone copy docker-built/ r2:colab-models/docker --verbose
+rclone copy docker-built/ r2:colab-models/docker --verbose --buffer-size=64M --use-server-modtime
