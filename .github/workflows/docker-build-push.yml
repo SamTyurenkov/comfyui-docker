@@ -23,13 +23,28 @@ jobs:
         with:
           username: samtyurenkov
           password: ${{ secrets.SAM_DOCKERHUB }}
-        
-      - name: Set up Docker Buildx
-        uses: useblacksmith/build-push-action@v1.1
-        with:
-          setup-only: true
 
-      - name: Build and push Docker image
+      - name: Set changed flags
+        id: flags
+        run: |
+          echo "nginx=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/nginx/' && echo 'true' || echo 'false')"
+          echo "comfyui=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/comfyui/' && echo 'true' || echo 'false')"
+          echo "runpod=$(echo ${{ steps.changed.outputs.files }} | grep -q 'docker/runpod/' && echo 'true' || echo 'false')"
+          echo "::set-output name=nginx_changed::$nginx"
+          echo "::set-output name=comfyui_changed::$comfyui"
+          echo "::set-output name=runpod_changed::$runpod"
+
+      - name: Build and push Nginx Image
+        if: steps.flags.outputs.nginx_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/nginx
+          file: ./docker/nginx/Dockerfile
+          push: true
+          tags: samtyurenkov/nginx-comfyui:latest
+
+      - name: Build and push Comfyui image
+        if: steps.flags.outputs.comfyui_changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./docker/comfyui
@@ -37,10 +52,11 @@ jobs:
           push: true
           tags: samtyurenkov/comfyui:latest
 
-      - name: Build and push Service API
+      - name: Build and push Runpod Image
+        if: steps.flags.outputs.runpod_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/nginx
-          file: ./docker/nginx/Dockerfile
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile
           push: true
-          tags: samtyurenkov/nginx-comfyui:latest
+          tags: samtyurenkov/runpod:latest
