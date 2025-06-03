@@ -25,7 +25,7 @@ jobs:
           password: ${{ secrets.SAM_DOCKERHUB }}
 
       - name: Get changed files
-        run: echo "All changed files: ${{ toJson(github.event.head_commit.modified) }}"
+        run: echo '${{ toJson(github.event.head_commit.modified) }}'
 
       - name: Set changed flags
         id: flags
