@@ -49,8 +49,8 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade pip
 RUN --mount=type=cache,target=/root/.cache/pip pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
-RUN --mount=type=cache,target=/root/.cache/pip pip install diffusers aiohttp aiodns Brotli numpy==1.26.4 onnxruntime-gpu flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
-RUN --mount=type=cache,target=/root/.cache/pip pip install setuptools wheel build triton spandrel kornia av
+RUN --mount=type=cache,target=/root/.cache/pip pip install diffusers aiohttp aiodns Brotli numpy==2.0 onnxruntime-gpu flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
+RUN --mount=type=cache,target=/root/.cache/pip pip install setuptools wheel build triton spandrel kornia av jedi>=0.16
 RUN --mount=type=cache,target=/root/.cache/pip pip install simsimd --prefer-binary
 
 RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
