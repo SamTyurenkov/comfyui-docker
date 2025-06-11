@@ -82,7 +82,7 @@ RUN git clone https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch /home/co
 RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack && git checkout 8.15.1
 RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack && git checkout v1.3.2
+RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack && git checkout 1.3.2
 RUN git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_Comfyroll_CustomNodes
 RUN git clone https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait && git checkout 3bba732915e22f18af0d221b9c5c282990181f1b
