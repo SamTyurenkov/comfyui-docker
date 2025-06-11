@@ -8,6 +8,7 @@ output/
 docker/comfyui/ComfyUI/
 docker/comfyui/Python-3.12.0/
 docker/comfyui/venv/
+**/ComfyUI
 r2_cache
 models
 output
