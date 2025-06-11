@@ -136,8 +136,6 @@ RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/cu
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip pip install -e /home/comfyuser/sageattention/. --use-pep517 --no-build-isolation --verbose
 RUN --mount=type=cache,target=/root/.cache/pip pip install --force-reinstall --no-deps numpy==1.26.4
 RUN --mount=type=cache,target=/root/.cache/pip pip install onnxruntime-gpu jedi>=0.16 tf-keras==2.19.0
