@@ -26,7 +26,7 @@ pip install --upgrade pip
 pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
 pip install diffusers aiohttp aiodns Brotli numpy==2.0 onnxruntime-gpu flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
 pip install simsimd --prefer-binary
-pip install setuptools wheel build triton spandrel kornia av jedi>=0.16 onnxruntime-gpu tf-keras==2.19.0
+pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
 pip install -r /home/comfyuser/ComfyUI/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
@@ -54,7 +54,9 @@ pip install --force-reinstall --no-deps numpy==1.26.4
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
 
-rclone mount --daemon --log-level=DEBUG --cache-dir=/mnt/r2_cache --allow-other --vfs-cache-max-age=12h --dir-cache-time=12h --poll-interval=10s --vfs-cache-mode=full --vfs-read-chunk-size=128M --fast-list --buffer-size=64M --use-server-modtime r2:europe-colab/models /home/comfyuser/r2_bucket 
+mkdir -p /mnt/r2_cache
+mkdir -p /home/comfyuser/r2_bucket
+rclone mount --daemon --log-level=DEBUG --cache-dir=/mnt/r2_cache --allow-other --vfs-cache-max-age=12h --dir-cache-time=12h --poll-interval=10s --vfs-cache-mode=full --vfs-read-chunk-size=128M --buffer-size=64M --use-server-modtime r2:europe-colab/models /home/comfyuser/r2_bucket 
 
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 rclone copy --log-level=INFO r2:europe-colab/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
