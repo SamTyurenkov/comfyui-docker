@@ -61,7 +61,6 @@ RUN git clone https://github.com/shinich39/comfyui-get-meta /home/comfyuser/Comf
 RUN git clone https://github.com/JPS-GER/ComfyUI_JPS-Nodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes
 RUN git clone https://github.com/aria1th/ComfyUI-LogicUtils /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils
 RUN git clone https://github.com/welltop-cn/ComfyUI-TeaCache.git /home/comfyuser/ComfyUI/custom_nodes/teacache
-RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
 RUN git clone https://github.com/WASasquatch/was-node-suite-comfyui /home/comfyuser/ComfyUI/custom_nodes/was-node-suite-comfyui
 RUN git clone https://github.com/bash-j/mikey_nodes /home/comfyuser/ComfyUI/custom_nodes/mikey_nodes
 
