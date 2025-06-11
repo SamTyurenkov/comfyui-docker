@@ -146,12 +146,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip list
 # RUN rm -rf /home/comfyuser/ComfyUI/user && rm -rf /home/comfyuser/ComfyUI/output
 WORKDIR /home/comfyuser/
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y 
-
-EXPOSE 8188
+# EXPOSE 8188
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
