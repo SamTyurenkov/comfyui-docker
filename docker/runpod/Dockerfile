@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install simsimd --prefer-bina
 RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
 
 # Copied from WAN Colab
-RUN git clone https://github.com/thu-ml/SageAttention.git /content/sageattention
+RUN git clone https://github.com/thu-ml/SageAttention.git /home/comfyuser/sageattention
 RUN git clone https://github.com/shinich39/comfyui-get-meta /home/comfyuser/ComfyUI/custom_nodes/comfyui-get-meta
 RUN git clone https://github.com/JPS-GER/ComfyUI_JPS-Nodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes
 RUN git clone https://github.com/aria1th/ComfyUI-LogicUtils /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils
@@ -114,32 +114,32 @@ RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes && git checkout a879
 RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
 RUN git clone https://github.com/kijai/ComfyUI-SUPIR /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-impact-subpack/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-advancedliveportrait/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyUI-Crystools/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyUI-LBMWrapper/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-art-venture/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-videohelpersuite/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui_chatgpt/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-easy-use/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyI2I/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/efficiency-nodes-comfyui/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfy_mtb/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/pfaeff-comfyui/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip python /content/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
-RUN --mount=type=cache,target=/root/.cache/pip python /content/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LBMWrapper/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_chatgpt/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyI2I/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/efficiency-nodes-comfyui/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfy_mtb/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/pfaeff-comfyui/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
+RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/teacache/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-get-meta/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r /content/ComfyUI/custom_nodes/comfyui-logicutils/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip pip install -e /content/sageattention/. --use-pep517 --no-build-isolation --verbose
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-get-meta/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -e /home/comfyuser/sageattention/. --use-pep517 --no-build-isolation --verbose
 RUN --mount=type=cache,target=/root/.cache/pip pip install --force-reinstall --no-deps numpy==1.26.4
 RUN --mount=type=cache,target=/root/.cache/pip pip install onnxruntime-gpu jedi>=0.16 tf-keras==2.19.0
 
