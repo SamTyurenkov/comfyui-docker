@@ -22,9 +22,34 @@ EOF
 
 # client_id = YOUR_GOOGLE_DRIVE_CLIENT_ID
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
+pip install --upgrade pip
+pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
+pip install diffusers aiohttp aiodns Brotli numpy==2.0 onnxruntime-gpu flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
+pip install simsimd --prefer-binary
+pip install setuptools wheel build triton spandrel kornia av jedi>=0.16 onnxruntime-gpu tf-keras==2.19.0
+pip install -r /home/comfyuser/ComfyUI/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LBMWrapper/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_chatgpt/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyI2I/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/efficiency-nodes-comfyui/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfy_mtb/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/pfaeff-comfyui/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
+pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
 pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
 python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
 python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
+pip install --force-reinstall --no-deps numpy==1.26.4
 
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
@@ -74,7 +99,7 @@ start_comfyui() {
 
 start_nginx() {
   echo "Starting Nginx..."
-  nginx -g daemon off
+  nginx -g "daemon off;"
 }
 
 start_cloudflared &
