@@ -144,12 +144,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install onnxruntime-gpu jedi>
 
 RUN --mount=type=cache,target=/root/.cache/pip pip list
 
-# RUN rm -rf /home/comfyuser/ComfyUI/user && rm -rf /home/comfyuser/ComfyUI/output
-WORKDIR /home/comfyuser/
-
-# EXPOSE 8188
-
 ADD entry.sh /usr/local/bin/entrypoint.sh
+WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-WORKDIR /home/comfyuser/
