@@ -23,6 +23,8 @@ EOF
 # client_id = YOUR_GOOGLE_DRIVE_CLIENT_ID
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
 pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
+python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
+python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
 
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf

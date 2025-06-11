@@ -131,8 +131,9 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/Co
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/pfaeff-comfyui/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
-RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
+# moved into entrypoint
+# RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
+# RUN --mount=type=cache,target=/root/.cache/pip python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
