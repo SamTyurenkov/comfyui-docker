@@ -45,8 +45,8 @@ COPY ssl/self-signed/cert.pem /home/comfyuser/docker/nginx/ssl/cert.pem
 COPY ssl/self-signed/privkey.pem /home/comfyuser/docker/nginx/ssl/privkey.pem
 
 
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# RUN python -m venv /opt/venv
+# ENV PATH="/opt/venv/bin:$PATH"
 
 RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
 

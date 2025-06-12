@@ -27,7 +27,11 @@ set -x
 # pip install diffusers aiohttp aiodns Brotli numpy==2.0 flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
 # pip install simsimd --prefer-binary
 # pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
-PATH="/workspace/venv/bin:$PATH"
+export PATH="/workspace/venv/bin:$PATH"
+source /workspace/venv/bin/activate
+which python
+which pip
+
 pip install -r /home/comfyuser/ComfyUI/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
