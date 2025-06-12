@@ -110,6 +110,7 @@ RUN git clone https://github.com/kijai/ComfyUI-KJNodes /home/comfyuser/ComfyUI/c
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes && git checkout a879d152083ebcbce90d187b5537193034974a54
 RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
 RUN git clone https://github.com/kijai/ComfyUI-SUPIR /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR
+RUN git clone https://github.com/cdb-boop/ComfyUI-Bringing-Old-Photos-Back-to-Life /home/comfyuser/ComfyUI/custom_nodes/bringing-old-photos-back-to-life
 
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
