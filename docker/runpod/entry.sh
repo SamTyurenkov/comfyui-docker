@@ -28,7 +28,6 @@ set -x
 # pip install simsimd --prefer-binary
 # pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
 export PATH="/workspace/venv/bin:$PATH"
-source /workspace/venv/bin/activate
 which python
 which pip
 
