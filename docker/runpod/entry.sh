@@ -89,7 +89,7 @@ start_cloudflared() {
     echo "Starting cloudflared..."
     echo "Using tunnel token and name..."
     cloudflared tunnel \
-        --loglevel debug \
+        --loglevel info \
         --logfile /var/log/cloudflared.log \
         run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
 }
