@@ -1,32 +1,33 @@
 #!/bin/bash
 set -x
-mkdir -p /root/.config/rclone
+# mkdir -p /root/.config/rclone
 
-cat << EOF > /root/.config/rclone/rclone.conf
-[r2]
-type = s3
-provider = Cloudflare
-access_key_id = $R2_ID
-secret_access_key = $R2_KEY
-endpoint = https://c45a8b257df7bbf1fb0c4fb396042547.r2.cloudflarestorage.com
-acl = private
+# cat << EOF > /root/.config/rclone/rclone.conf
+# [r2]
+# type = s3
+# provider = Cloudflare
+# access_key_id = $R2_ID
+# secret_access_key = $R2_KEY
+# endpoint = https://c45a8b257df7bbf1fb0c4fb396042547.r2.cloudflarestorage.com
+# acl = private
 
-[google-drive]
-type = drive
-client_id =
-client_secret =
-scope = drive
-token = $GOOGLE_DRIVE_TOKEN_JSON
-EOF
+# [google-drive]
+# type = drive
+# client_id =
+# client_secret =
+# scope = drive
+# token = $GOOGLE_DRIVE_TOKEN_JSON
+# EOF
 # TODO: FINISH GOOGLE DRIVE SERVICE ACCOUNT LOGIC
 
 # client_id = YOUR_GOOGLE_DRIVE_CLIENT_ID
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
-pip install --upgrade pip
-pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
-pip install diffusers aiohttp aiodns Brotli numpy==2.0 onnxruntime-gpu flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
-pip install simsimd --prefer-binary
-pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
+# pip install --upgrade pip
+# pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
+# pip install diffusers aiohttp aiodns Brotli numpy==2.0 flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
+# pip install simsimd --prefer-binary
+# pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
+PATH="/workspace/venv/bin:$PATH"
 pip install -r /home/comfyuser/ComfyUI/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
@@ -46,7 +47,7 @@ pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR/requirements.txt
 pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
-pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
+# pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
 python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
 python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
 pip install --force-reinstall --no-deps numpy==1.26.4
@@ -54,30 +55,31 @@ pip install --force-reinstall --no-deps numpy==1.26.4
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
 
-mkdir -p /mnt/r2_cache
-mkdir -p /home/comfyuser/r2_bucket
-rclone mount --daemon --log-level=DEBUG --cache-dir=/mnt/r2_cache --allow-other --vfs-cache-max-age=12h --dir-cache-time=12h --poll-interval=10s --vfs-cache-mode=full --vfs-read-chunk-size=128M --buffer-size=64M --use-server-modtime r2:europe-colab/models /home/comfyuser/r2_bucket 
+# mkdir -p /mnt/r2_cache
+# mkdir -p /home/comfyuser/r2_bucket
+# rclone mount --daemon --log-level=DEBUG --cache-dir=/mnt/r2_cache --allow-other --vfs-cache-max-age=12h --dir-cache-time=12h --poll-interval=10s --vfs-cache-mode=full --vfs-read-chunk-size=128M --buffer-size=64M --use-server-modtime r2:europe-colab/models /home/comfyuser/r2_bucket 
 
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
-rclone copy --log-level=INFO r2:europe-colab/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
+cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
+# rclone copy --log-level=INFO r2:europe-colab/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
 
 # reactor breaks loading often
-mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
+# mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
 
-rm -rf /home/comfyuser/ComfyUI/models/vae_approx
-rclone copy --log-level=INFO r2:europe-colab/extra_model_paths.yaml /home/comfyuser/ComfyUI/
-ln -s /home/comfyuser/r2_bucket/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
-ln -s /home/comfyuser/r2_bucket/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
-ln -s /home/comfyuser/r2_bucket/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
-ln -s /home/comfyuser/r2_bucket/models/liveportrait /home/comfyuser/ComfyUI/models/liveportrait
-ln -s /home/comfyuser/r2_bucket/models/reactor /home/comfyuser/ComfyUI/models/reactor
-ln -s /home/comfyuser/r2_bucket/models/xlabs /home/comfyuser/ComfyUI/models/xlabs
-ln -s /home/comfyuser/r2_bucket/models/BiRefNet /home/comfyuser/ComfyUI/models/BiRefNet
-ln -s /home/comfyuser/r2_bucket/models/onnx /home/comfyuser/ComfyUI/models/onnx
-ln -s /home/comfyuser/r2_bucket/models/LLM /home/comfyuser/ComfyUI/models/LLM
-ln -s /home/comfyuser/r2_bucket/models/insightface /home/comfyuser/ComfyUI/models/insightface
-ln -s /home/comfyuser/r2_bucket/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
-ln -s /home/comfyuser/r2_bucket/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
+# rm -rf /home/comfyuser/ComfyUI/models/vae_approx
+# # rclone copy --log-level=INFO r2:europe-colab/extra_model_paths.yaml /home/comfyuser/ComfyUI/
+# ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
+# ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
+# ln -s /workspace/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
+# ln -s /workspace/models/liveportrait /home/comfyuser/ComfyUI/models/liveportrait
+# ln -s /workspace/models/reactor /home/comfyuser/ComfyUI/models/reactor
+# ln -s /workspace/models/xlabs /home/comfyuser/ComfyUI/models/xlabs
+# ln -s /workspace/models/BiRefNet /home/comfyuser/ComfyUI/models/BiRefNet
+# ln -s /workspace/models/onnx /home/comfyuser/ComfyUI/models/onnx
+# ln -s /workspace/models/LLM /home/comfyuser/ComfyUI/models/LLM
+# ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
+# ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
+# ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
 
 # Start cloudflared in the background
 start_cloudflared() {

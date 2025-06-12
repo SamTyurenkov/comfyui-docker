@@ -24,8 +24,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     openssl \
     cron \
     rclone \
-    fuse \
-    libfuse2 \
+    # fuse \
+    # libfuse2 \
     nginx
 
 # Nginx folders
@@ -50,8 +50,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
 
+COPY extra_model_paths.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
+
 # Copied from WAN Colab
-RUN git clone https://github.com/thu-ml/SageAttention.git /home/comfyuser/sageattention
+# RUN git clone https://github.com/thu-ml/SageAttention.git /workspace/sageattention
 RUN git clone https://github.com/shinich39/comfyui-get-meta /home/comfyuser/ComfyUI/custom_nodes/comfyui-get-meta
 RUN git clone https://github.com/JPS-GER/ComfyUI_JPS-Nodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes
 RUN git clone https://github.com/aria1th/ComfyUI-LogicUtils /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils
