@@ -23,10 +23,10 @@ set -x
 # client_id = YOUR_GOOGLE_DRIVE_CLIENT_ID
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
 # pip install --upgrade pip
-# pip install torch==2.7.0 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
-# pip install diffusers aiohttp aiodns Brotli numpy==2.0 flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
+# pip install torch==2.7.0 protobuf==4.25.3 numpy==1.26.4 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
+# pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
 # pip install simsimd --prefer-binary
-# pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime-gpu tf-keras==2.19.0
+# pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
 export PATH="/workspace/venv/bin:$PATH"
 which python
 which pip
@@ -67,7 +67,7 @@ cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reacto
 # rclone copy --log-level=INFO r2:europe-colab/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
 
 # reactor breaks loading often
-# mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
+mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
 
 # rm -rf /home/comfyuser/ComfyUI/models/vae_approx
 # # rclone copy --log-level=INFO r2:europe-colab/extra_model_paths.yaml /home/comfyuser/ComfyUI/
