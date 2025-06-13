@@ -89,6 +89,7 @@ ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encode
 ln -s /workspace/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
 
 mkdir -p /workspace/user
+rm -rf /home/comfyuser/ComfyUI/user
 ln -s /workspace/user /home/comfyuser/ComfyUI/user
 
 # Start cloudflared in the background
