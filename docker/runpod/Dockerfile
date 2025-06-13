@@ -116,6 +116,7 @@ RUN git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts /home/comf
 RUN git clone https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MagCache
 RUN git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale
 RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
+RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SAM2
 
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
