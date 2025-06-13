@@ -70,6 +70,7 @@ cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reacto
 mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
 
 rm -rf /home/comfyuser/ComfyUI/models/vae_approx
+rm -rf /home/comfyuser/ComfyUI/models/text_encoders
 # rclone copy --log-level=INFO r2:europe-colab/extra_model_paths.yaml /home/comfyuser/ComfyUI/
 ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
 ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
@@ -83,6 +84,7 @@ ln -s /workspace/models/LLM /home/comfyuser/ComfyUI/models/LLM
 ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
 ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
 ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
+ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
 
 mkdir -p /workspace/user
 ln -s /workspace/user /home/comfyuser/ComfyUI/user
