@@ -84,6 +84,9 @@ ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
 ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
 ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
 
+mkdir -p /workspace/user
+ln -s /workspace/user /home/comfyuser/ComfyUI/user
+
 # Start cloudflared in the background
 start_cloudflared() {
     echo "Starting cloudflared..."
