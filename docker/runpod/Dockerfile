@@ -112,6 +112,9 @@ RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/co
 RUN git clone https://github.com/kijai/ComfyUI-SUPIR /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR
 RUN git clone https://github.com/cdb-boop/ComfyUI-Bringing-Old-Photos-Back-to-Life /home/comfyuser/ComfyUI/custom_nodes/bringing-old-photos-back-to-life
 RUN git clone https://github.com/cdb-boop/comfyui-image-round /home/comfyuser/ComfyUI/custom_nodes/comfyui-image-round
+RUN git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts /home/comfyuser/ComfyUI/custom_nodes/comfyui-custom-scripts
+RUN git clone https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MagCache
+RUN git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale
 
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
