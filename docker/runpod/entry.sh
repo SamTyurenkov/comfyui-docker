@@ -27,7 +27,13 @@ set -x
 # pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
 # pip install simsimd --prefer-binary
 # pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
-export PATH="/workspace/venv/bin:$PATH"
+if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
+  export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
+else
+  #default CC 8.0
+  export PATH="/workspace/venv/bin:$PATH"
+fi
+
 which python
 which pip
 
@@ -105,11 +111,7 @@ start_cloudflared() {
 # Start ComfyUI
 start_comfyui() {
     echo "Starting ComfyUI..."
-    if [ -n "$COMMAND" ]; then
-      exec sh -c "$COMMAND"
-    else
-      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
-    fi
+    python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
 }
 
 start_nginx() {
