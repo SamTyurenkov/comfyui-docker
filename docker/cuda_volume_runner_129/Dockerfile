@@ -7,6 +7,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -y \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    llvm \
+    libncurses5-dev \
+    libncursesw5-dev \
+    xz-utils \
+    tk-dev \
+    libffi-dev \
+    liblzma-dev \
     wget \
     git \
     ca-certificates \
@@ -15,6 +28,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     cron \
     rclone \
     nginx
+
+RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz  && \
+    tar -xzf Python-3.12.0.tgz && \
+    cd Python-3.12.0 && \
+    ./configure --enable-shared --enable-optimizations && \
+    make -j$(nproc) && \
+    make altinstall && \
+    ln -s /usr/local/bin/python3.12 /usr/local/bin/python && \
+    echo "/usr/local/lib" > /etc/ld.so.conf.d/python3.12.conf && \
+    ldconfig
 
 # Nginx folders
 RUN mkdir -p /var/cache/nginx/client_temp \
