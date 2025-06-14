@@ -107,5 +107,6 @@ RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
 WORKDIR /home/comfyuser/
+
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

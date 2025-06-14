@@ -84,7 +84,7 @@ jobs:
         if: steps.flags.outputs.cuda_volume_runner_129_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/cuda_volume_runner_129_changed
-          file: ./docker/cuda_volume_runner_129_changed/Dockerfile
+          context: ./docker/cuda_volume_runner_129
+          file: ./docker/cuda_volume_runner_129/Dockerfile
           push: true
-          tags: samtyurenkov/cuda_volume_runner_129_changed:latest
+          tags: samtyurenkov/cuda_volume_runner_129:latest
