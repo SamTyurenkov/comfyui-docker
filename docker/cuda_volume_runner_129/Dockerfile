@@ -16,7 +16,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     llvm \
     libncurses5-dev \
     libncursesw5-dev \
-    libgl1-mesa-glx \
+    libglx-mesa0 \
+    libegl1 \
+    libgles2 \
+    mesa-utils \
     libglib2.0-0 \
     xz-utils \
     tk-dev \
