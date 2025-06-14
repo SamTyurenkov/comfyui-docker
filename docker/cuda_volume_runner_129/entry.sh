@@ -37,6 +37,11 @@ mkdir -p /workspace/user
 rm -rf /home/comfyuser/ComfyUI/user
 ln -s /workspace/user /home/comfyuser/ComfyUI/user
 
+# pip install torch==2.7.0 numpy==1.26.4 torchvision torchaudio torchsde --force-reinstall --extra-index-url https://download.pytorch.org/whl/cu128
+# python /workspace/sageattention/setup.py install
+# python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
+# python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
+
 # Start cloudflared in the background
 start_cloudflared() {
     echo "Starting cloudflared..."

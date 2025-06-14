@@ -38,6 +38,7 @@ jobs:
           comfyui=false
           runpod=false
           cuda_volume_runner_129=true
+          cuda_volume_builder_129=true
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
@@ -46,12 +47,14 @@ jobs:
             [[ "$file" == docker/comfyui/* ]] && comfyui=true
             [[ "$file" == docker/runpod/* ]] && runpod=true
             [[ "$file" == docker/cuda_volume_runner_129/* ]] && cuda_volume_runner_129=true
+            [[ "$file" == docker/cuda_volume_builder_129/* ]] && cuda_volume_builder_129=true
           done
 
           echo "nginx_changed=$nginx" >> $GITHUB_OUTPUT
           echo "comfyui_changed=$comfyui" >> $GITHUB_OUTPUT
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
           echo "cuda_volume_runner_129_changed=$cuda_volume_runner_129" >> $GITHUB_OUTPUT
+          echo "cuda_volume_builder_129_changed=$cuda_volume_builder_129" >> $GITHUB_OUTPUT
 
       - name: Build and push Nginx Image
         if: steps.flags.outputs.nginx_changed == 'true'
@@ -88,3 +91,12 @@ jobs:
           file: ./docker/cuda_volume_runner_129/Dockerfile
           push: true
           tags: samtyurenkov/cuda_volume_runner_129:latest
+
+      - name: Build and push CUDA volume builder Image
+        if: steps.flags.outputs.cuda_volume_runner_129_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/cuda_volume_builder_129
+          file: ./docker/cuda_volume_builder_129/Dockerfile
+          push: true
+          tags: samtyurenkov/cuda_volume_builder_129:latest
