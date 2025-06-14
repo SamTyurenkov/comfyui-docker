@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #see https://stackoverflow.com/questions/58018300/using-a-pip-cache-directory-in-docker-builds
-FROM 12.9.0-cudnn-runtime-ubuntu24.04
+FROM nvidia/cuda:12.9.0-cudnn-runtime-ubuntu24.04
 
 # Update package lists and install dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
