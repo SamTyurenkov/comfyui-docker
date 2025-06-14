@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libncurses5-dev \
     libncursesw5-dev \
     libgl1-mesa-glx \
-    libglib2.0-0
+    libglib2.0-0 \
     xz-utils \
     tk-dev \
     libffi-dev \
