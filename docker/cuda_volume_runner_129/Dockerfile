@@ -11,6 +11,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libssl-dev \
     zlib1g-dev \
     libbz2-dev \
+    libjpeg62 \
     libreadline-dev \
     libsqlite3-dev \
     llvm \
