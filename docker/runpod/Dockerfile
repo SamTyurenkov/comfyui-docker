@@ -37,6 +37,7 @@ RUN mkdir -p /var/cache/nginx/client_temp \
 
 # Expose ports
 EXPOSE 80 443
+EXPOSE 8888
 
 RUN mkdir -p /home/comfyuser/docker/
 COPY site-conf/ /home/comfyuser/docker/nginx/site-conf
@@ -117,6 +118,9 @@ RUN git clone https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/Comf
 RUN git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale
 RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
 RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SAM2
+RUN git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger
+RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Addoor
+
 
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb

@@ -27,8 +27,11 @@ set -x
 # pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background xformers insightface
 # pip install simsimd --prefer-binary
 # pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
+
 if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
   export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
+elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "8.9" ]; then
+  export PATH="/workspace/venv_cc8_9_cuda129/bin:$PATH"
 else
   #default CC 8.0
   export PATH="/workspace/venv/bin:$PATH"
@@ -60,6 +63,11 @@ which pip
 # python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
 # python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
 # pip install --force-reinstall --no-deps numpy==1.26.4
+
+# pip install torch==2.7.0 numpy==1.26.4 torchvision torchaudio torchsde --force-reinstall --extra-index-url https://download.pytorch.org/whl/cu128
+# python /workspace/sageattention/setup.py install
+# python /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui/setup.py
+# python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
 
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
@@ -114,6 +122,12 @@ start_comfyui() {
     python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
 }
 
+start_jupyterlab() {
+    echo "Starting Jupyter Lab..."
+    jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace &> /jupyter.log &
+    echo "Jupyter Lab started"
+}
+
 start_nginx() {
   echo "Starting Nginx..."
   nginx -g "daemon off;"
@@ -121,4 +135,5 @@ start_nginx() {
 
 start_cloudflared &
 start_comfyui &
-start_nginx
+start_nginx &
+start_jupyterlab
