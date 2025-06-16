@@ -37,8 +37,8 @@ jobs:
           nginx=false
           comfyui=false
           runpod=false
-          cuda_volume_runner_129=true
-          cuda_volume_builder_129=true
+          cuda_volume_runner_129=false
+          cuda_volume_builder_129=false
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
