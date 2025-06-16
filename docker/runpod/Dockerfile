@@ -121,6 +121,7 @@ RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI
 RUN git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger
 RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Addoor
 
+RUN pip install --upgrade pip && pip install jupyter
 
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
