@@ -124,8 +124,7 @@ start_comfyui() {
 
 start_jupyterlab() {
     echo "Starting Jupyter Lab..."
-    pip install jupyterlab
-    jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=* --ServerApp.preferred_dir=/workspace
+    jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=*
 }
 
 start_nginx() {
