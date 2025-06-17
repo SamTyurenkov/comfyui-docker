@@ -132,7 +132,12 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
-start_cloudflared &
+# start_cloudflared &
 start_comfyui &
 start_nginx &
 start_jupyterlab
+
+# wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+# dpkg -i cuda-keyring_1.1-1_all.deb
+# apt-get update && apt-get -y install cuda-toolkit-12-9
+# export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
