@@ -83,28 +83,23 @@ cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reacto
 # reactor breaks loading often
 mv /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node /tmp/comfyui-reactor-node
 
-rm -rf /home/comfyuser/ComfyUI/models/vae_approx
-rm -rf /home/comfyuser/ComfyUI/models/text_encoders
-rm -rf /home/comfyuser/ComfyUI/models/clip_vision
 # rclone copy --log-level=INFO r2:europe-colab/extra_model_paths.yaml /home/comfyuser/ComfyUI/
-ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
-ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
-ln -s /workspace/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
-ln -s /workspace/models/liveportrait /home/comfyuser/ComfyUI/models/liveportrait
-ln -s /workspace/models/reactor /home/comfyuser/ComfyUI/models/reactor
-ln -s /workspace/models/xlabs /home/comfyuser/ComfyUI/models/xlabs
-ln -s /workspace/models/BiRefNet /home/comfyuser/ComfyUI/models/BiRefNet
-ln -s /workspace/models/onnx /home/comfyuser/ComfyUI/models/onnx
-ln -s /workspace/models/LLM /home/comfyuser/ComfyUI/models/LLM
-ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
-ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
-ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
-ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
-ln -s /workspace/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
+rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
+rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
+rm -rf /home/comfyuser/ComfyUI/models/facedetection && ln -s /workspace/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
+rm -rf /home/comfyuser/ComfyUI/models/liveportrait && ln -s /workspace/models/liveportrait /home/comfyuser/ComfyUI/models/liveportrait
+rm -rf /home/comfyuser/ComfyUI/models/reactor && ln -s /workspace/models/reactor /home/comfyuser/ComfyUI/models/reactor
+rm -rf /home/comfyuser/ComfyUI/models/xlabs && ln -s /workspace/models/xlabs /home/comfyuser/ComfyUI/models/xlabs
+rm -rf /home/comfyuser/ComfyUI/models/BiRefNet && ln -s /workspace/models/BiRefNet /home/comfyuser/ComfyUI/models/BiRefNet
+rm -rf /home/comfyuser/ComfyUI/models/onnx && ln -s /workspace/models/onnx /home/comfyuser/ComfyUI/models/onnx
+rm -rf /home/comfyuser/ComfyUI/models/LLM && ln -s /workspace/models/LLM /home/comfyuser/ComfyUI/models/LLM
+rm -rf /home/comfyuser/ComfyUI/models/insightface && ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
+rm -rf /home/comfyuser/ComfyUI/models/ipadapter && ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
+rm -rf /home/comfyuser/ComfyUI/models/ultralytics && ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
+rm -rf /home/comfyuser/ComfyUI/models/text_encoders && ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
+rm -rf /home/comfyuser/ComfyUI/models/clip_vision && ln -s /workspace/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
 
-mkdir -p /workspace/user
-rm -rf /home/comfyuser/ComfyUI/user
-ln -s /workspace/user /home/comfyuser/ComfyUI/user
+rm -rf /home/comfyuser/ComfyUI/user && ln -s /workspace/user /home/comfyuser/ComfyUI/user
 
 # Start cloudflared in the background
 start_cloudflared() {

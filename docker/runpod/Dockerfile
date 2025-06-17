@@ -120,8 +120,8 @@ RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/C
 RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SAM2
 RUN git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger
 RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Addoor
-RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
-RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle_Advance /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle_Advance
+# RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
+# RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle_Advance /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle_Advance
 
 RUN pip install --upgrade pip && pip install jupyter
 
