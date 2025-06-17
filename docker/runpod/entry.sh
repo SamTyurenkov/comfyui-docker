@@ -114,7 +114,12 @@ start_cloudflared() {
 # Start ComfyUI
 start_comfyui() {
     echo "Starting ComfyUI..."
-    python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
+    if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
+      /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
+    else
+      #default CC 8.0
+      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers
+    fi
 }
 
 start_jupyterlab() {
