@@ -96,6 +96,8 @@ rm -rf /home/comfyuser/ComfyUI/models/LLM && ln -s /workspace/models/LLM /home/c
 rm -rf /home/comfyuser/ComfyUI/models/insightface && ln -s /workspace/models/insightface /home/comfyuser/ComfyUI/models/insightface
 rm -rf /home/comfyuser/ComfyUI/models/ipadapter && ln -s /workspace/models/ipadapter /home/comfyuser/ComfyUI/models/ipadapter
 rm -rf /home/comfyuser/ComfyUI/models/ultralytics && ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/ultralytics
+rm -rf /home/comfyuser/ComfyUI/models/sams && ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/sams
+rm -rf /home/comfyuser/ComfyUI/models/sam2 && ln -s /workspace/models/ultralytics /home/comfyuser/ComfyUI/models/sam2
 rm -rf /home/comfyuser/ComfyUI/models/text_encoders && ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
 rm -rf /home/comfyuser/ComfyUI/models/clip_vision && ln -s /workspace/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
 
