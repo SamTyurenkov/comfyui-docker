@@ -37,6 +37,7 @@ jobs:
           nginx=false
           comfyui=false
           runpod=false
+          runpod_reactor=false
           cuda_volume_runner_129=false
           cuda_volume_builder_129=false
 
@@ -46,6 +47,7 @@ jobs:
             [[ "$file" == docker/nginx/* ]] && nginx=true
             [[ "$file" == docker/comfyui/* ]] && comfyui=true
             [[ "$file" == docker/runpod/* ]] && runpod=true
+            [[ "$file" == docker/runpod_reactor/* ]] && runpod_reactor=true
             [[ "$file" == docker/cuda_volume_runner_129/* ]] && cuda_volume_runner_129=true
             [[ "$file" == docker/cuda_volume_builder_129/* ]] && cuda_volume_builder_129=true
           done
@@ -53,6 +55,7 @@ jobs:
           echo "nginx_changed=$nginx" >> $GITHUB_OUTPUT
           echo "comfyui_changed=$comfyui" >> $GITHUB_OUTPUT
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
+          echo "runpod_reactor_changed=$runpod_reactor" >> $GITHUB_OUTPUT
           echo "cuda_volume_runner_129_changed=$cuda_volume_runner_129" >> $GITHUB_OUTPUT
           echo "cuda_volume_builder_129_changed=$cuda_volume_builder_129" >> $GITHUB_OUTPUT
 
@@ -76,6 +79,15 @@ jobs:
 
       - name: Build and push Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile
+          push: true
+          tags: samtyurenkov/runpod:latest
+
+      - name: Build and push Runpod Image
+        if: steps.flags.outputs.runpod_reactor_changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./docker/runpod
