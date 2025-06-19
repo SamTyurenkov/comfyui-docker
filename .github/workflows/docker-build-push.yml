@@ -90,10 +90,10 @@ jobs:
         if: steps.flags.outputs.runpod_reactor_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile
+          context: ./docker/runpod_reactor
+          file: ./docker/runpod_reactor/Dockerfile
           push: true
-          tags: samtyurenkov/runpod:latest
+          tags: samtyurenkov/runpod:reactor
 
       - name: Build and push CUDA volume runner Image
         if: steps.flags.outputs.cuda_volume_runner_129_changed == 'true'
