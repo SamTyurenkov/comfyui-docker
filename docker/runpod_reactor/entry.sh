@@ -40,7 +40,7 @@ fi
 which python
 which pip
 
-# pip install -r /home/comfyuser/ComfyUI/requirements.txt
+# /workspace/venv_cc12_cuda129/bin/python -m pip install -r /home/comfyuser/ComfyUI/requirements.txt
 # pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
 # pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
 # pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack/requirements.txt
