@@ -134,7 +134,7 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
-# start_cloudflared &
+start_cloudflared &
 start_comfyui &
 start_nginx &
 start_jupyterlab
