@@ -32,6 +32,8 @@ if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
   export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "8.9" ]; then
   export PATH="/workspace/venv_cc8_9_cuda129/bin:$PATH"
+elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
+    export PATH="/workspace/venv/bin:$PATH"
 else
   #default CC 8.0
   export PATH="/workspace/venv/bin:$PATH"
@@ -118,6 +120,8 @@ start_comfyui() {
     echo "Starting ComfyUI..."
     if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
       /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
+    elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
+      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --cpu
     else
       #default CC 8.0
       /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 100 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
