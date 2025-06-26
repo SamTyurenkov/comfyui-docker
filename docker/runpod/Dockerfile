@@ -121,6 +121,7 @@ RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI
 RUN git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger
 RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Addoor
 RUN git clone https://github.com/kijai/ComfyUI-Florence2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Florence2
+RUN git clone https://github.com/regiellis/ComfyUI-EasyColorCorrector /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-EasyColorCorrector
 # RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
 # RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle_Advance /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle_Advance
 
