@@ -108,12 +108,14 @@ rm -rf /home/comfyuser/ComfyUI/user && ln -s /workspace/user /home/comfyuser/Com
 
 # Start cloudflared in the background
 start_cloudflared() {
-    echo "Starting cloudflared..."
-    echo "Using tunnel token and name..."
-    cloudflared tunnel \
-        --loglevel info \
-        --logfile /var/log/cloudflared.log \
-        run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
+    if [ -z "$TUNNEL_TOKEN" ] && [ "$TUNNEL_TOKEN" != "SET_YOUR_TUNNEL_TOKEN" ]; then
+      echo "Starting cloudflared..."
+      echo "Using tunnel token and name..."
+      cloudflared tunnel \
+          --loglevel info \
+          --logfile /var/log/cloudflared.log \
+          run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
+    fi
 }
 
 # Start ComfyUI
