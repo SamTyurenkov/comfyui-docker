@@ -141,10 +141,10 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
-start_cloudflared &
 start_comfyui &
 start_nginx &
-start_jupyterlab
+start_jupyterlab &
+start_cloudflared &
 
 # wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
 # dpkg -i cuda-keyring_1.1-1_all.deb
