@@ -115,6 +115,8 @@ start_cloudflared() {
           --loglevel info \
           --logfile /var/log/cloudflared.log \
           run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
+    else
+      echo "Skipping cloudflared, tunnel data not specified"
     fi
 }
 
