@@ -116,7 +116,8 @@ start_cloudflared() {
           --logfile /var/log/cloudflared.log \
           run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
     else
-      echo "Skipping cloudflared, tunnel data not specified"
+      echo "Skipping private cloudflared, tunnel data not specified"
+      cloudflared tunnel --url https://127.0.0.1 --loglevel info
     fi
 }
 
@@ -143,10 +144,11 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
+start_cloudflared &
 start_comfyui &
 start_nginx &
-start_jupyterlab &
-start_cloudflared
+start_jupyterlab
+
 
 # wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
 # dpkg -i cuda-keyring_1.1-1_all.deb
