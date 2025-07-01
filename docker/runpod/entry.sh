@@ -63,6 +63,7 @@ EOF
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae /home/comfyuser/ComfyUI/models/vae
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/loras/wan /home/comfyuser/ComfyUI/models/loras/wan
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip /home/comfyuser/ComfyUI/models/clip
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
 
