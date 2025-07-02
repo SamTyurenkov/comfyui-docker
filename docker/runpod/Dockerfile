@@ -24,6 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     openssl \
     cron \
     rclone \
+    awscli \
     # fuse \
     # libfuse2 \
     nginx
