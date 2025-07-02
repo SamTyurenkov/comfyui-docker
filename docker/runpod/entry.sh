@@ -81,7 +81,6 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
 
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
 
-  rclone copy --log-level=INFO runpod:kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
