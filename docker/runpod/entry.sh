@@ -7,6 +7,11 @@ set -x
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
 
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
+  wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+  dpkg -i cuda-keyring_1.1-1_all.deb
+  apt-get update && apt-get -y install cuda-toolkit-12-9
+  export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
+
   pip install --upgrade pip
   pip install torch==2.7.0 protobuf==4.25.3 numpy==1.26.4 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
   pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background
@@ -47,11 +52,6 @@ cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
-
-  wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
-  dpkg -i cuda-keyring_1.1-1_all.deb
-  apt-get update && apt-get -y install cuda-toolkit-12-9
-  export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
 
   mkdir -p /root/.config/rclone
 
