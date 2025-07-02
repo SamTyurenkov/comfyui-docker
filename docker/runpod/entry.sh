@@ -72,14 +72,14 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   mkdir -p /home/comfyuser/ComfyUI/models/text_encoders
   mkdir -p /home/comfyuser/ComfyUI/models/diffusion_models
 
-  rclone copy --log-level=INFO runpod:kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae_bf16.safetensors
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae.safetensors
+  rclone copy --log-level=INFO runpod:kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/loras/wan /home/comfyuser/ComfyUI/models/loras/wan
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/clip_l.safetensors
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
 
   if [ -n "$LOAD_FUN_INP_MODEL" ] && [ "$LOAD_FUN_INP_MODEL" = "1" ]; then
     rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors
