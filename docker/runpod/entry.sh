@@ -45,9 +45,14 @@ cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default
 
 
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
-cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
+
+  wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+  dpkg -i cuda-keyring_1.1-1_all.deb
+  apt-get update && apt-get -y install cuda-toolkit-12-9
+  export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
+
   mkdir -p /root/.config/rclone
 
   cat << EOF > /root/.config/rclone/rclone.conf
@@ -67,6 +72,7 @@ EOF
   mkdir -p /home/comfyuser/ComfyUI/models/text_encoders
   mkdir -p /home/comfyuser/ComfyUI/models/diffusion_models
 
+  rclone copy --log-level=INFO runpod:kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae_bf16.safetensors
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae.safetensors
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
@@ -103,6 +109,7 @@ EOF
   fi
 
 elif
+  cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
   rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
   rm -rf /home/comfyuser/ComfyUI/models/facedetection && ln -s /workspace/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
@@ -168,9 +175,3 @@ start_cloudflared &
 start_comfyui &
 start_nginx &
 start_jupyterlab
-
-
-# wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
-# dpkg -i cuda-keyring_1.1-1_all.deb
-# apt-get update && apt-get -y install cuda-toolkit-12-9
-# export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
