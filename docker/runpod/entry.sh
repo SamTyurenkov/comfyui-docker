@@ -31,6 +31,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
   python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
   pip install --force-reinstall --no-deps numpy==1.26.4
+  pip uninstall tensorflow
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
   export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "8.9" ]; then
