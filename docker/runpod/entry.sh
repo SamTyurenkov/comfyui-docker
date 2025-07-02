@@ -6,6 +6,17 @@ set -x
 # client_id = YOUR_GOOGLE_DRIVE_CLIENT_ID
 # client_secret = YOUR_GOOGLE_DRIVE_CLIENT_SECRET
 
+mkdir -p /root/.config/rclone
+cat >/root/.config/rclone/rclone.conf <<EOL
+[runpod]
+type = s3
+provider = Runpod
+access_key_id = ${RUNPOD_USERID}
+secret_access_key = ${RUNPOD_TOKEN}
+endpoint = https://s3api-eu-ro-1.runpod.io
+acl = private
+EOL
+
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
   dpkg -i cuda-keyring_1.1-1_all.deb
@@ -53,18 +64,6 @@ cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
-
-  mkdir -p /root/.config/rclone
-
-  cat << EOF > /root/.config/rclone/rclone.conf
-[runpod]
-type = s3
-provider = Runpod
-access_key_id = $RUNPOD_USERID
-secret_access_key = $RUNPOD_TOKEN
-endpoint = https://s3api-eu-ro-1.runpod.io
-acl = private
-EOF
 
   mkdir -p /home/comfyuser/ComfyUI/models/vae
   mkdir -p /home/comfyuser/ComfyUI/models/vae_approx
