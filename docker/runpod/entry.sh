@@ -42,7 +42,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
   python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
   pip install --force-reinstall --no-deps numpy==1.26.4
-  pip uninstall tensorflow
+  pip uninstall -y tensorflow
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
   export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "8.9" ]; then
@@ -108,7 +108,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
     rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors
   fi
 
-elif
+else
   cp /workspace/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
   rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
