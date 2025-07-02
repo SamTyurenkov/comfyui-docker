@@ -125,12 +125,12 @@ start_cloudflared() {
 start_comfyui() {
     echo "Starting ComfyUI..."
     if [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
-      /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --disable-smart-memory --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
+      /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
-      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --disable-smart-memory --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --cpu
+      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --cpu
     else
       #default CC 8.0
-      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --disable-smart-memory --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
+      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     fi
 }
 
