@@ -93,14 +93,14 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_decoder.pth"
   # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_encoder.pth"
   
-  wget -O /home/comfyuser/ComfyUI/models/vae_approx/taew2_1.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/taew2_1.safetensors?download=true" & \
-  wget -O /home/comfyuser/ComfyUI/models/clip_vision/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors?download=true" & \
+  wget -O /home/comfyuser/ComfyUI/models/vae_approx/taew2_1.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/taew2_1.safetensors?download=true"
+  wget -O /home/comfyuser/ComfyUI/models/clip_vision/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors?download=true"
   wget -O /home/comfyuser/ComfyUI/models/clip_vision/clip_vision_h.safetensors "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors?download=true"
 
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/ & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/ & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/ & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/ & \
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
 
   if [ -n "$LOAD_FUN_INP_MODEL" ] && [ "$LOAD_FUN_INP_MODEL" = "1" ]; then
@@ -108,7 +108,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   fi
 
   if [ -n "$LOAD_DMD_VACE_MODEL" ] && [ "$LOAD_DMD_VACE_MODEL" = "1" ]; then
-    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors & \
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors
     aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors
   fi
 
@@ -121,26 +121,26 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   fi
 
   if [ -n "$LOAD_VACE_MODEL" ] && [ "$LOAD_VACE_MODEL" = "1" ]; then
-    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors & \
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors
     aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors
   fi
 
   if [ -n "$LOAD_FUSIONX_MODEL" ] && [ "$LOAD_FUSIONX_MODEL" = "1" ]; then
-    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors & \
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors
     aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors
   fi
 
   # aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/ /home/comfyuser/ComfyUI/models/loras/wan --recursive --no-paginate
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/Wan21_CausVid_14B_T2V_lora_rank32_v2.safetensors /home/comfyuser/ComfyUI/models/loras/wan/Wan21_CausVid_14B_T2V_lora_rank32_v2.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-missionary-t2v_v1_1_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-missionary-t2v_v1_1_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/detailz_t2v_14B_v1.safetensors /home/comfyuser/ComfyUI/models/loras/wan/detailz_t2v_14B_v1.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/nsfwfemale-genitals-helper-for-wan-t2vi2v.safetensors /home/comfyuser/ComfyUI/models/loras/wan/nsfwfemale-genitals-helper-for-wan-t2vi2v.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-handjob_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-handjob_t2v_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-missionary-i2v_v1_1_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-missionary-i2v_v1_1_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/dick_slap_T2V_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/dick_slap_T2V_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_t2v_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_i2v_14B.safetensors & \
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/Wan21_CausVid_14B_T2V_lora_rank32_v2.safetensors /home/comfyuser/ComfyUI/models/loras/wan/Wan21_CausVid_14B_T2V_lora_rank32_v2.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-missionary-t2v_v1_1_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-missionary-t2v_v1_1_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/detailz_t2v_14B_v1.safetensors /home/comfyuser/ComfyUI/models/loras/wan/detailz_t2v_14B_v1.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/nsfwfemale-genitals-helper-for-wan-t2vi2v.safetensors /home/comfyuser/ComfyUI/models/loras/wan/nsfwfemale-genitals-helper-for-wan-t2vi2v.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-handjob_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-handjob_t2v_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-missionary-i2v_v1_1_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-missionary-i2v_v1_1_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/dick_slap_T2V_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/dick_slap_T2V_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_t2v_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_i2v_14B.safetensors
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/anal_from_behind_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/anal_from_behind_t2v_14B.safetensors
   
 # 360-i2v_480p-lora.safetensors                                                     penis-lora-front-view-blowjob-cumshot-taz-wan-21-14b-13b-t2v-and-i2v.sha256  pov-titty-fuck-ti2v-and-i2v_720p_v1.safetensors
