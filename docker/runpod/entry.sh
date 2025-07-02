@@ -60,14 +60,48 @@ endpoint = https://s3api-eu-ro-1.runpod.io
 acl = private
 EOF
 
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae /home/comfyuser/ComfyUI/models/vae
+  mkdir -p /home/comfyuser/ComfyUI/models/vae
+  mkdir -p /home/comfyuser/ComfyUI/models/vae_approx
+  mkdir -p /home/comfyuser/ComfyUI/models/loras/wan
+  mkdir -p /home/comfyuser/ComfyUI/models/clip_vision
+  mkdir -p /home/comfyuser/ComfyUI/models/text_encoders
+  mkdir -p /home/comfyuser/ComfyUI/models/diffusion_models
+
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae_bf16.safetensors
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/wan_2.1_vae.safetensors
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/loras/wan /home/comfyuser/ComfyUI/models/loras/wan
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip /home/comfyuser/ComfyUI/models/clip
   rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors
+  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/clip_l.safetensors
 
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models /home/comfyuser/ComfyUI/models/diffusion_models
+  if [ -n "$LOAD_FUN_INP_MODEL" ] && [ "$LOAD_FUN_INP_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors
+  fi
+
+  if [ -n "$LOAD_DMD_VACE_MODEL" ] && [ "$LOAD_DMD_VACE_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors
+  fi
+
+  if [ -n "$LOAD_I2V_MODEL" ] && [ "$LOAD_I2V_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors
+  fi
+
+  if [ -n "$LOAD_FLF2V_MODEL" ] && [ "$LOAD_FLF2V_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors
+  fi
+
+  if [ -n "$LOAD_VACE_MODEL" ] && [ "$LOAD_VACE_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors
+  fi
+
+  if [ -n "$LOAD_FUSIONX_MODEL" ] && [ "$LOAD_FUSIONX_MODEL" = "1" ]; then
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors
+    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors
+  fi
+
 elif
   rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /workspace/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
   rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /workspace/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
