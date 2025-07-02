@@ -140,7 +140,8 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/dick_slap_T2V_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/dick_slap_T2V_14B.safetensors & \
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/pov-blowjob-t2v-and-i2v_14B.safetensors & \
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_t2v_14B.safetensors & \
-  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_i2v_14B.safetensors
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/wan_cumshot_i2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/wan_cumshot_i2v_14B.safetensors & \
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan/anal_from_behind_t2v_14B.safetensors /home/comfyuser/ComfyUI/models/loras/wan/anal_from_behind_t2v_14B.safetensors
   
 # 360-i2v_480p-lora.safetensors                                                     penis-lora-front-view-blowjob-cumshot-taz-wan-21-14b-13b-t2v-and-i2v.sha256  pov-titty-fuck-ti2v-and-i2v_720p_v1.safetensors
 # 360-i2v_480p-lora.sha256                                                          pov-blowjob-t2v-and-i2v_14B.safetensors                                      rev3rse-c0wg1rl-wan-21-i2v_720p-lora_v1.safetensors
