@@ -45,6 +45,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/efficiency-nodes-comfyui/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
+  pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SAM2/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
   pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
   python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
