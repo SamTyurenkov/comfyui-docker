@@ -47,7 +47,7 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SAM2/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/teacache/requirements.txt
-  pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose
+  pip install -e /home/comfyuser/sageattention/. --use-pep517 --verbose --no-build-isolation
   python /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/install.py
   pip install --force-reinstall --no-deps numpy==1.26.4
   pip uninstall -y tensorflow
