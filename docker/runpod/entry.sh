@@ -17,6 +17,13 @@ endpoint = https://s3api-eu-ro-1.runpod.io
 acl = private
 EOL
 
+mkdir -p /root/.aws/
+cat >/root/.aws/credentials <<EOL
+[default]
+aws_access_key_id = ${RUNPOD_USERID}
+aws_secret_access_key = ${RUNPOD_TOKEN}
+EOL
+
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
   dpkg -i cuda-keyring_1.1-1_all.deb
@@ -72,40 +79,42 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   mkdir -p /home/comfyuser/ComfyUI/models/text_encoders
   mkdir -p /home/comfyuser/ComfyUI/models/diffusion_models
 
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
+
   rclone copy --log-level=INFO runpod:kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/loras/wan /home/comfyuser/ComfyUI/models/loras/wan
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
-  rclone copy --log-level=INFO runpod:kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae_bf16.safetensors /home/comfyuser/ComfyUI/models/vae/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae/wan_2.1_vae.safetensors /home/comfyuser/ComfyUI/models/vae/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/loras/wan /home/comfyuser/ComfyUI/models/loras/wan
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/text_encoders/umt5-xxl-enc-bf16.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
+  aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/text_encoders/clip_l.safetensors /home/comfyuser/ComfyUI/models/text_encoders/
 
   if [ -n "$LOAD_FUN_INP_MODEL" ] && [ "$LOAD_FUN_INP_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-Fun-14B-InP.safetensors
   fi
 
   if [ -n "$LOAD_DMD_VACE_MODEL" ] && [ "$LOAD_DMD_VACE_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-FP16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2.1-T2V-1.3B-Self-Forcing-DMD-VACE-FP16.safetensors
   fi
 
   if [ -n "$LOAD_I2V_MODEL" ] && [ "$LOAD_I2V_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_i2v_720p_14B_fp16.safetensors
   fi
 
   if [ -n "$LOAD_FLF2V_MODEL" ] && [ "$LOAD_FLF2V_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_flf2v_720p_14B_fp16.safetensors
   fi
 
   if [ -n "$LOAD_VACE_MODEL" ] && [ "$LOAD_VACE_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/wan2.1_vace_14B_fp16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan2_1-VACE_module_14B_bf16.safetensors
   fi
 
   if [ -n "$LOAD_FUSIONX_MODEL" ] && [ "$LOAD_FUSIONX_MODEL" = "1" ]; then
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors
-    rclone copy --log-level=INFO runpod:kns8p9opbh/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14BT2VFusioniX_Phantom_fp16.safetensors
+    aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors /home/comfyuser/ComfyUI/models/diffusion_models/Wan14Bi2vFusioniX_fp16.safetensors
   fi
 
 else
