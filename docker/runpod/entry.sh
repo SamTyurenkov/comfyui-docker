@@ -80,23 +80,23 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   mkdir -p /home/comfyuser/ComfyUI/models/text_encoders
   mkdir -p /home/comfyuser/ComfyUI/models/diffusion_models
 
-  # ### FLUX TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
-  wget -O /content/ComfyUI/models/vae_approx/taef1_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taef1_decoder.pth"
-  wget -O /content/ComfyUI/models/vae_approx/taef1_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taef1_encoder.pth"
-  # ### SDXL TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
-  wget -O /content/ComfyUI/models/vae_approx/taesdxl_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesdxl_decoder.pth"
-  wget -O /content/ComfyUI/models/vae_approx/taesdxl_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesdxl_encoder.pth"
-  # ### SD3 TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
-  wget -O /content/ComfyUI/models/vae_approx/taesd3_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd3_decoder.pth"
-  wget -O /content/ComfyUI/models/vae_approx/taesd3_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd3_encoder.pth"
-  # ### SD TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
-  wget -O /content/ComfyUI/models/vae_approx/taesd_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_decoder.pth"
-  wget -O /content/ComfyUI/models/vae_approx/taesd_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_encoder.pth"
+  # # ### FLUX TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taef1_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taef1_decoder.pth"
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taef1_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taef1_encoder.pth"
+  # # ### SDXL TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesdxl_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesdxl_decoder.pth"
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesdxl_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesdxl_encoder.pth"
+  # # ### SD3 TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd3_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd3_decoder.pth"
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd3_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd3_encoder.pth"
+  # # ### SD TAE DECODER/ENCODER FOR PREVIEWS AND VAE decode/encode
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd_decoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_decoder.pth"
+  # wget -O /home/comfyuser/ComfyUI/models/vae_approx/taesd_encoder.pth "https://raw.githubusercontent.com/madebyollin/taesd/main/taesd_encoder.pth"
   
-  wget -O /content/ComfyUI/models/vae_approx/taew2_1.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/taew2_1.safetensors?download=true"
+  wget -O /home/comfyuser/ComfyUI/models/vae_approx/taew2_1.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/taew2_1.safetensors?download=true"
 
-  wget -O /content/ComfyUI/models/clip_vision/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors?download=true"
-  wget -O /content/ComfyUI/models/clip_vision/clip_vision_h.safetensors "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors?download=true"
+  wget -O /home/comfyuser/ComfyUI/models/clip_vision/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/open-clip-xlm-roberta-large-vit-huge-14_visual_fp16.safetensors?download=true"
+  wget -O /home/comfyuser/ComfyUI/models/clip_vision/clip_vision_h.safetensors "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors?download=true"
 
   aws s3 cp --region EU-RO-1 --endpoint-url https://s3api-eu-ro-1.runpod.io/ s3://kns8p9opbh/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/
 
