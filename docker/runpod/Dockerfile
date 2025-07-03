@@ -124,7 +124,7 @@ RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI
 RUN git clone https://github.com/kijai/ComfyUI-Florence2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Florence2
 RUN git clone https://github.com/gameltb/comfyui-stablesr /home/comfyuser/ComfyUI/custom_nodes/comfyui-stablesr
 RUN git clone https://github.com/ethansmith2000/comfy-todo /home/comfyuser/ComfyUI/custom_nodes/comfy-todo
-RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
+# RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
 RUN pip install --upgrade pip && pip install jupyter
 
