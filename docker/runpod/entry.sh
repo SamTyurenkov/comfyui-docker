@@ -198,21 +198,26 @@ start_comfyui() {
     echo "Starting ComfyUI..."
     if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
       python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
-      if [ -n "$MULTIGPU" ] && [ "$MULTIGPU" = "1" ]; then
-        python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --cuda-device 1
-      fi
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
       /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
-      if [ -n "$MULTIGPU" ] && [ "$MULTIGPU" = "1" ]; then
-        /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --cuda-device 1
-      fi
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
       /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --cpu
     else
       #default CC 8.0
       /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
-      if [ -n "$MULTIGPU" ] && [ "$MULTIGPU" = "1" ]; then
-        /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --cuda-device 1
+    fi
+}
+
+# Start ComfyUI MultiGPU
+start_comfyui_multigpu() {
+    if [ -n "$MULTIGPU" ] && [ "$MULTIGPU" = "1" ]; then
+      echo "Starting ComfyUI 2..."
+      if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
+        python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
+      elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
+          /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
+      else
+          /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
       fi
     fi
 }
@@ -229,5 +234,6 @@ start_nginx() {
 
 start_cloudflared &
 start_comfyui &
+start_comfyui_multigpu &
 start_nginx &
 start_jupyterlab
