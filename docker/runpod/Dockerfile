@@ -38,7 +38,7 @@ RUN mkdir -p /var/cache/nginx/client_temp \
 
 # Expose ports
 EXPOSE 80 443
-EXPOSE 8888
+EXPOSE 8888 8889
 
 RUN mkdir -p /home/comfyuser/docker/
 COPY site-conf/ /home/comfyuser/docker/nginx/site-conf
