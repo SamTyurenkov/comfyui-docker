@@ -25,6 +25,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     cron \
     rclone \
     awscli \
+    aria2 \
     # fuse \
     # libfuse2 \
     nginx
@@ -124,6 +125,7 @@ RUN git clone https://github.com/Eagle-CN/ComfyUI-Addoor /home/comfyuser/ComfyUI
 RUN git clone https://github.com/kijai/ComfyUI-Florence2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Florence2
 RUN git clone https://github.com/gameltb/comfyui-stablesr /home/comfyuser/ComfyUI/custom_nodes/comfyui-stablesr
 RUN git clone https://github.com/ethansmith2000/comfy-todo /home/comfyuser/ComfyUI/custom_nodes/comfy-todo
+RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
 RUN pip install --upgrade pip && pip install jupyter
