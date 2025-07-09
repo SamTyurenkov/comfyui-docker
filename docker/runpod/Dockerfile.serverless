@@ -1,0 +1,9 @@
+FROM samtyurenkov/runpod:dev as builder
+
+FROM python:3.12-slim
+COPY --from=builder /home/comfyuser /home/comfyuser
+
+ADD entry.serverless.sh /usr/local/bin/entrypoint.sh
+WORKDIR /home/comfyuser/
+RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
