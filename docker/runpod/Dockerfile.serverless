@@ -5,6 +5,7 @@ COPY --from=builder /home/comfyuser /home/comfyuser
 
 ADD entry.serverless.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
+ADD test_input.json /home/comfyuser/test_input.json
 
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
