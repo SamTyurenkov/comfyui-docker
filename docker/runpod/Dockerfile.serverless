@@ -3,6 +3,9 @@ FROM samtyurenkov/runpod:dev as builder
 FROM python:3.12
 COPY --from=builder /home/comfyuser /home/comfyuser
 
+RUN rm /home/comfyuser/ComfyUI/extra_model_paths.yaml
+COPY extra_model_paths.serverless.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
