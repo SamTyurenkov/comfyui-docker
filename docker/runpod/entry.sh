@@ -205,7 +205,7 @@ start_comfyui() {
       /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --cpu
     else
       #default CC 8.0
-      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-sage-attention --disable-xformers --fast fp16_accumulation
+      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     fi
 }
 
@@ -218,7 +218,7 @@ start_comfyui_multigpu() {
       elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
           /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-sage-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
       else
-          /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-sage-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
+          /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
       fi
     fi
 }
