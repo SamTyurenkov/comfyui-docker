@@ -116,6 +116,7 @@ RUN git clone https://github.com/kijai/ComfyUI-SUPIR /home/comfyuser/ComfyUI/cus
 RUN git clone https://github.com/cdb-boop/ComfyUI-Bringing-Old-Photos-Back-to-Life /home/comfyuser/ComfyUI/custom_nodes/bringing-old-photos-back-to-life
 RUN git clone https://github.com/cdb-boop/comfyui-image-round /home/comfyuser/ComfyUI/custom_nodes/comfyui-image-round
 RUN git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts /home/comfyuser/ComfyUI/custom_nodes/comfyui-custom-scripts
+COPY autocomplete.txt /home/comfyuser/ComfyUI/custom_nodes/comfyui-custom-scripts/user/autocomplete.txt
 RUN git clone https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MagCache
 RUN git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale
 RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
