@@ -26,6 +26,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     rclone \
     awscli \
     aria2 \
+    ffmpeg \
     # fuse \
     # libfuse2 \
     nginx
