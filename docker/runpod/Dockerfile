@@ -127,6 +127,9 @@ RUN git clone https://github.com/gameltb/comfyui-stablesr /home/comfyuser/ComfyU
 RUN git clone https://github.com/ethansmith2000/comfy-todo /home/comfyuser/ComfyUI/custom_nodes/comfy-todo
 RUN git clone https://github.com/kaibioinfo/ComfyUI_AdvancedRefluxControl.git /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_AdvancedRefluxControl
 RUN git clone https://github.com/Jonseed/ComfyUI-Detail-Daemon /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Detail-Daemon
+RUN git clone https://github.com/Extraltodeus/sigmas_tools_and_the_golden_scheduler /home/comfyuser/ComfyUI/custom_nodes/sigmas_tools_and_the_golden_scheduler
+RUN git clone https://github.com/Nourepide/ComfyUI-Allor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Allor
+RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
