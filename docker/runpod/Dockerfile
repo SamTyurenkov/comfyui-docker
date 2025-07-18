@@ -98,7 +98,7 @@ RUN git clone https://github.com/kijai/ComfyUI-LBMWrapper /home/comfyuser/ComfyU
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LBMWrapper && git checkout 6bda0e7c6910033f2efc124131422fae568965db
 RUN git clone https://github.com/sipherxyz/comfyui-art-venture /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture && git checkout c3bacdc0c4393166b25c5a8f30a183292d0010e8
-RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
+# RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite && git checkout a7ce59e381934733bfae03b1be029756d6ce936d
 RUN git clone https://github.com/SamTyurenkov/comfyui_chatgpt /home/comfyuser/ComfyUI/custom_nodes/comfyui_chatgpt
 RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
@@ -111,7 +111,7 @@ RUN git clone https://github.com/jags111/efficiency-nodes-comfyui /home/comfyuse
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/efficiency-nodes-comfyui && git checkout 7dc3c93aa27fb200d62179b9a9f2b4fe301b4474
 RUN git clone https://github.com/M1kep/ComfyLiterals /home/comfyuser/ComfyUI/custom_nodes/ComfyLiterals
 RUN git clone https://github.com/kijai/ComfyUI-KJNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes && git checkout a879d152083ebcbce90d187b5537193034974a54
+# RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes && git checkout a879d152083ebcbce90d187b5537193034974a54
 RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
 RUN git clone https://github.com/kijai/ComfyUI-SUPIR /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SUPIR
 RUN git clone https://github.com/cdb-boop/ComfyUI-Bringing-Old-Photos-Back-to-Life /home/comfyuser/ComfyUI/custom_nodes/bringing-old-photos-back-to-life
