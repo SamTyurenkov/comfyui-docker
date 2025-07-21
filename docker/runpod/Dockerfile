@@ -136,6 +136,7 @@ RUN git clone https://github.com/Extraltodeus/sigmas_tools_and_the_golden_schedu
 RUN git clone https://github.com/Nourepide/ComfyUI-Allor /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Allor
 RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
 RUN git clone https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SeedVR2_VideoUpscaler
+RUN git clone https://github.com/Kosinkadink/ComfyUI-AnimateDiff-Evolved /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-AnimateDiff-Evolved
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
