@@ -137,6 +137,7 @@ RUN git clone https://github.com/Nourepide/ComfyUI-Allor /home/comfyuser/ComfyUI
 RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
 RUN git clone https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-SeedVR2_VideoUpscaler
 RUN git clone https://github.com/Kosinkadink/ComfyUI-AnimateDiff-Evolved /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-AnimateDiff-Evolved
+RUN git clone https://github.com/kijai/ComfyUI-segment-anything-2 /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-segment-anything-2
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
