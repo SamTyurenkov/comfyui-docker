@@ -101,6 +101,7 @@ RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture && git checkout 
 RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
 # RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite && git checkout a7ce59e381934733bfae03b1be029756d6ce936d
 RUN git clone https://github.com/SamTyurenkov/comfyui_chatgpt /home/comfyuser/ComfyUI/custom_nodes/comfyui_chatgpt
+RUN git clone https://github.com/SamTyurenkov/comfyui-vace-preprocessors /home/comfyuser/ComfyUI/custom_nodes/comfyui-vace-preprocessors
 RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use && git checkout 71c7865d2d3c934ccb99f24171e08ae5a81148ac
 RUN git clone https://github.com/ManglerFTW/ComfyI2I /home/comfyuser/ComfyUI/custom_nodes/ComfyI2I
