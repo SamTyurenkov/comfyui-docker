@@ -175,6 +175,8 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/stablesr && ln -s /workspace/models/stablesr /home/comfyuser/ComfyUI/models/stablesr
   rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /workspace/models/style_models /home/comfyuser/ComfyUI/models/style_models
   rm -rf /home/comfyuser/ComfyUI/models/SEEDVR2 && ln -s /workspace/models/SEEDVR2 /home/comfyuser/ComfyUI/models/SEEDVR2
+  rm -rf /home/comfyuser/ComfyUI/models/salient && ln -s /workspace/models/salient /home/comfyuser/ComfyUI/models/salient
+  rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /workspace/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
   rm -rf /home/comfyuser/ComfyUI/user && ln -s /workspace/user /home/comfyuser/ComfyUI/user
 fi
 
