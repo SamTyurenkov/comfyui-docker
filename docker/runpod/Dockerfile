@@ -67,7 +67,7 @@ RUN git clone https://github.com/bash-j/mikey_nodes /home/comfyuser/ComfyUI/cust
 
 # Copied from Generic Colab
 RUN git clone https://github.com/ltdrdata/ComfyUI-Manager /home/comfyuser/ComfyUI/custom_nodes/comfyui-manager
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-manager && git checkout 3.33.3
+# RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-manager && git checkout 3.33.3
 RUN git clone https://github.com/chrisgoringe/cg-use-everywhere /home/comfyuser/ComfyUI/custom_nodes/cg-use-everywhere
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/cg-use-everywhere && git checkout 5ae64f462ec24fc0100a309c42c3def6aae18d7b
 RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
