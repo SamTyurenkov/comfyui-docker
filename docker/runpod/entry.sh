@@ -226,7 +226,7 @@ start_comfyui_multigpu() {
       fi
     fi
 }
-
+#
 start_jupyterlab() {
     echo "Starting Jupyter Lab..."
     jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=*
