@@ -35,16 +35,20 @@ cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default
 rm -rf /home/comfyuser/OneTrainer && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainer
 rm -rf /home/comfyuser/models && ln -s /workspace/models /home/comfyuser/models
 
-# Start ComfyUI
-start_onetrainer() {
-    # Capture additional arguments from environment variables
-    echo "Starting OneTrainer..."
-
-}
-#
 start_jupyterlab() {
     echo "Starting Jupyter Lab..."
     jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=*
+}
+
+start_tensorboard() {
+    echo "Starting TensorBoard..."
+    tensorboard --logdir=/workspace/OneTrainer/tensorboard
+}
+
+start_training_ui() {
+    echo "Starting Training UI..."
+    # Start the training UI
+    /workspace/venv_onetrainer/bin/python /home/comfyuser/training_ui.py
 }
 
 start_nginx() {
@@ -52,6 +56,7 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
-start_onetrainer &
+start_tensorboard &
+start_training_ui &
 start_nginx &
 start_jupyterlab

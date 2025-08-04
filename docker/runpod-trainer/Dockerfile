@@ -29,6 +29,7 @@ RUN mkdir -p /var/cache/nginx/client_temp \
 # Expose ports
 EXPOSE 80 81
 EXPOSE 6006
+EXPOSE 5000
 
 COPY site-conf/ /home/comfyuser/docker/nginx/site-conf
 COPY nginx.conf /home/comfyuser/docker/nginx/nginx.conf
@@ -39,7 +40,12 @@ RUN mkdir -p /home/comfyuser/OneTrainer/
 
 RUN cd /home/comfyuser && git clone https://github.com/Nerogar/OneTrainer.git
 
-RUN pip install --upgrade pip && pip install jupyter
+RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors
+
+# Copy training UI files
+COPY training_ui.py /home/comfyuser/training_ui.py
+COPY templates/ /home/comfyuser/templates/
+COPY find_configs.py /home/comfyuser/find_configs.py
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
 WORKDIR /home/comfyuser/
