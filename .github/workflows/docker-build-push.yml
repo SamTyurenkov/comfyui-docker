@@ -60,7 +60,7 @@ jobs:
         if: steps.flags.outputs.runpod_trainer_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile
+          context: ./docker/runpod-trainer
+          file: ./docker/runpod-trainer/Dockerfile
           push: true
           tags: samtyurenkov/runpod:trainer
