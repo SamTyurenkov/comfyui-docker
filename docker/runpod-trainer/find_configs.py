@@ -5,7 +5,7 @@ from pathlib import Path
 
 def find_config_files():
     """Find all config files in the OneTrainer config directory"""
-    config_path = Path("/workspace/OneTrainer/config")
+    config_path = Path("/workspace/OneTrainerConfigs/config")
     config_files = []
     
     if not config_path.exists():

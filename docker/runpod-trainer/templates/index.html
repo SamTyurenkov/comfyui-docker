@@ -202,18 +202,16 @@
             <div class="form-section">
                 <h2>Start Training</h2>
                 <div class="form-group">
-                    <label for="configFile">Config File Path:</label>
-                    <input type="text" id="configFile" placeholder="Enter config file name (e.g., lora_config.json) or full path" value="">
+                    <label for="configFile">Selected Config File:</label>
+                    <input type="text" id="configFile" placeholder="Select a config file from the dropdown below" value="" readonly>
                     <div style="margin-top: 10px;">
-                        <button type="button" class="btn" style="background: #28a745; margin-right: 10px;" onclick="loadConfigs()">Load Available Configs</button>
-                        <span id="configStatus" style="color: #666; font-size: 0.9em; margin-left: 10px;"></span>
-                        <select id="configSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%; display: none;" onchange="selectConfig(this.value)">
+                        <span id="configStatus" style="color: #666; font-size: 0.9em;"></span>
+                        <select id="configSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectConfig(this.value)">
                             <option value="">Select a config file...</option>
                         </select>
                     </div>
                     <small style="color: #666; margin-top: 5px; display: block;">
-                        Config files are typically stored in <code>/workspace/OneTrainer/config/</code>. 
-                        You can enter just the filename (e.g., "lora_config.json") or the full path.
+                        Config files are automatically loaded from <code>/workspace/OneTrainerConfigs/config/</code>.
                     </small>
                 </div>
                 <button class="btn" id="startBtn" onclick="startTraining()">Start Training</button>
@@ -409,7 +407,6 @@
                         option.textContent = config;
                         configSelect.appendChild(option);
                     });
-                    configSelect.style.display = 'block';
                     
                     // Restore previous selection if it still exists
                     if (currentValue && data.configs.includes(currentValue)) {
@@ -418,7 +415,6 @@
                     
                     statusElement.textContent = `Found ${data.configs.length} config file(s)`;
                 } else {
-                    configSelect.style.display = 'none';
                     statusElement.textContent = 'No config files found';
                     console.log('No config files found. Make sure you have config files in the OneTrainer config directory.');
                 }

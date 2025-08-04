@@ -45,7 +45,7 @@ class ProcessManager:
                     text=True,
                     bufsize=1,
                     universal_newlines=True,
-                    cwd="/workspace/OneTrainer"
+                    cwd="/home/comfyuser/OneTrainer"
                 )
                 
                 self.processes[process_id] = process

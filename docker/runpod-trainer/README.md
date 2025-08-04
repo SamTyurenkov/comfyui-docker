@@ -42,14 +42,14 @@ The UI runs the following command for each training job:
 /workspace/venv_onetrainer/bin/python scripts/train.py --config-path="config/$CONFIG_FILE"
 ```
 
-Config files are typically stored in `/workspace/OneTrainer/config/` directory.
+Config files are typically stored in `/workspace/OneTrainerConfigs/config/` directory.
 
 ## Configuration
 
 The training UI is configured to:
 - Run on port 5000 internally
 - Be proxied through nginx on port 81 at `/training`
-- Work with OneTrainer installed at `/workspace/OneTrainer`
+- Work with OneTrainer installed at `/home/comfyuser/OneTrainer`
 - Use the Python virtual environment at `/workspace/venv_onetrainer/bin/python`
 
 ## Troubleshooting
