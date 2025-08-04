@@ -23,6 +23,10 @@ class ProcessManager:
     
     def start_process(self, process_id, command):
         """Start a new process and capture its output"""
+        
+        # Initialize the outputs dictionary for this process_id before starting the thread
+        self.outputs[process_id] = []
+        
         def run_process():
             try:
                 # Handle config file path - use the full path to OneTrainerConfigs
@@ -49,7 +53,6 @@ class ProcessManager:
                 )
                 
                 self.processes[process_id] = process
-                self.outputs[process_id] = []
                 
                 # Capture output in real-time
                 import datetime
@@ -65,7 +68,9 @@ class ProcessManager:
                 self.outputs[process_id].append(f"\nProcess completed with return code: {return_code}")
                 
             except Exception as e:
-                self.outputs[process_id].append(f"Error: {str(e)}")
+                if process_id in self.outputs:
+                    self.outputs[process_id].append(f"Error: {str(e)}")
+                print(f"[{process_id}] Error: {str(e)}")
             finally:
                 if process_id in self.processes:
                     del self.processes[process_id]
