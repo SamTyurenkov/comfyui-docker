@@ -87,8 +87,8 @@ RUN git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes /home/comf
 RUN git clone https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait && git checkout 3bba732915e22f18af0d221b9c5c282990181f1b
 RUN git clone https://github.com/XLabs-AI/x-flux-comfyui /home/comfyuser/ComfyUI/custom_nodes/x-flux-comfyui
-# RUN git clone https://github.com/crystian/ComfyUI-Crystools /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools
-# RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools && git checkout 1156ff983b635ef506e7b79659126837a1e9d275
+RUN git clone https://github.com/crystian/ComfyUI-Crystools /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools
+RUN cd /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Crystools && git checkout 1156ff983b635ef506e7b79659126837a1e9d275
 RUN git clone https://github.com/twri/sdxl_prompt_styler /home/comfyuser/ComfyUI/custom_nodes/sdxl_prompt_styler
 RUN git clone https://github.com/rgthree/rgthree-comfy /home/comfyuser/ComfyUI/custom_nodes/rgthree-comfy
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/rgthree-comfy && git checkout 2fcd7a64217741ec11fe9429d15200e5477bc19a
