@@ -32,7 +32,7 @@ which pip
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
 
-rm -rf /home/comfyuser/OneTrainer && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainer
+rm -rf /home/comfyuser/OneTrainerConfigs && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainerConfigs
 rm -rf /home/comfyuser/models && ln -s /workspace/models /home/comfyuser/models
 
 start_jupyterlab() {
