@@ -35,14 +35,17 @@ jobs:
         run: |
           # Initialize flags
           runpod=false
+          runpod_trainer=false
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
           for file in "${files[@]}"; do
             [[ "$file" == docker/runpod/* ]] && runpod=true
+            [[ "$file" == docker/runpod-trainer/* ]] && runpod_trainer=true
           done
 
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
+          echo "runpod_trainer_changed=$runpod_trainer" >> $GITHUB_OUTPUT
 
       - name: Build and push Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
@@ -52,3 +55,12 @@ jobs:
           file: ./docker/runpod/Dockerfile
           push: true
           tags: samtyurenkov/runpod:latest
+
+      - name: Build and push Runpod Trainer Image
+        if: steps.flags.outputs.runpod_trainer_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile
+          push: true
+          tags: samtyurenkov/runpod:trainer
