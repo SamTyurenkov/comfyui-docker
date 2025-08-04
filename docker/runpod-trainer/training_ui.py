@@ -27,8 +27,8 @@ class ProcessManager:
             try:
                 # Handle config file path - use the full path to OneTrainerConfigs
                 config_path = command
-                if not config_path.startswith('/workspace/OneTrainerConfigs/config/'):
-                    config_path = f"/workspace/OneTrainerConfigs/config/{config_path}"
+                if not config_path.startswith('/home/comfyuser/OneTrainerConfigs/config/'):
+                    config_path = f"/home/comfyuser/OneTrainerConfigs/config/{config_path}"
                 
                 # Create the full command
                 full_command = f"/workspace/venv_onetrainer/bin/python scripts/train.py --config-path={config_path}"
