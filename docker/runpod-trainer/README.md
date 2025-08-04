@@ -39,7 +39,7 @@ The training UI is available at:
 The UI runs the following command for each training job:
 
 ```bash
-/workspace/venv_onetrainer/bin/python scripts/train.py --config-path="config/$CONFIG_FILE"
+/workspace/venv_onetrainer/bin/python scripts/train.py --config-path="/workspace/OneTrainerConfigs/config/$CONFIG_FILE"
 ```
 
 Config files are typically stored in `/workspace/OneTrainerConfigs/config/` directory.
