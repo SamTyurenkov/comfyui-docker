@@ -40,10 +40,10 @@ start_jupyterlab() {
     jupyter lab --allow-root --no-browser --port=8888 --ip=* --FileContentsManager.delete_to_trash=False --ServerApp.token=$JUPYTER_PASSWORD --ServerApp.allow_origin=*
 }
 
-start_tensorboard() {
-    echo "Starting TensorBoard..."
-    tensorboard --logdir=/workspace/OneTrainer/tensorboard
-}
+# start_tensorboard() {
+#     echo "Starting TensorBoard..."
+#     tensorboard --logdir=/home/comfyuser/OneTrainer/tensorboard
+# }
 
 start_training_ui() {
     echo "Starting Training UI..."
@@ -56,7 +56,7 @@ start_nginx() {
   nginx -g "daemon off;"
 }
 
-start_tensorboard &
+# start_tensorboard &
 start_training_ui &
 start_nginx &
 start_jupyterlab
