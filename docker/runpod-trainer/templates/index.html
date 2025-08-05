@@ -118,6 +118,12 @@
             overflow-y: auto;
             white-space: pre-wrap;
             margin-top: 20px;
+            line-height: 1.4;
+        }
+
+        .output-line {
+            margin: 0;
+            padding: 0;
         }
 
         .status {
@@ -272,7 +278,7 @@
                     document.getElementById('statusDisplay').textContent = 'Training is starting...';
                     
                     // Clear previous output
-                    document.getElementById('outputDisplay').textContent = '';
+                    document.getElementById('outputDisplay').innerHTML = '';
                     
                     startOutputStream(currentProcessId);
                     updateProcessList();
@@ -335,8 +341,24 @@
                 
                 if (data.line) {
                     const outputDisplay = document.getElementById('outputDisplay');
-                    outputDisplay.textContent += data.line + '\n';
-                    outputDisplay.scrollTop = outputDisplay.scrollHeight;
+                    
+                    // Create a new line element
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'output-line';
+                    lineElement.textContent = data.line;
+                    outputDisplay.appendChild(lineElement);
+                    
+                    // Limit the number of lines to prevent performance issues
+                    const maxLines = 1000;
+                    while (outputDisplay.children.length > maxLines) {
+                        outputDisplay.removeChild(outputDisplay.firstChild);
+                    }
+                    
+                    // Only auto-scroll if user is already at the bottom
+                    const isAtBottom = outputDisplay.scrollTop + outputDisplay.clientHeight >= outputDisplay.scrollHeight - 10;
+                    if (isAtBottom) {
+                        outputDisplay.scrollTop = outputDisplay.scrollHeight;
+                    }
                 }
                 
                 if (data.status === 'completed') {

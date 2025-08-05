@@ -178,6 +178,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/salient && ln -s /workspace/models/salient /home/comfyuser/ComfyUI/models/salient
   rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /workspace/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
   rm -rf /home/comfyuser/ComfyUI/user && ln -s /workspace/user /home/comfyuser/ComfyUI/user
+  rm -rf /home/comfyuser/OneTrainerConfigs && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainerConfigs
 fi
 
 # Start cloudflared in the background
