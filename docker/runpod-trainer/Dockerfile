@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #see https://stackoverflow.com/questions/58018300/using-a-pip-cache-directory-in-docker-builds
-FROM python:3.12 as builder
+FROM python:3.12-bookworm as builder
 
 # Update package lists and install dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
