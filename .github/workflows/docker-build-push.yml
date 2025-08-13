@@ -36,16 +36,19 @@ jobs:
           # Initialize flags
           runpod=false
           runpod_trainer=false
+          runpod_musubi_tuner=false
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
           for file in "${files[@]}"; do
             [[ "$file" == docker/runpod/* ]] && runpod=true
             [[ "$file" == docker/runpod-trainer/* ]] && runpod_trainer=true
+            [[ "$file" == docker/runpod-musubi-tuner/* ]] && runpod_musubi_tuner=true
           done
 
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
           echo "runpod_trainer_changed=$runpod_trainer" >> $GITHUB_OUTPUT
+          echo "runpod_musubi_changed=$runpod_musubi_tuner" >> $GITHUB_OUTPUT
 
       - name: Build and push Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
@@ -64,3 +67,12 @@ jobs:
           file: ./docker/runpod-trainer/Dockerfile
           push: true
           tags: samtyurenkov/runpod:trainer
+      
+      - name: Build and push Runpod Musubi Tuner Image
+        if: steps.flags.outputs.runpod_musubi_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/runpod-musubi-tuner
+          file: ./docker/runpod-musubi-tuner/Dockerfile
+          push: true
+          tags: samtyurenkov/runpod:musubi-tuner
