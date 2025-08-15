@@ -13,7 +13,7 @@ def find_config_files():
         return config_files
     
     # Look for common config file patterns in the config directory
-    patterns = ["*.json", "*.yaml", "*.yml", "config*.json", "config*.yaml", "config*.yml"]
+    patterns = ["*.toml","*.json", "*.yaml", "*.yml", "config*.json", "config*.yaml", "config*.yml"]
     
     for pattern in patterns:
         for config_file in config_path.rglob(pattern):

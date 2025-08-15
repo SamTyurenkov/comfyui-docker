@@ -179,6 +179,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /workspace/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
   rm -rf /home/comfyuser/ComfyUI/user && ln -s /workspace/user /home/comfyuser/ComfyUI/user
   rm -rf /home/comfyuser/OneTrainerConfigs && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainerConfigs
+  rm -rf /home/comfyuser/MusubiConfigs && ln -s /workspace/Musubi /home/comfyuser/MusubiConfigs
   rm -rf /home/comfyuser/loras && ln -s /workspace/models/loras /home/comfyuser/loras
 fi
 

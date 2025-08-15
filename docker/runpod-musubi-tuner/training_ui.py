@@ -21,7 +21,7 @@ class ProcessManager:
         self.processes = {}
         self.outputs = {}
     
-    def start_process(self, process_id, command):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id before starting the thread
@@ -30,18 +30,32 @@ class ProcessManager:
         def run_process():
             try:
                 # Handle config file path - use the full path to OneTrainerConfigs
-                config_path = command
-                if not config_path.startswith('/home/comfyuser/OneTrainerConfigs/config/'):
-                    config_path = f"/home/comfyuser/OneTrainerConfigs/config/{config_path}"
+                if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
+                    config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
                 
-                # Create the full command
-                full_command = f"/workspace/venv_onetrainer/bin/python scripts/train.py --config-path={config_path}"
-                
+                # Create the full command with virtual environment
+                full_command = (
+                    "/workspace/venv_musubi/bin/accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 "
+                    "src/musubi_tuner/wan_train_network.py "
+                    "--task t2v-14B "
+                    "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
+                    f"--dataset_config {config_path} --xformers --mixed_precision bf16 --fp8_base "
+                    f"--optimizer_type adamw8bit --learning_rate {learning_rate} --gradient_checkpointing "
+                    "--max_data_loader_n_workers 2 --persistent_data_loader_workers "
+                    "--network_module networks.lora_wan --network_dim 32 "
+                    "--timestep_sampling shift --discrete_flow_shift 3.0 "
+                    f"--max_train_epochs {max_train_epochs} --save_every_n_epochs 1 --seed 42 "
+                    f"--output_dir /workspace/models/loras/training/wan --output_name {lora_name}"
+                )
+
                 # Log the command being executed
                 print(f"[{process_id}] Executing: {full_command}")
                 self.outputs[process_id].append(f"Executing: {full_command}")
                 
-                # Start the process
+                # Start the process with virtual environment
+                env = os.environ.copy()
+                env['PATH'] = f"/workspace/venv_musubi/bin:{env.get('PATH', '')}"
+                
                 process = subprocess.Popen(
                     full_command.split(),
                     stdout=subprocess.PIPE,
@@ -49,7 +63,8 @@ class ProcessManager:
                     text=True,
                     bufsize=1,
                     universal_newlines=True,
-                    cwd="/home/comfyuser/OneTrainer"
+                    cwd="/home/comfyuser/musubi-tuner",
+                    env=env
                 )
                 
                 self.processes[process_id] = process
@@ -108,15 +123,28 @@ def index():
 def start_training():
     data = request.get_json()
     config_file = data.get('config_file', '')
+    lora_name = data.get('lora_name', '')
+    learning_rate = data.get('learning_rate', 2e-4)
+    max_train_epochs = data.get('max_train_epochs', 16)
     
     if not config_file:
         return jsonify({'error': 'Config file is required'}), 400
+    
+    if not lora_name:
+        return jsonify({'error': 'Lora name is required'}), 400
+    
+    # Convert string values to appropriate types
+    try:
+        learning_rate = float(learning_rate)
+        max_train_epochs = int(max_train_epochs)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid learning_rate or max_train_epochs values'}), 400
     
     # Generate unique process ID
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs)
     
     return jsonify({
         'process_id': process_id,

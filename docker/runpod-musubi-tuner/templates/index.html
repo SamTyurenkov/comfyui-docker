@@ -220,6 +220,27 @@
                         Config files are automatically loaded from <code>/home/comfyuser/MusubiConfigs/config/</code>.
                     </small>
                 </div>
+                <div class="form-group">
+                    <label for="loraName">LoRA Name:</label>
+                    <input type="text" id="loraName" placeholder="Enter a name for your LoRA model" value="">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        This will be the name of your trained LoRA model.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="learningRate">Learning Rate:</label>
+                    <input type="number" id="learningRate" placeholder="2e-4" value="2e-4" step="0.0001" min="0.0001" max="0.1">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        The learning rate for training (default: 2e-4).
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="maxTrainEpochs">Max Train Epochs:</label>
+                    <input type="number" id="maxTrainEpochs" placeholder="16" value="16" step="1" min="1" max="100">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Maximum number of training epochs (default: 16).
+                    </small>
+                </div>
                 <button class="btn" id="startBtn" onclick="startTraining()">Start Training</button>
                 <button class="btn btn-danger" id="stopBtn" onclick="stopTraining()" style="display: none;">Stop Training</button>
             </div>
@@ -243,9 +264,27 @@
 
         async function startTraining() {
             const configFile = document.getElementById('configFile').value.trim();
+            const loraName = document.getElementById('loraName').value.trim();
+            const learningRate = document.getElementById('learningRate').value;
+            const maxTrainEpochs = document.getElementById('maxTrainEpochs').value;
             
             if (!configFile) {
                 alert('Please enter a config file path');
+                return;
+            }
+
+            if (!loraName) {
+                alert('Please enter a LoRA name');
+                return;
+            }
+
+            if (!learningRate || learningRate <= 0) {
+                alert('Please enter a valid learning rate');
+                return;
+            }
+
+            if (!maxTrainEpochs || maxTrainEpochs <= 0) {
+                alert('Please enter a valid number of training epochs');
                 return;
             }
 
@@ -262,7 +301,10 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        config_file: configFile
+                        config_file: configFile,
+                        lora_name: loraName,
+                        learning_rate: parseFloat(learningRate),
+                        max_train_epochs: parseInt(maxTrainEpochs)
                     })
                 });
 

@@ -41,6 +41,9 @@ class ProcessManager:
                 print(f"[{process_id}] Executing: {full_command}")
                 self.outputs[process_id].append(f"Executing: {full_command}")
                 
+                env = os.environ.copy()
+                env['PATH'] = f"/workspace/venv_onetrainer/bin:{env.get('PATH', '')}"
+
                 # Start the process
                 process = subprocess.Popen(
                     full_command.split(),
@@ -49,7 +52,8 @@ class ProcessManager:
                     text=True,
                     bufsize=1,
                     universal_newlines=True,
-                    cwd="/home/comfyuser/OneTrainer"
+                    cwd="/home/comfyuser/OneTrainer",
+                    env=env
                 )
                 
                 self.processes[process_id] = process
