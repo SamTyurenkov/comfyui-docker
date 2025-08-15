@@ -33,7 +33,7 @@ class ProcessManager:
                 "/workspace/venv_musubi/bin/python src/musubi_tuner/cache_latents.py "
                 f"--dataset_config {config_path} "
                 "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                "--task t2v-14B --mixed_precision bf16 --fp8_base "
+                "--task t2v-14B --mixed_precision bf16 " #--fp8_base 
                 "--xformers --max_data_loader_n_workers 2 --persistent_data_loader_workers"
             )
             
@@ -115,7 +115,7 @@ class ProcessManager:
                     "src/musubi_tuner/wan_train_network.py "
                     "--task t2v-14B "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                    f"--dataset_config {config_path} --xformers --mixed_precision bf16 --fp8_base "
+                    f"--dataset_config {config_path} --xformers --mixed_precision bf16 " #--fp8_base 
                     f"--optimizer_type adamw8bit --learning_rate {learning_rate} --gradient_checkpointing "
                     "--max_data_loader_n_workers 2 --persistent_data_loader_workers "
                     "--network_module networks.lora_wan --network_dim 32 "
