@@ -241,6 +241,15 @@
                         Maximum number of training epochs (default: 16).
                     </small>
                 </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="enableLatentCaching" checked style="margin-right: 10px; width: auto;">
+                        Enable Latent Caching
+                    </label>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Cache latents before training to speed up the process (recommended).
+                    </small>
+                </div>
                 <button class="btn" id="startBtn" onclick="startTraining()">Start Training</button>
                 <button class="btn btn-danger" id="stopBtn" onclick="stopTraining()" style="display: none;">Stop Training</button>
             </div>
@@ -267,6 +276,7 @@
             const loraName = document.getElementById('loraName').value.trim();
             const learningRate = document.getElementById('learningRate').value;
             const maxTrainEpochs = document.getElementById('maxTrainEpochs').value;
+            const enableLatentCaching = document.getElementById('enableLatentCaching').checked;
             
             if (!configFile) {
                 alert('Please enter a config file path');
@@ -304,7 +314,8 @@
                         config_file: configFile,
                         lora_name: loraName,
                         learning_rate: parseFloat(learningRate),
-                        max_train_epochs: parseInt(maxTrainEpochs)
+                        max_train_epochs: parseInt(maxTrainEpochs),
+                        enable_latent_caching: enableLatentCaching
                     })
                 });
 

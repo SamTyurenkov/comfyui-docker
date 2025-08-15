@@ -21,7 +21,67 @@ class ProcessManager:
         self.processes = {}
         self.outputs = {}
     
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16):
+    def cache_latents(self, process_id, config_path):
+        """Cache latents for the dataset to speed up training"""
+        try:
+            # Handle config file path - use the full path to OneTrainerConfigs
+            if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
+                config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+            
+            # Create the latent caching command
+            cache_command = (
+                "/workspace/venv_musubi/bin/python src/musubi_tuner/cache_latents.py "
+                f"--dataset_config {config_path} "
+                "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
+                "--task t2v-14B --mixed_precision bf16 --fp8_base "
+                "--xformers --max_data_loader_n_workers 2 --persistent_data_loader_workers"
+            )
+            
+            # Log the caching command
+            print(f"[{process_id}] Caching latents: {cache_command}")
+            self.outputs[process_id].append(f"Caching latents: {cache_command}")
+            
+            # Start the caching process
+            env = os.environ.copy()
+            env['PATH'] = f"/workspace/venv_musubi/bin:{env.get('PATH', '')}"
+            
+            cache_process = subprocess.Popen(
+                cache_command.split(),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True,
+                cwd="/home/comfyuser/musubi-tuner",
+                env=env
+            )
+            
+            # Capture caching output in real-time
+            import datetime
+            for line in iter(cache_process.stdout.readline, ''):
+                if line:
+                    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                    output_line = f"[{timestamp}] [CACHE] {line.strip()}"
+                    self.outputs[process_id].append(output_line)
+                    print(f"[{process_id}] [CACHE] {output_line}")
+            
+            # Wait for caching to complete
+            cache_return_code = cache_process.wait()
+            if cache_return_code == 0:
+                self.outputs[process_id].append(f"Latent caching completed successfully")
+                print(f"[{process_id}] Latent caching completed successfully")
+                return True
+            else:
+                self.outputs[process_id].append(f"Latent caching failed with return code: {cache_return_code}")
+                print(f"[{process_id}] Latent caching failed with return code: {cache_return_code}")
+                return False
+                
+        except Exception as e:
+            self.outputs[process_id].append(f"Error during latent caching: {str(e)}")
+            print(f"[{process_id}] Error during latent caching: {str(e)}")
+            return False
+    
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id before starting the thread
@@ -32,6 +92,22 @@ class ProcessManager:
                 # Handle config file path - use the full path to OneTrainerConfigs
                 if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
                     config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+                
+                # Cache latents first to speed up training (if enabled)
+                if enable_latent_caching:
+                    self.outputs[process_id].append("Starting latent caching...")
+                    print(f"[{process_id}] Starting latent caching...")
+                    
+                    cache_success = self.cache_latents(process_id, config_path)
+                    if not cache_success:
+                        self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
+                        print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
+                else:
+                    self.outputs[process_id].append("Latent caching disabled, skipping...")
+                    print(f"[{process_id}] Latent caching disabled, skipping...")
+                
+                self.outputs[process_id].append("Starting training process...")
+                print(f"[{process_id}] Starting training process...")
                 
                 # Create the full command with virtual environment
                 full_command = (
@@ -126,6 +202,7 @@ def start_training():
     lora_name = data.get('lora_name', '')
     learning_rate = data.get('learning_rate', 2e-4)
     max_train_epochs = data.get('max_train_epochs', 16)
+    enable_latent_caching = data.get('enable_latent_caching', True)
     
     if not config_file:
         return jsonify({'error': 'Config file is required'}), 400
@@ -137,14 +214,15 @@ def start_training():
     try:
         learning_rate = float(learning_rate)
         max_train_epochs = int(max_train_epochs)
+        enable_latent_caching = bool(enable_latent_caching)
     except (ValueError, TypeError):
-        return jsonify({'error': 'Invalid learning_rate or max_train_epochs values'}), 400
+        return jsonify({'error': 'Invalid learning_rate, max_train_epochs, or enable_latent_caching values'}), 400
     
     # Generate unique process ID
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching)
     
     return jsonify({
         'process_id': process_id,
