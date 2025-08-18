@@ -39,6 +39,14 @@ class ProcessManager:
                 "--xformers --max_data_loader_n_workers 2 --persistent_data_loader_workers"
             )
             
+            # Check if cache_latents.py exists
+            cache_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/cache_latents.py"
+            if not os.path.exists(cache_script_path):
+                error_msg = f"Cache script not found: {cache_script_path}"
+                self.outputs[process_id].append(error_msg)
+                print(f"[{process_id}] {error_msg}")
+                return False
+            
             # Log the caching command
             print(f"[{process_id}] Caching latents: {cache_command}")
             self.outputs[process_id].append(f"Caching latents: {cache_command}")
@@ -46,6 +54,12 @@ class ProcessManager:
             # Start the caching process
             env = os.environ.copy()
             env['PATH'] = f"/workspace/venv_musubi/bin:{env.get('PATH', '')}"
+            
+            # Debug: Log working directory and environment
+            self.outputs[process_id].append(f"Working directory: /home/comfyuser/musubi-tuner")
+            self.outputs[process_id].append(f"Python path: {env.get('PATH', '')}")
+            print(f"[{process_id}] Working directory: /home/comfyuser/musubi-tuner")
+            print(f"[{process_id}] Python path: {env.get('PATH', '')}")
             
             cache_process = subprocess.Popen(
                 cache_command.split(),
@@ -58,14 +72,38 @@ class ProcessManager:
                 env=env
             )
             
-            # Capture caching output in real-time
+            # Capture caching output in real-time with better error handling
             import datetime
-            for line in iter(cache_process.stdout.readline, ''):
-                if line:
-                    timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                    output_line = f"[{timestamp}] [CACHE] {line.strip()}"
-                    self.outputs[process_id].append(output_line)
-                    print(f"[{process_id}] [CACHE] {output_line}")
+            import select
+            
+            # Use select to avoid blocking on readline
+            while True:
+                # Check if process is still running
+                if cache_process.poll() is not None:
+                    break
+                
+                # Try to read output with timeout
+                try:
+                    if select.select([cache_process.stdout], [], [], 1.0)[0]:
+                        line = cache_process.stdout.readline()
+                        if line:
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            output_line = f"[{timestamp}] [CACHE] {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] [CACHE] {output_line}")
+                except (OSError, IOError) as e:
+                    print(f"[{process_id}] Error reading cache output: {e}")
+                    break
+            
+            # Read any remaining output
+            remaining_output, _ = cache_process.communicate()
+            if remaining_output:
+                for line in remaining_output.splitlines():
+                    if line.strip():
+                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                        output_line = f"[{timestamp}] [CACHE] {line.strip()}"
+                        self.outputs[process_id].append(output_line)
+                        print(f"[{process_id}] [CACHE] {output_line}")
             
             # Wait for caching to complete
             cache_return_code = cache_process.wait()
@@ -128,6 +166,14 @@ class ProcessManager:
                     f"--output_dir /workspace/models/loras/training/wan --output_name {lora_name}"
                 )
 
+                # Check if training script exists
+                train_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/wan_train_network.py"
+                if not os.path.exists(train_script_path):
+                    error_msg = f"Training script not found: {train_script_path}"
+                    self.outputs[process_id].append(error_msg)
+                    print(f"[{process_id}] {error_msg}")
+                    return
+                
                 # Log the command being executed
                 print(f"[{process_id}] Executing: {full_command}")
                 self.outputs[process_id].append(f"Executing: {full_command}")
@@ -149,14 +195,38 @@ class ProcessManager:
                 
                 self.processes[process_id] = process
                 
-                # Capture output in real-time
+                # Capture output in real-time with better error handling
                 import datetime
-                for line in iter(process.stdout.readline, ''):
-                    if line:
-                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                        output_line = f"[{timestamp}] {line.strip()}"
-                        self.outputs[process_id].append(output_line)
-                        print(f"[{process_id}] {output_line}")
+                import select
+                
+                # Use select to avoid blocking on readline
+                while True:
+                    # Check if process is still running
+                    if process.poll() is not None:
+                        break
+                    
+                    # Try to read output with timeout
+                    try:
+                        if select.select([process.stdout], [], [], 1.0)[0]:
+                            line = process.stdout.readline()
+                            if line:
+                                timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                                output_line = f"[{timestamp}] {line.strip()}"
+                                self.outputs[process_id].append(output_line)
+                                print(f"[{process_id}] {output_line}")
+                    except (OSError, IOError) as e:
+                        print(f"[{process_id}] Error reading process output: {e}")
+                        break
+                
+                # Read any remaining output
+                remaining_output, _ = process.communicate()
+                if remaining_output:
+                    for line in remaining_output.splitlines():
+                        if line.strip():
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            output_line = f"[{timestamp}] {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] {output_line}")
                 
                 # Wait for process to complete
                 return_code = process.wait()
