@@ -143,6 +143,10 @@ class ProcessManager:
         
         def run_process():
             try:
+                # Create a placeholder process entry to mark this process as running
+                # This prevents the stream from thinking the process is complete during caching
+                self.processes[process_id] = "INITIALIZING"
+                
                 # Handle config file path - use the full path to OneTrainerConfigs
                 if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
                     full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
@@ -151,6 +155,7 @@ class ProcessManager:
                 
                 # Cache latents first to speed up training (if enabled)
                 if enable_latent_caching:
+                    self.outputs[process_id].append("=== PHASE 1: LATENT CACHING ===")
                     self.outputs[process_id].append("Starting latent caching...")
                     print(f"[{process_id}] Starting latent caching...")
                     time.sleep(0.1)  # Small delay to ensure output is captured
@@ -160,11 +165,16 @@ class ProcessManager:
                         self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
                         print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
                         time.sleep(0.1)
+                    else:
+                        self.outputs[process_id].append("Latent caching completed successfully!")
+                        print(f"[{process_id}] Latent caching completed successfully!")
+                        time.sleep(0.1)
                 else:
                     self.outputs[process_id].append("Latent caching disabled, skipping...")
                     print(f"[{process_id}] Latent caching disabled, skipping...")
                     time.sleep(0.1)
                 
+                self.outputs[process_id].append("=== PHASE 2: MAIN TRAINING ===")
                 self.outputs[process_id].append("Starting training process...")
                 print(f"[{process_id}] Starting training process...")
                 time.sleep(0.1)
@@ -287,7 +297,11 @@ class ProcessManager:
         """Stop a running process"""
         if process_id in self.processes:
             process = self.processes[process_id]
-            process.terminate()
+            # Only terminate if it's a real subprocess object
+            if hasattr(process, 'terminate'):
+                process.terminate()
+            # Remove from processes dict regardless
+            del self.processes[process_id]
             return True
         return False
     
@@ -399,6 +413,13 @@ def stream_output(process_id):
                 
                 yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 break
+            
+            # Check if the process is a real subprocess object (not just a placeholder string)
+            current_process = process_manager.processes.get(process_id)
+            if isinstance(current_process, str):
+                # Process is still initializing (caching phase), continue waiting
+                time.sleep(0.1)
+                continue
             
             time.sleep(0.1)  # More frequent polling
     
