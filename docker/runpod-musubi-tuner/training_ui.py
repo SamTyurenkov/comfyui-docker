@@ -32,15 +32,13 @@ class ProcessManager:
             
             # Create the latent caching command
             cache_command = (
-                "/workspace/venv_musubi/bin/python src/musubi_tuner/cache_latents.py "
+                "/workspace/venv_musubi/bin/python src/musubi_tuner/wan_cache_latents.py "
                 f"--dataset_config {full_config_path} "
-                "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                "--task t2v-14B --mixed_precision bf16 " #--fp8_base 
-                "--xformers --max_data_loader_n_workers 2 --persistent_data_loader_workers"
+                "--vae /workspace/models/vae/wan_2.1_vae.safetensors"
             )
             
             # Check if cache_latents.py exists
-            cache_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/cache_latents.py"
+            cache_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/wan_cache_latents.py"
             if not os.path.exists(cache_script_path):
                 error_msg = f"Cache script not found: {cache_script_path}"
                 self.outputs[process_id].append(error_msg)
