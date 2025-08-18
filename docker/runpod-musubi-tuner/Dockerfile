@@ -58,7 +58,7 @@ RUN apt-get update && apt-get -y install cuda-toolkit-12-9 && \
 ENV CUDA_HOME="/usr/local/cuda-12.9"
 ENV PATH="$CUDA_HOME/bin:$PATH"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
-ENV BNB_CUDA_VERSION=129
+# ENV BNB_CUDA_VERSION=129
 
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
