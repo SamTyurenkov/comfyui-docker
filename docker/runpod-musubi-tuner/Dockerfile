@@ -52,13 +52,7 @@ WORKDIR /home/comfyuser/
 
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
 RUN dpkg -i cuda-keyring_1.1-1_all.deb && rm cuda-keyring_1.1-1_all.deb
-RUN apt-get update && apt-get -y install \
-    cuda-runtime-12-9 \
-    libcublas-12-9 \
-    libcurand-12-9 \
-    libcusolver-12-9 \
-    libcusparse-12-9 \
-    libcufft-12-9 && \
+RUN apt-get update && apt-get -y install cuda-toolkit-12-9 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ENV CUDA_HOME="/usr/local/cuda-12.9"
