@@ -132,7 +132,119 @@ class ProcessManager:
             self.outputs[process_id].append(f"Error during latent caching: {str(e)}")
             print(f"[{process_id}] Error during latent caching: {str(e)}")
             return False
+
+    def cache_te(self, process_id, config_path):
+        """Cache latents for the dataset to speed up training"""
+        try:
+            # Handle config file path - use the full path to OneTrainerConfigs
+            if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
+                full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+            else:
+                full_config_path = config_path
+            
+            # Create the latent caching command
+            cache_command = (
+                "/workspace/venv_musubi/bin/python src/musubi_tuner/wan_cache_text_encoder_outputs.py "
+                f"--dataset_config {full_config_path} "
+                "--t5 /workspace/models/text_encoders/models_t5_umt5-xxl-enc-bf16.pth"
+            )
     
+            # Check if cache_latents.py exists
+            cache_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/wan_cache_text_encoder_outputs.py"
+            if not os.path.exists(cache_script_path):
+                error_msg = f"Cache script not found: {cache_script_path}"
+                self.outputs[process_id].append(error_msg)
+                print(f"[{process_id}] {error_msg}")
+                return False
+            
+            # Log the caching command
+            print(f"[{process_id}] Caching text encoder: {cache_command}")
+            self.outputs[process_id].append(f"Caching text encoder: {cache_command}")
+            
+            # Start the caching process
+            env = os.environ.copy()
+            env['PATH'] = f"/workspace/venv_musubi/bin:{env.get('PATH', '')}"
+            
+            # Debug: Log working directory and environment
+            self.outputs[process_id].append(f"Working directory: /home/comfyuser/musubi-tuner")
+            self.outputs[process_id].append(f"Python path: {env.get('PATH', '')}")
+            print(f"[{process_id}] Working directory: /home/comfyuser/musubi-tuner")
+            print(f"[{process_id}] Python path: {env.get('PATH', '')}")
+            
+            cache_process = subprocess.Popen(
+                cache_command.split(),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True,
+                cwd="/home/comfyuser/musubi-tuner",
+                env=env
+            )
+            
+            # Capture caching output in real-time with better error handling
+            import datetime
+            import select
+            
+            # Use select to avoid blocking on readline for both stdout and stderr
+            while True:
+                # Check if process is still running
+                if cache_process.poll() is not None:
+                    break
+                
+                # Try to read output with timeout from both stdout and stderr
+                try:
+                    readable, _, _ = select.select([cache_process.stdout, cache_process.stderr], [], [], 1.0)
+                    
+                    for stream in readable:
+                        line = stream.readline()
+                        if line:
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            stream_type = "[STDERR]" if stream == cache_process.stderr else "[STDOUT]"
+                            output_line = f"[{timestamp}] [CACHE] {stream_type} {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] [CACHE] {output_line}")
+                except (OSError, IOError) as e:
+                    print(f"[{process_id}] Error reading cache output: {e}")
+                    break
+            
+            # Read any remaining output from both streams
+            remaining_stdout, remaining_stderr = cache_process.communicate()
+            
+            # Process remaining stdout
+            if remaining_stdout:
+                for line in remaining_stdout.splitlines():
+                    if line.strip():
+                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                        output_line = f"[{timestamp}] [CACHE] [STDOUT] {line.strip()}"
+                        self.outputs[process_id].append(output_line)
+                        print(f"[{process_id}] [CACHE] {output_line}")
+            
+            # Process remaining stderr
+            if remaining_stderr:
+                for line in remaining_stderr.splitlines():
+                    if line.strip():
+                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                        output_line = f"[{timestamp}] [CACHE] [STDERR] {line.strip()}"
+                        self.outputs[process_id].append(output_line)
+                        print(f"[{process_id}] [CACHE] {output_line}")
+            
+            # Wait for caching to complete
+            cache_return_code = cache_process.wait()
+            if cache_return_code == 0:
+                self.outputs[process_id].append(f"TE caching completed successfully")
+                print(f"[{process_id}] TE caching completed successfully")
+                return True
+            else:
+                self.outputs[process_id].append(f"TE caching failed with return code: {cache_return_code}")
+                print(f"[{process_id}] TE caching failed with return code: {cache_return_code}")
+                return False
+                
+        except Exception as e:
+            self.outputs[process_id].append(f"Error during TE caching: {str(e)}")
+            print(f"[{process_id}] Error during TE caching: {str(e)}")
+            return False
+
     def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True):
         """Start a new process and capture its output"""
         
@@ -186,6 +298,32 @@ class ProcessManager:
                 self.outputs[process_id].append("Starting training process...")
                 print(f"[{process_id}] Starting training process...")
                 time.sleep(0.1)
+
+                if enable_latent_caching:
+                    self.outputs[process_id].append("=== PHASE 2: TE CACHING ===")
+                    self.outputs[process_id].append("Starting TE caching...")
+                    print(f"[{process_id}] Starting TE caching...")
+                    time.sleep(0.1)  # Small delay to ensure output is captured
+                    
+                    cache_success = self.cache_te(process_id, full_config_path)
+                    if not cache_success:
+                        self.outputs[process_id].append("Warning: TE caching failed, continuing with training...")
+                        print(f"[{process_id}] Warning: TE caching failed, continuing with training...")
+                        time.sleep(0.1)
+                    else:
+                        self.outputs[process_id].append("TE caching completed successfully!")
+                        print(f"[{process_id}] TE caching completed successfully!")
+                        time.sleep(0.1)
+                else:
+                    self.outputs[process_id].append("TE caching disabled, skipping...")
+                    print(f"[{process_id}] TE caching disabled, skipping...")
+                    time.sleep(0.1)
+                
+                self.outputs[process_id].append("=== PHASE 3: MAIN TRAINING ===")
+                self.outputs[process_id].append("Starting training process...")
+                print(f"[{process_id}] Starting training process...")
+                time.sleep(0.1)
+
                 
                 # Create the full command with virtual environment
                 full_command = (
