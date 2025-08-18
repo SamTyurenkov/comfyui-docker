@@ -24,7 +24,7 @@ aws_access_key_id = ${RUNPOD_USERID}
 aws_secret_access_key = ${RUNPOD_TOKEN}
 EOL
 
-export PATH="/workspace/venv_onetrainer/bin:$PATH"
+export PATH="/workspace/venv_musubi/bin:$PATH"
 
 which python
 which pip
@@ -49,7 +49,7 @@ start_jupyterlab() {
 start_training_ui() {
     echo "Starting Training UI..."
     # Start the training UI
-    /workspace/venv_onetrainer/bin/python /home/comfyuser/training_ui.py
+    /workspace/venv_musubi/bin/python /home/comfyuser/training_ui.py
 }
 
 start_nginx() {
