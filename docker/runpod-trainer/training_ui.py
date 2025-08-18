@@ -34,6 +34,14 @@ class ProcessManager:
                 if not config_path.startswith('/home/comfyuser/OneTrainerConfigs/config/'):
                     config_path = f"/home/comfyuser/OneTrainerConfigs/config/{config_path}"
                 
+                # Check if training script exists
+                train_script_path = "/home/comfyuser/OneTrainer/scripts/train.py"
+                if not os.path.exists(train_script_path):
+                    error_msg = f"Training script not found: {train_script_path}"
+                    self.outputs[process_id].append(error_msg)
+                    print(f"[{process_id}] {error_msg}")
+                    return
+                
                 # Create the full command
                 full_command = f"/workspace/venv_onetrainer/bin/python scripts/train.py --config-path={config_path}"
                 
@@ -43,12 +51,18 @@ class ProcessManager:
                 
                 env = os.environ.copy()
                 env['PATH'] = f"/workspace/venv_onetrainer/bin:{env.get('PATH', '')}"
+                
+                # Debug: Log working directory and environment
+                self.outputs[process_id].append(f"Working directory: /home/comfyuser/OneTrainer")
+                self.outputs[process_id].append(f"Python path: {env.get('PATH', '')}")
+                print(f"[{process_id}] Working directory: /home/comfyuser/OneTrainer")
+                print(f"[{process_id}] Python path: {env.get('PATH', '')}")
 
-                # Start the process
+                # Start the process with separate stdout and stderr pipes
                 process = subprocess.Popen(
                     full_command.split(),
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                     text=True,
                     bufsize=1,
                     universal_newlines=True,
@@ -58,14 +72,53 @@ class ProcessManager:
                 
                 self.processes[process_id] = process
                 
-                # Capture output in real-time
+                # Capture output in real-time with better error handling
                 import datetime
-                for line in iter(process.stdout.readline, ''):
-                    if line:
-                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                        output_line = f"[{timestamp}] {line.strip()}"
-                        self.outputs[process_id].append(output_line)
-                        print(f"[{process_id}] {output_line}")
+                import select
+                
+                # Use select to avoid blocking on readline for both stdout and stderr
+                while True:
+                    # Check if process is still running
+                    if process.poll() is not None:
+                        break
+                    
+                    # Try to read output with timeout from both stdout and stderr
+                    try:
+                        readable, _, _ = select.select([process.stdout, process.stderr], [], [], 1.0)
+                        
+                        for stream in readable:
+                            line = stream.readline()
+                            if line:
+                                timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                                stream_type = "[STDERR]" if stream == process.stderr else "[STDOUT]"
+                                output_line = f"[{timestamp}] {stream_type} {line.strip()}"
+                                self.outputs[process_id].append(output_line)
+                                print(f"[{process_id}] {output_line}")
+                                
+                    except (OSError, IOError) as e:
+                        print(f"[{process_id}] Error reading process output: {e}")
+                        break
+                
+                # Read any remaining output from both streams
+                remaining_stdout, remaining_stderr = process.communicate()
+                
+                # Process remaining stdout
+                if remaining_stdout:
+                    for line in remaining_stdout.splitlines():
+                        if line.strip():
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            output_line = f"[{timestamp}] [STDOUT] {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] {output_line}")
+                
+                # Process remaining stderr
+                if remaining_stderr:
+                    for line in remaining_stderr.splitlines():
+                        if line.strip():
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            output_line = f"[{timestamp}] [STDERR] {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] {output_line}")
                 
                 # Wait for process to complete
                 return_code = process.wait()

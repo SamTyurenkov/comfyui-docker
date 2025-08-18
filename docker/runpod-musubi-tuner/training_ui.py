@@ -64,7 +64,7 @@ class ProcessManager:
             cache_process = subprocess.Popen(
                 cache_command.split(),
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
                 universal_newlines=True,
@@ -76,32 +76,46 @@ class ProcessManager:
             import datetime
             import select
             
-            # Use select to avoid blocking on readline
+            # Use select to avoid blocking on readline for both stdout and stderr
             while True:
                 # Check if process is still running
                 if cache_process.poll() is not None:
                     break
                 
-                # Try to read output with timeout
+                # Try to read output with timeout from both stdout and stderr
                 try:
-                    if select.select([cache_process.stdout], [], [], 1.0)[0]:
-                        line = cache_process.stdout.readline()
+                    readable, _, _ = select.select([cache_process.stdout, cache_process.stderr], [], [], 1.0)
+                    
+                    for stream in readable:
+                        line = stream.readline()
                         if line:
                             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                            output_line = f"[{timestamp}] [CACHE] {line.strip()}"
+                            stream_type = "[STDERR]" if stream == cache_process.stderr else "[STDOUT]"
+                            output_line = f"[{timestamp}] [CACHE] {stream_type} {line.strip()}"
                             self.outputs[process_id].append(output_line)
                             print(f"[{process_id}] [CACHE] {output_line}")
                 except (OSError, IOError) as e:
                     print(f"[{process_id}] Error reading cache output: {e}")
                     break
             
-            # Read any remaining output
-            remaining_output, _ = cache_process.communicate()
-            if remaining_output:
-                for line in remaining_output.splitlines():
+            # Read any remaining output from both streams
+            remaining_stdout, remaining_stderr = cache_process.communicate()
+            
+            # Process remaining stdout
+            if remaining_stdout:
+                for line in remaining_stdout.splitlines():
                     if line.strip():
                         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                        output_line = f"[{timestamp}] [CACHE] {line.strip()}"
+                        output_line = f"[{timestamp}] [CACHE] [STDOUT] {line.strip()}"
+                        self.outputs[process_id].append(output_line)
+                        print(f"[{process_id}] [CACHE] {output_line}")
+            
+            # Process remaining stderr
+            if remaining_stderr:
+                for line in remaining_stderr.splitlines():
+                    if line.strip():
+                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                        output_line = f"[{timestamp}] [CACHE] [STDERR] {line.strip()}"
                         self.outputs[process_id].append(output_line)
                         print(f"[{process_id}] [CACHE] {output_line}")
             
@@ -185,7 +199,7 @@ class ProcessManager:
                 process = subprocess.Popen(
                     full_command.split(),
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    stderr=subprocess.PIPE,
                     text=True,
                     bufsize=1,
                     universal_newlines=True,
@@ -199,32 +213,46 @@ class ProcessManager:
                 import datetime
                 import select
                 
-                # Use select to avoid blocking on readline
+                # Use select to avoid blocking on readline for both stdout and stderr
                 while True:
                     # Check if process is still running
                     if process.poll() is not None:
                         break
                     
-                    # Try to read output with timeout
+                    # Try to read output with timeout from both stdout and stderr
                     try:
-                        if select.select([process.stdout], [], [], 1.0)[0]:
-                            line = process.stdout.readline()
+                        readable, _, _ = select.select([process.stdout, process.stderr], [], [], 1.0)
+                        
+                        for stream in readable:
+                            line = stream.readline()
                             if line:
                                 timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                                output_line = f"[{timestamp}] {line.strip()}"
+                                stream_type = "[STDERR]" if stream == process.stderr else "[STDOUT]"
+                                output_line = f"[{timestamp}] {stream_type} {line.strip()}"
                                 self.outputs[process_id].append(output_line)
                                 print(f"[{process_id}] {output_line}")
                     except (OSError, IOError) as e:
                         print(f"[{process_id}] Error reading process output: {e}")
                         break
                 
-                # Read any remaining output
-                remaining_output, _ = process.communicate()
-                if remaining_output:
-                    for line in remaining_output.splitlines():
+                # Read any remaining output from both streams
+                remaining_stdout, remaining_stderr = process.communicate()
+                
+                # Process remaining stdout
+                if remaining_stdout:
+                    for line in remaining_stdout.splitlines():
                         if line.strip():
                             timestamp = datetime.datetime.now().strftime("%H:%M:%S")
-                            output_line = f"[{timestamp}] {line.strip()}"
+                            output_line = f"[{timestamp}] [STDOUT] {line.strip()}"
+                            self.outputs[process_id].append(output_line)
+                            print(f"[{process_id}] {output_line}")
+                
+                # Process remaining stderr
+                if remaining_stderr:
+                    for line in remaining_stderr.splitlines():
+                        if line.strip():
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            output_line = f"[{timestamp}] [STDERR] {line.strip()}"
                             self.outputs[process_id].append(output_line)
                             print(f"[{process_id}] {output_line}")
                 
