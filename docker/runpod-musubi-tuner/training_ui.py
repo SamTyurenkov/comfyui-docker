@@ -136,8 +136,18 @@ class ProcessManager:
     def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True):
         """Start a new process and capture its output"""
         
-        # Initialize the outputs dictionary for this process_id before starting the thread
+        # Initialize the outputs dictionary for this process_id IMMEDIATELY
         self.outputs[process_id] = []
+        
+        # Add initial status message immediately (before thread starts)
+        self.outputs[process_id].append("=== MUSUBI TRAINING INITIALIZED ===")
+        self.outputs[process_id].append(f"Process ID: {process_id}")
+        self.outputs[process_id].append(f"Config: {config_path}")
+        self.outputs[process_id].append(f"LoRA Name: {lora_name}")
+        self.outputs[process_id].append(f"Learning Rate: {learning_rate}")
+        self.outputs[process_id].append(f"Max Epochs: {max_train_epochs}")
+        self.outputs[process_id].append(f"Latent Caching: {'Enabled' if enable_latent_caching else 'Disabled'}")
+        self.outputs[process_id].append("Starting training thread...")
         
         def run_process():
             try:
@@ -416,7 +426,9 @@ def stream_output(process_id):
             current_process = process_manager.processes.get(process_id)
             if isinstance(current_process, str):
                 # Process is still initializing (caching phase), continue waiting
-                time.sleep(0.1)
+                # Send a keepalive to prevent connection timeout
+                yield f"data: {json.dumps({'keepalive': True})}\n\n"
+                time.sleep(1.0)  # Longer sleep during initialization, but with keepalive
                 continue
             
             time.sleep(0.1)  # More frequent polling

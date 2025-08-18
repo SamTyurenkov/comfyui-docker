@@ -368,7 +368,14 @@
                         eventSource.close();
                     }
                     
+                    // Clear any pending reconnection attempts
+                    if (reconnectTimeout) {
+                        clearTimeout(reconnectTimeout);
+                        reconnectTimeout = null;
+                    }
+                    
                     currentProcessId = null;
+                    reconnectAttempts = 0;
                     document.getElementById('startBtn').style.display = 'inline-block';
                     stopBtn.style.display = 'none';
                 } else {
@@ -382,12 +389,28 @@
             }
         }
 
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 10;
+        let reconnectTimeout = null;
+
         function startOutputStream(processId) {
             if (eventSource) {
                 eventSource.close();
             }
 
+            console.log(`Starting EventSource for process ${processId.substring(0, 8)}...`);
             eventSource = new EventSource(`/api/stream_output/${processId}`);
+            
+            eventSource.onopen = function(event) {
+                console.log('EventSource connection opened');
+                reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+                
+                // Update status to show connection is active
+                const statusDisplay = document.getElementById('statusDisplay');
+                if (statusDisplay.className.includes('running')) {
+                    statusDisplay.textContent = 'Training is running... (Connected)';
+                }
+            };
             
             eventSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);
@@ -414,6 +437,11 @@
                     }
                 }
                 
+                if (data.keepalive) {
+                    // Just a keepalive message during caching, do nothing
+                    console.log('Received keepalive during process initialization');
+                }
+                
                 if (data.status === 'completed') {
                     document.getElementById('statusDisplay').className = 'status completed';
                     document.getElementById('statusDisplay').textContent = 'Training completed';
@@ -422,7 +450,14 @@
                         eventSource.close();
                     }
                     
+                    // Clear any pending reconnection attempts
+                    if (reconnectTimeout) {
+                        clearTimeout(reconnectTimeout);
+                        reconnectTimeout = null;
+                    }
+                    
                     currentProcessId = null;
+                    reconnectAttempts = 0;
                     document.getElementById('startBtn').style.display = 'inline-block';
                     document.getElementById('stopBtn').style.display = 'none';
                 }
@@ -431,6 +466,29 @@
             eventSource.onerror = function(event) {
                 console.error('EventSource failed:', event);
                 eventSource.close();
+                
+                // Only attempt reconnection if we still have a current process and haven't exceeded max attempts
+                if (currentProcessId && reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const retryDelay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000); // Exponential backoff, max 30s
+                    
+                    console.log(`Connection lost. Reconnecting in ${retryDelay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+                    
+                    // Update status to show reconnection attempt
+                    const statusDisplay = document.getElementById('statusDisplay');
+                    statusDisplay.textContent = `Connection lost. Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`;
+                    
+                    reconnectTimeout = setTimeout(() => {
+                        console.log(`Attempting to reconnect to process ${currentProcessId.substring(0, 8)}...`);
+                        startOutputStream(currentProcessId);
+                    }, retryDelay);
+                } else if (reconnectAttempts >= maxReconnectAttempts) {
+                    console.error('Max reconnection attempts reached. Giving up.');
+                    document.getElementById('statusDisplay').className = 'status stopped';
+                    document.getElementById('statusDisplay').textContent = 'Connection lost. Please refresh the page to retry.';
+                } else {
+                    console.log('No current process, not attempting to reconnect');
+                }
             };
         }
 
