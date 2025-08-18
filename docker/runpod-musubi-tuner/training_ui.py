@@ -26,12 +26,14 @@ class ProcessManager:
         try:
             # Handle config file path - use the full path to OneTrainerConfigs
             if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
-                config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+                full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+            else:
+                full_config_path = config_path
             
             # Create the latent caching command
             cache_command = (
                 "/workspace/venv_musubi/bin/python src/musubi_tuner/cache_latents.py "
-                f"--dataset_config {config_path} "
+                f"--dataset_config {full_config_path} "
                 "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
                 "--task t2v-14B --mixed_precision bf16 " #--fp8_base 
                 "--xformers --max_data_loader_n_workers 2 --persistent_data_loader_workers"
@@ -91,14 +93,16 @@ class ProcessManager:
             try:
                 # Handle config file path - use the full path to OneTrainerConfigs
                 if not config_path.startswith('/home/comfyuser/MusubiConfigs/config/'):
-                    config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+                    full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_path}"
+                else:
+                    full_config_path = config_path
                 
                 # Cache latents first to speed up training (if enabled)
                 if enable_latent_caching:
                     self.outputs[process_id].append("Starting latent caching...")
                     print(f"[{process_id}] Starting latent caching...")
                     
-                    cache_success = self.cache_latents(process_id, config_path)
+                    cache_success = self.cache_latents(process_id, full_config_path)
                     if not cache_success:
                         self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
                         print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
@@ -115,7 +119,7 @@ class ProcessManager:
                     "src/musubi_tuner/wan_train_network.py --compile "
                     "--task t2v-14B "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                    f"--dataset_config {config_path} --xformers --mixed_precision bf16 " #--fp8_base 
+                    f"--dataset_config {full_config_path} --xformers --mixed_precision bf16 " #--fp8_base 
                     f"--optimizer_type adamw8bit --learning_rate {learning_rate} --gradient_checkpointing "
                     "--max_data_loader_n_workers 2 --persistent_data_loader_workers "
                     "--network_module networks.lora_wan --network_dim 32 "
