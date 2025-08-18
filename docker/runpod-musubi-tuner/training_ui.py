@@ -168,7 +168,7 @@ class ProcessManager:
                 # Create the full command with virtual environment
                 full_command = (
                     "/workspace/venv_musubi/bin/accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 "
-                    "src/musubi_tuner/wan_train_network.py --compile "
+                    "src/musubi_tuner/wan_train_network.py "
                     "--task t2v-14B "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
                     f"--dataset_config {full_config_path} --xformers --mixed_precision bf16 " #--fp8_base 
