@@ -48,6 +48,7 @@ class ProcessManager:
                 # Log the command being executed
                 print(f"[{process_id}] Executing: {full_command}")
                 self.outputs[process_id].append(f"Executing: {full_command}")
+                time.sleep(0.1)  # Small delay to ensure output is captured
                 
                 env = os.environ.copy()
                 env['PATH'] = f"/workspace/venv_onetrainer/bin:{env.get('PATH', '')}"
@@ -123,6 +124,10 @@ class ProcessManager:
                 # Wait for process to complete
                 return_code = process.wait()
                 self.outputs[process_id].append(f"\nProcess completed with return code: {return_code}")
+                
+                # Force flush the output to ensure it's available for streaming
+                import sys
+                sys.stdout.flush()
                 
             except Exception as e:
                 if process_id in self.outputs:
@@ -231,10 +236,17 @@ def stream_output(process_id):
             
             # Check if process is still running
             if process_id not in process_manager.processes:
+                # Send any remaining output before marking as completed
+                final_output = process_manager.get_output(process_id)
+                if len(final_output) > last_length:
+                    new_lines = final_output[last_length:]
+                    for line in new_lines:
+                        yield f"data: {json.dumps({'line': line})}\n\n"
+                
                 yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 break
             
-            time.sleep(0.5)
+            time.sleep(0.1)  # More frequent polling
     
     return Response(generate(), mimetype='text/event-stream')
 

@@ -153,17 +153,21 @@ class ProcessManager:
                 if enable_latent_caching:
                     self.outputs[process_id].append("Starting latent caching...")
                     print(f"[{process_id}] Starting latent caching...")
+                    time.sleep(0.1)  # Small delay to ensure output is captured
                     
                     cache_success = self.cache_latents(process_id, full_config_path)
                     if not cache_success:
                         self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
                         print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
+                        time.sleep(0.1)
                 else:
                     self.outputs[process_id].append("Latent caching disabled, skipping...")
                     print(f"[{process_id}] Latent caching disabled, skipping...")
+                    time.sleep(0.1)
                 
                 self.outputs[process_id].append("Starting training process...")
                 print(f"[{process_id}] Starting training process...")
+                time.sleep(0.1)
                 
                 # Create the full command with virtual environment
                 full_command = (
@@ -259,6 +263,10 @@ class ProcessManager:
                 # Wait for process to complete
                 return_code = process.wait()
                 self.outputs[process_id].append(f"\nProcess completed with return code: {return_code}")
+                
+                # Force flush the output to ensure it's available for streaming
+                import sys
+                sys.stdout.flush()
                 
             except Exception as e:
                 if process_id in self.outputs:
@@ -382,10 +390,17 @@ def stream_output(process_id):
             
             # Check if process is still running
             if process_id not in process_manager.processes:
+                # Send any remaining output before marking as completed
+                final_output = process_manager.get_output(process_id)
+                if len(final_output) > last_length:
+                    new_lines = final_output[last_length:]
+                    for line in new_lines:
+                        yield f"data: {json.dumps({'line': line})}\n\n"
+                
                 yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 break
             
-            time.sleep(0.5)
+            time.sleep(0.1)  # More frequent polling
     
     return Response(generate(), mimetype='text/event-stream')
 
