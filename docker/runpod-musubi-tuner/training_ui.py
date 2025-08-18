@@ -293,11 +293,6 @@ class ProcessManager:
                     self.outputs[process_id].append("Latent caching disabled, skipping...")
                     print(f"[{process_id}] Latent caching disabled, skipping...")
                     time.sleep(0.1)
-                
-                self.outputs[process_id].append("=== PHASE 2: MAIN TRAINING ===")
-                self.outputs[process_id].append("Starting training process...")
-                print(f"[{process_id}] Starting training process...")
-                time.sleep(0.1)
 
                 if enable_latent_caching:
                     self.outputs[process_id].append("=== PHASE 2: TE CACHING ===")
