@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -325,15 +325,31 @@ class ProcessManager:
                     "/workspace/venv_musubi/bin/accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 "
                     "src/musubi_tuner/wan_train_network.py "
                     "--task t2v-14B "
+                    "--dynamo_backend INDUCTOR "
+                    "--dynamo_mode default "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                    f"--dataset_config {full_config_path} --xformers --mixed_precision bf16 " #--fp8_base 
-                    f"--optimizer_type adamw8bit --learning_rate {learning_rate} --gradient_checkpointing "
-                    "--max_data_loader_n_workers 2 --persistent_data_loader_workers "
-                    "--network_module networks.lora_wan --network_dim 32 "
-                    "--timestep_sampling shift --discrete_flow_shift 3.0 "
-                    f"--max_train_epochs {max_train_epochs} --save_every_n_epochs 1 --seed 42 "
-                    f"--output_dir /workspace/models/loras/training/wan --output_name {lora_name}"
+                    f"--dataset_config {full_config_path} "
+                    "--xformers "
+                    "--mixed_precision bf16 " #--fp8_base 
+                    "--optimizer_type adamw8bit "
+                    f"--learning_rate {learning_rate} "
+                    "--gradient_checkpointing "
+                    "--max_data_loader_n_workers 2 "
+                    "--persistent_data_loader_workers "
+                    "--network_module networks.lora_wan "
+                    "--network_dim 32 "
+                    "--timestep_sampling shift "
+                    "--discrete_flow_shift 3.0 "
+                    f"--max_train_epochs {max_train_epochs} "
+                    "--save_every_n_epochs 1 "
+                    "--seed 42 "
+                    "--output_dir /workspace/models/loras/training/wan "
+                    f"--output_name {lora_name}"
                 )
+                
+                # Add blocks_to_swap parameter if block_swap > 0
+                if block_swap > 0:
+                    full_command += f" --blocks_to_swap {block_swap}"
 
                 # Check if training script exists
                 train_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/wan_train_network.py"
@@ -468,6 +484,7 @@ def start_training():
     learning_rate = data.get('learning_rate', 2e-4)
     max_train_epochs = data.get('max_train_epochs', 16)
     enable_latent_caching = data.get('enable_latent_caching', True)
+    block_swap = data.get('block_swap', 0)
     
     if not config_file:
         return jsonify({'error': 'Config file is required'}), 400
@@ -479,6 +496,7 @@ def start_training():
     try:
         learning_rate = float(learning_rate)
         max_train_epochs = int(max_train_epochs)
+        block_swap = int(block_swap)
         enable_latent_caching = bool(enable_latent_caching)
     except (ValueError, TypeError):
         return jsonify({'error': 'Invalid learning_rate, max_train_epochs, or enable_latent_caching values'}), 400
@@ -487,7 +505,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap)
     
     return jsonify({
         'process_id': process_id,

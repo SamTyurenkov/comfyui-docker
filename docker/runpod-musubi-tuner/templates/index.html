@@ -208,9 +208,8 @@
             <div class="form-section">
                 <h2>Start Training</h2>
                 <div class="form-group">
-                    <label for="configFile">Selected Config File:</label>
-                    <input type="text" id="configFile" placeholder="Select a config file from the dropdown below" value="" readonly>
-                    <div style="margin-top: 10px;">
+                    <input type="hidden" id="configFile" placeholder="Select a config file from the dropdown below" value="" readonly>
+                    <div>
                         <span id="configStatus" style="color: #666; font-size: 0.9em;"></span>
                         <select id="configSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectConfig(this.value)">
                             <option value="">Select a config file...</option>
@@ -239,6 +238,13 @@
                     <input type="number" id="maxTrainEpochs" placeholder="16" value="16" step="1" min="1" max="100">
                     <small style="color: #666; margin-top: 5px; display: block;">
                         Maximum number of training epochs (default: 16).
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="blockSwap">Block Swap:</label>
+                    <input type="number" id="blockSwap" placeholder="30" value="30" step="1" min="0" max="39">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Number of blocks to offload to CPU. (default:30)
                     </small>
                 </div>
                 <div class="form-group">
@@ -277,7 +283,8 @@
             const learningRate = document.getElementById('learningRate').value;
             const maxTrainEpochs = document.getElementById('maxTrainEpochs').value;
             const enableLatentCaching = document.getElementById('enableLatentCaching').checked;
-            
+            const blockSwap = document.getElementById('blockSwap').value;
+
             if (!configFile) {
                 alert('Please enter a config file path');
                 return;
@@ -298,6 +305,11 @@
                 return;
             }
 
+            if (!blockSwap || blockSwap < 0 || blockSwap > 39) {
+                alert('Please enter a valid number for block swap');
+                return;
+            }
+
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             
@@ -315,7 +327,8 @@
                         lora_name: loraName,
                         learning_rate: parseFloat(learningRate),
                         max_train_epochs: parseInt(maxTrainEpochs),
-                        enable_latent_caching: enableLatentCaching
+                        enable_latent_caching: enableLatentCaching,
+                        blockSwap: parseInt(blockSwap)
                     })
                 });
 
