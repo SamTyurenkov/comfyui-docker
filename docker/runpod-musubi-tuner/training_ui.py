@@ -329,7 +329,7 @@ class ProcessManager:
                     "--dynamo_mode default "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
                     f"--dataset_config {full_config_path} "
-                    "--xformers "
+                    "--sdpa "
                     "--mixed_precision bf16 " #--fp8_base 
                     "--optimizer_type adamw8bit "
                     f"--learning_rate {learning_rate} "
