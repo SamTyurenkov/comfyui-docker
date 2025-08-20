@@ -333,6 +333,8 @@ class ProcessManager:
                     f"--{attention} " #sdpa
                     "--optimizer_type adamw8bit "
                     f"--learning_rate {learning_rate} " #2e-4
+                    "--lr_scheduler constant " #constant_with_warmup
+                    "--lr_warmup_steps 0.05 "
                     "--gradient_checkpointing "
                     "--max_data_loader_n_workers 2 "
                     "--persistent_data_loader_workers "
