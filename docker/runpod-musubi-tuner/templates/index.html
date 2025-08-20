@@ -234,6 +234,28 @@
                     </small>
                 </div>
                 <div class="form-group">
+                    <label for="lrScheduler">Learning Rate Scheduler:</label>
+                    <select id="lrScheduler" style="padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; width: 100%;" onchange="toggleWarmupSteps()">
+                        <option value="constant" selected>constant</option>
+                        <option value="constant_with_warmup">constant_with_warmup</option>
+                        <option value="cosine">cosine</option>
+                        <option value="cosine_with_restarts">cosine_with_restarts</option>
+                        <option value="linear">linear</option>
+                        <option value="polynomial">polynomial</option>
+                        <option value="adafactor">adafactor</option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Learning rate scheduler type (default: constant).
+                    </small>
+                </div>
+                <div class="form-group" id="lrWarmupGroup" style="display: none;">
+                    <label for="lrWarmupSteps">Learning Rate Warmup Steps:</label>
+                    <input type="number" id="lrWarmupSteps" placeholder="100" value="100" step="1" min="0" max="10000">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Number of warmup steps for learning rate scheduler (only for schedulers with warmup).
+                    </small>
+                </div>
+                <div class="form-group">
                     <label for="maxTrainEpochs">Max Train Epochs:</label>
                     <input type="number" id="maxTrainEpochs" placeholder="16" value="16" step="1" min="1" max="100">
                     <small style="color: #666; margin-top: 5px; display: block;">
@@ -344,6 +366,8 @@
             const attention = document.getElementById('attention').value.trim();
             const timestepSampling = document.getElementById('timestepSampling').value.trim();
             const flowShift = document.getElementById('flowShift').value;
+            const lrScheduler = document.getElementById('lrScheduler').value.trim();
+            const lrWarmupSteps = document.getElementById('lrWarmupSteps').value;
 
             if (!configFile) {
                 alert('Please enter a config file path');
@@ -370,6 +394,11 @@
                 return;
             }
 
+            if (lrScheduler === 'constant_with_warmup' && (!lrWarmupSteps || lrWarmupSteps < 0)) {
+                alert('Please enter a valid number for learning rate warmup steps');
+                return;
+            }
+
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             
@@ -392,7 +421,9 @@
                         task: task,
                         attention: attention,
                         timestep_sampling: timestepSampling,
-                        flow_shift: flowShift
+                        flow_shift: flowShift,
+                        lr_scheduler: lrScheduler,
+                        lr_warmup_steps: parseInt(lrWarmupSteps)
                     })
                 });
 
@@ -656,6 +687,18 @@
         function selectTimestepSampling(timestepSampling) {
             if (timestepSampling) {
                 document.getElementById('timestepSampling').value = timestepSampling;
+            }
+        }
+
+        function toggleWarmupSteps() {
+            const lrScheduler = document.getElementById('lrScheduler').value;
+            const warmupGroup = document.getElementById('lrWarmupGroup');
+            
+            // Show warmup steps field only for schedulers that support warmup
+            if (lrScheduler === 'constant_with_warmup' || lrScheduler === 'linear' || lrScheduler === 'polynomial') {
+                warmupGroup.style.display = 'block';
+            } else {
+                warmupGroup.style.display = 'none';
             }
         }
 

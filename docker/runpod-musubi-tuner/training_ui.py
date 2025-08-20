@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -333,8 +333,7 @@ class ProcessManager:
                     f"--{attention} " #sdpa
                     "--optimizer_type adamw8bit "
                     f"--learning_rate {learning_rate} " #2e-4
-                    "--lr_scheduler constant_with_warmup " #constant
-                    "--lr_warmup_steps 0.1 "
+                    f"--lr_scheduler {lr_scheduler} " #constant
                     "--gradient_checkpointing "
                     "--max_data_loader_n_workers 2 "
                     "--persistent_data_loader_workers "
@@ -361,9 +360,12 @@ class ProcessManager:
                     "--max_grad_norm 1.0 "
                 )
                 
+                if lr_scheduler == 'constant_with_warmup':
+                    full_command += f"--lr_warmup_steps {lr_warmup_steps} " #0.1
+
                 # Add blocks_to_swap parameter if block_swap > 0
                 if block_swap > 0:
-                    full_command += f" --blocks_to_swap {block_swap}"
+                    full_command += f"--blocks_to_swap {block_swap} "
 
                 # Check if training script exists
                 train_script_path = "/home/comfyuser/musubi-tuner/src/musubi_tuner/wan_train_network.py"
@@ -503,6 +505,8 @@ def start_training():
     attention = data.get('attention', 'sdpa')
     timestep_sampling = data.get('timestep_sampling', 'shift')
     flow_shift = data.get('flow_shift', 2.0)
+    lr_scheduler = data.get('lr_scheduler', 'constant')
+    lr_warmup_steps = data.get('lr_warmup_steps', 100)
 
 
     if not config_file:
@@ -518,6 +522,7 @@ def start_training():
         block_swap = int(block_swap)
         enable_latent_caching = bool(enable_latent_caching)
         flow_shift = float(flow_shift)
+        lr_warmup_steps = int(lr_warmup_steps)
     except (ValueError, TypeError):
         return jsonify({'error': 'Invalid learning_rate, max_train_epochs, or enable_latent_caching values'}), 400
     
@@ -525,7 +530,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps)
     
     return jsonify({
         'process_id': process_id,
