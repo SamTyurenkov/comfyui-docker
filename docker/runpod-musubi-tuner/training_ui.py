@@ -324,6 +324,7 @@ class ProcessManager:
                 full_command = (
                     "/workspace/venv_musubi/bin/accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 "
                     "src/musubi_tuner/wan_train_network.py "
+                    "--mixed_precision bf16 "
                     f"--task {task} " #t2v-14B
                     # "--dynamo_backend INDUCTOR "
                     # "--dynamo_mode default "
