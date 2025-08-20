@@ -212,11 +212,11 @@
                     <div>
                         <span id="configStatus" style="color: #666; font-size: 0.9em;"></span>
                         <select id="configSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectConfig(this.value)">
-                            <option value="">Select a config file...</option>
+                            <option value="">Выбери конфиг...</option>
                         </select>
                     </div>
                     <small style="color: #666; margin-top: 5px; display: block;">
-                        Config files are automatically loaded from <code>/home/comfyuser/MusubiConfigs/config/</code>.
+                        Конфиги автоматически подгружаются из <code>/home/comfyuser/MusubiConfigs/config/</code>.
                     </small>
                 </div>
                 <div class="form-group">
@@ -237,14 +237,14 @@
                     <label for="maxTrainEpochs">Max Train Epochs:</label>
                     <input type="number" id="maxTrainEpochs" placeholder="16" value="16" step="1" min="1" max="100">
                     <small style="color: #666; margin-top: 5px; display: block;">
-                        Maximum number of training epochs (default: 16).
+                        Сколько эпох тренировать. Зависит от Learning Rate, Flow Shift и размера датасета. 
                     </small>
                 </div>
                 <div class="form-group">
                     <label for="blockSwap">Block Swap:</label>
                     <input type="number" id="blockSwap" placeholder="30" value="30" step="1" min="0" max="39">
                     <small style="color: #666; margin-top: 5px; display: block;">
-                        Number of blocks to offload to CPU. (default:30)
+                        Сколько блоков выгрузить в обычную оперативку. Потребует меньше видеопамяти.
                     </small>
                 </div>
                 <div class="form-group">
@@ -255,8 +255,12 @@
                             <option value="t2v-14B" selected>t2v-14B</option>
                         </select>
                     </div>
+                    <small>
+                        Пока выбор только t2v-14B для wan2.1. Для i2v, fun, flf2v или wan2.2 надо будет дорабатывать.
+                    </small>
                 </div>
                 <div class="form-group">
+                    <label for="attention">Attention:</label>
                     <input value="sdpa" type="hidden" id="attention" placeholder="Select an attention from the dropdown below" readonly>
                     <div>
                         <span id="attentionStatus" style="color: #666; font-size: 0.9em;"></span>
@@ -265,8 +269,12 @@
                             <option value="xformers">xformers</option>
                         </select>
                     </div>
+                    <small>
+                        С разным аттеншеном может быть быстрее (например с xformers). но у меня пока заработало только на sdpa, xformers вылетал с ошибкой.
+                    </small>
                 </div>
                 <div class="form-group">
+                    <label for="timestepSampling">Timestep Sampling:</label>
                     <input value="shift" type="hidden" id="timestepSampling" placeholder="Select an attention from the dropdown below" readonly>
                     <div>
                         <span id="timestepSamplingStatus" style="color: #666; font-size: 0.9em;"></span>
@@ -274,6 +282,19 @@
                             <option value="shift" selected>shift</option>
                         </select>
                     </div>
+                    <small>
+                        Способ покадрового сэмплинга, для захвата движения судя по совету автора и GPT - shift подходит больше всего.
+                        <br><br>
+                        Другие варианты:<br>
+                        -"uniform"<br>
+                        -"sigmoid"<br>
+                        -"shift"<br>
+                        -"flux_shift"<br>
+                        -"qwen_shift"<br>
+                        -"logsnr"<br>
+                        -"qinglong_flux"<br>
+                        -"qinglong_qwen"<br>
+                    </small>
                 </div>
                 <div class="form-group">
                     <label for="flowShift">Flow Shift:</label>

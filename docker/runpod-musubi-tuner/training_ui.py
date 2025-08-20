@@ -338,13 +338,25 @@ class ProcessManager:
                     "--persistent_data_loader_workers "
                     "--network_module networks.lora_wan "
                     "--network_dim 32 "
+                    "--network_alpha 16 "
+                    "--sigmoid_scale 5.0 "
                     f"--timestep_sampling {timestep_sampling} " #shift
                     f"--discrete_flow_shift {flow_shift} " #2.0
                     f"--max_train_epochs {max_train_epochs} " #16
+                    "--weighting_scheme logit_normal "     # Better timestep dist than uniform
+                    "--logit_mean 0.05 "                   # Biased toward earlier timesteps
+                    "--logit_std 0.03 "
+                    "--num_timestep_buckets 8 "            # ✅ Stratified sampling → stable timesteps
+                    "--preserve_distribution_shape "       # Keeps distribution shape when clamping
+                    "--min_timestep 100 "                  # Skip very high noise (0-100)
+                    "--max_timestep 900 "                  # Skip very clean steps (900-1000)
                     "--save_every_n_epochs 1 "
                     "--seed 42 "
+                    "--scale_weight_norms 1.0 "
                     "--output_dir /workspace/models/loras/training/wan "
-                    f"--output_name {lora_name}"
+                    f"--output_name {lora_name} "
+                    "--save_last_n_epochs 10 "
+                    "--max_grad_norm 1.0 "
                 )
                 
                 # Add blocks_to_swap parameter if block_swap > 0
