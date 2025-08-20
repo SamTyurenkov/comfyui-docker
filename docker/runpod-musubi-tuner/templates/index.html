@@ -248,6 +248,41 @@
                     </small>
                 </div>
                 <div class="form-group">
+                    <input value="t2v-14B" type="hidden" id="task" placeholder="Select a task from the dropdown below" readonly>
+                    <div>
+                        <span id="taskStatus" style="color: #666; font-size: 0.9em;"></span>
+                        <select id="taskSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectTask(this.value)">
+                            <option value="t2v-14B" selected>t2v-14B</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input value="sdpa" type="hidden" id="attention" placeholder="Select an attention from the dropdown below" readonly>
+                    <div>
+                        <span id="attentionStatus" style="color: #666; font-size: 0.9em;"></span>
+                        <select id="attentionSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectAttention(this.value)">
+                            <option value="sdpa" selected>sdpa</option>
+                            <option value="xformers">xformers</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input value="shift" type="hidden" id="timestepSampling" placeholder="Select an attention from the dropdown below" readonly>
+                    <div>
+                        <span id="timestepSamplingStatus" style="color: #666; font-size: 0.9em;"></span>
+                        <select id="timestepSamplingSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectTimestepSampling(this.value)">
+                            <option value="shift" selected>shift</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="flowShift">Flow Shift:</label>
+                    <input type="number" id="flowShift" placeholder="2.0" value="2.0" step="0.1" min="0.0" max="10.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        The flow shift for training (default: 2.0).
+                    </small>
+                </div>
+                <div class="form-group">
                     <label style="display: flex; align-items: center; cursor: pointer;">
                         <input type="checkbox" id="enableLatentCaching" checked style="margin-right: 10px; width: auto;">
                         Enable Latent Caching
@@ -284,6 +319,10 @@
             const maxTrainEpochs = document.getElementById('maxTrainEpochs').value;
             const enableLatentCaching = document.getElementById('enableLatentCaching').checked;
             const blockSwap = document.getElementById('blockSwap').value;
+            const task = document.getElementById('task').value.trim();
+            const attention = document.getElementById('attention').value.trim();
+            const timestepSampling = document.getElementById('timestepSampling').value.trim();
+            const flowShift = document.getElementById('flowShift').value;
 
             if (!configFile) {
                 alert('Please enter a config file path');
@@ -305,7 +344,7 @@
                 return;
             }
 
-            if (!blockSwap || blockSwap < 0 || blockSwap > 39) {
+            if (!blockSwap || blockSwap < 0 || blockSwap > 40) {
                 alert('Please enter a valid number for block swap');
                 return;
             }
@@ -328,7 +367,11 @@
                         learning_rate: parseFloat(learningRate),
                         max_train_epochs: parseInt(maxTrainEpochs),
                         enable_latent_caching: enableLatentCaching,
-                        block_swap: parseInt(blockSwap)
+                        block_swap: parseInt(blockSwap),
+                        task: task,
+                        attention: attention,
+                        timestep_sampling: timestepSampling,
+                        flow_shift: flowShift
                     })
                 });
 
@@ -574,6 +617,24 @@
         function selectConfig(configPath) {
             if (configPath) {
                 document.getElementById('configFile').value = configPath;
+            }
+        }
+
+        function selectTask(task) {
+            if (task) {
+                document.getElementById('task').value = task;
+            }
+        }
+
+        function selectAttention(attention) {
+            if (attention) {
+                document.getElementById('attention').value = attention;
+            }
+        }
+
+        function selectTimestepSampling(timestepSampling) {
+            if (timestepSampling) {
+                document.getElementById('timestepSampling').value = timestepSampling;
             }
         }
 

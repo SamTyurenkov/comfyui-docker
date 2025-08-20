@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -324,23 +324,22 @@ class ProcessManager:
                 full_command = (
                     "/workspace/venv_musubi/bin/accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 "
                     "src/musubi_tuner/wan_train_network.py "
-                    "--task t2v-14B "
-                    "--dynamo_backend INDUCTOR "
-                    "--dynamo_mode default "
+                    f"--task {task} " #t2v-14B
+                    # "--dynamo_backend INDUCTOR "
+                    # "--dynamo_mode default "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
                     f"--dataset_config {full_config_path} "
-                    "--sdpa "
-                    "--mixed_precision bf16 " #--fp8_base 
+                    f"--{attention} " #sdpa
                     "--optimizer_type adamw8bit "
-                    f"--learning_rate {learning_rate} "
+                    f"--learning_rate {learning_rate} " #2e-4
                     "--gradient_checkpointing "
                     "--max_data_loader_n_workers 2 "
                     "--persistent_data_loader_workers "
                     "--network_module networks.lora_wan "
                     "--network_dim 32 "
-                    "--timestep_sampling shift "
-                    "--discrete_flow_shift 3.0 "
-                    f"--max_train_epochs {max_train_epochs} "
+                    f"--timestep_sampling {timestep_sampling} " #shift
+                    f"--discrete_flow_shift {flow_shift} " #2.0
+                    f"--max_train_epochs {max_train_epochs} " #16
                     "--save_every_n_epochs 1 "
                     "--seed 42 "
                     "--output_dir /workspace/models/loras/training/wan "
@@ -485,7 +484,12 @@ def start_training():
     max_train_epochs = data.get('max_train_epochs', 16)
     enable_latent_caching = data.get('enable_latent_caching', True)
     block_swap = data.get('block_swap', 0)
-    
+    task = data.get('task', 't2v-14B')
+    attention = data.get('attention', 'sdpa')
+    timestep_sampling = data.get('timestep_sampling', 'shift')
+    flow_shift = data.get('flow_shift', 2.0)
+
+
     if not config_file:
         return jsonify({'error': 'Config file is required'}), 400
     
@@ -498,6 +502,7 @@ def start_training():
         max_train_epochs = int(max_train_epochs)
         block_swap = int(block_swap)
         enable_latent_caching = bool(enable_latent_caching)
+        flow_shift = float(flow_shift)
     except (ValueError, TypeError):
         return jsonify({'error': 'Invalid learning_rate, max_train_epochs, or enable_latent_caching values'}), 400
     
@@ -505,7 +510,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift)
     
     return jsonify({
         'process_id': process_id,
