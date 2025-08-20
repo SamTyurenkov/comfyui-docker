@@ -243,7 +243,7 @@ start_nginx() {
 start_lora_viewer() {
     echo "Starting Lora Viewer..."
     # Start the training UI
-    /workspace/venv_onetrainer/bin/python /home/comfyuser/app.py --directory /workspace/models/loras
+    /workspace/venv_onetrainer/bin/python /home/comfyuser/lora-metadata-viewer-fork/app.py --directory /workspace/models/loras
 }
 
 start_cloudflared &
