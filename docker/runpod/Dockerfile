@@ -144,7 +144,6 @@ RUN git clone https://github.com/scraed/LanPaint.git /home/comfyuser/ComfyUI/cus
 RUN git clone https://github.com/1038lab/ComfyUI-JoyCaption /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-JoyCaption
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
-
 RUN git clone https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
 RUN pip install --upgrade pip && pip install jupyter
 
