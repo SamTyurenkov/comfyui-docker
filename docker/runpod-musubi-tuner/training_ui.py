@@ -273,48 +273,51 @@ class ProcessManager:
                 else:
                     full_config_path = config_path
                 
-                # Cache latents first to speed up training (if enabled)
-                if enable_latent_caching:
-                    self.outputs[process_id].append("=== PHASE 1: LATENT CACHING ===")
-                    self.outputs[process_id].append("Starting latent caching...")
-                    print(f"[{process_id}] Starting latent caching...")
-                    time.sleep(0.1)  # Small delay to ensure output is captured
-                    
-                    cache_success = self.cache_latents(process_id, full_config_path)
-                    if not cache_success:
-                        self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
-                        print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
-                        time.sleep(0.1)
-                    else:
-                        self.outputs[process_id].append("Latent caching completed successfully!")
-                        print(f"[{process_id}] Latent caching completed successfully!")
-                        time.sleep(0.1)
-                else:
-                    self.outputs[process_id].append("Latent caching disabled, skipping...")
-                    print(f"[{process_id}] Latent caching disabled, skipping...")
-                    time.sleep(0.1)
-
-                if enable_latent_caching:
-                    self.outputs[process_id].append("=== PHASE 2: TE CACHING ===")
-                    self.outputs[process_id].append("Starting TE caching...")
-                    print(f"[{process_id}] Starting TE caching...")
-                    time.sleep(0.1)  # Small delay to ensure output is captured
-                    
-                    cache_success = self.cache_te(process_id, full_config_path)
-                    if not cache_success:
-                        self.outputs[process_id].append("Warning: TE caching failed, continuing with training...")
-                        print(f"[{process_id}] Warning: TE caching failed, continuing with training...")
-                        time.sleep(0.1)
-                    else:
-                        self.outputs[process_id].append("TE caching completed successfully!")
-                        print(f"[{process_id}] TE caching completed successfully!")
-                        time.sleep(0.1)
-                else:
-                    self.outputs[process_id].append("TE caching disabled, skipping...")
-                    print(f"[{process_id}] TE caching disabled, skipping...")
-                    time.sleep(0.1)
+                # Commenting out cache_latents and cache_te calls as requested
+                # These are now available as separate buttons in the UI
                 
-                self.outputs[process_id].append("=== PHASE 3: MAIN TRAINING ===")
+                # # Cache latents first to speed up training (if enabled)
+                # if enable_latent_caching:
+                #     self.outputs[process_id].append("=== PHASE 1: LATENT CACHING ===")
+                #     self.outputs[process_id].append("Starting latent caching...")
+                #     print(f"[{process_id}] Starting latent caching...")
+                #     time.sleep(0.1)  # Small delay to ensure output is captured
+                #     
+                #     cache_success = self.cache_latents(process_id, full_config_path)
+                #     if not cache_success:
+                #         self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
+                #         print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
+                #         time.sleep(0.1)
+                #     else:
+                #         self.outputs[process_id].append("Latent caching completed successfully!")
+                #         print(f"[{process_id}] Latent caching completed successfully!")
+                #         time.sleep(0.1)
+                # else:
+                #     self.outputs[process_id].append("Latent caching disabled, skipping...")
+                #     print(f"[{process_id}] Latent caching disabled, skipping...")
+                #     time.sleep(0.1)
+
+                # if enable_latent_caching:
+                #     self.outputs[process_id].append("=== PHASE 2: TE CACHING ===")
+                #     self.outputs[process_id].append("Starting TE caching...")
+                #     print(f"[{process_id}] Starting TE caching...")
+                #     time.sleep(0.1)  # Small delay to ensure output is captured
+                #     
+                #     cache_success = self.cache_te(process_id, full_config_path)
+                #     if not cache_success:
+                #         self.outputs[process_id].append("Warning: TE caching failed, continuing with training...")
+                #         print(f"[{process_id}] Warning: TE caching failed, continuing with training...")
+                #         time.sleep(0.1)
+                #     else:
+                #         self.outputs[process_id].append("TE caching completed successfully!")
+                #         print(f"[{process_id}] TE caching completed successfully!")
+                #         time.sleep(0.1)
+                # else:
+                #     self.outputs[process_id].append("TE caching disabled, skipping...")
+                #     print(f"[{process_id}] TE caching disabled, skipping...")
+                #     time.sleep(0.1)
+                
+                self.outputs[process_id].append("=== MAIN TRAINING ===")
                 self.outputs[process_id].append("Starting training process...")
                 print(f"[{process_id}] Starting training process...")
                 time.sleep(0.1)
@@ -329,7 +332,7 @@ class ProcessManager:
                     # "--dynamo_backend INDUCTOR "
                     # "--dynamo_mode default "
                     "--dit /workspace/models/diffusion_models/wan2.1_t2v_14B_bf16.safetensors "
-                    "--vae /workspace/models/vae/wan_2.1_vae.safetensors "
+                    # "--vae /workspace/models/vae/wan_2.1_vae.safetensors "
                     f"--dataset_config {full_config_path} "
                     f"--{attention} " #sdpa, xformers
                     f"--optimizer_type {optimizer} " #AdamW, AdamW8bit, AdaFactor
@@ -584,6 +587,108 @@ def stop_training(process_id):
     return jsonify({
         'success': success,
         'message': 'Training stopped' if success else 'Process not found'
+    })
+
+@app.route('/api/cache_latents', methods=['POST'])
+def cache_latents():
+    data = request.get_json()
+    config_file = data.get('config_file', '')
+    
+    if not config_file:
+        return jsonify({'error': 'Config file is required'}), 400
+    
+    # Generate unique process ID for caching
+    process_id = str(uuid.uuid4())
+    
+    # Initialize the outputs dictionary for this process_id
+    process_manager.outputs[process_id] = []
+    process_manager.outputs[process_id].append("=== LATENT CACHING STARTED ===")
+    process_manager.outputs[process_id].append(f"Process ID: {process_id}")
+    process_manager.outputs[process_id].append(f"Config: {config_file}")
+    
+    def run_cache_latents():
+        try:
+            # Mark as running
+            process_manager.processes[process_id] = "CACHING_LATENTS"
+            
+            # Handle config file path
+            if not config_file.startswith('/home/comfyuser/MusubiConfigs/config/'):
+                full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_file}"
+            else:
+                full_config_path = config_file
+            
+            success = process_manager.cache_latents(process_id, full_config_path)
+            
+            if success:
+                process_manager.outputs[process_id].append("=== LATENT CACHING COMPLETED SUCCESSFULLY ===")
+            else:
+                process_manager.outputs[process_id].append("=== LATENT CACHING FAILED ===")
+                
+        except Exception as e:
+            process_manager.outputs[process_id].append(f"Error during latent caching: {str(e)}")
+        finally:
+            if process_id in process_manager.processes:
+                del process_manager.processes[process_id]
+    
+    # Start the caching in a separate thread
+    thread = threading.Thread(target=run_cache_latents)
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({
+        'process_id': process_id,
+        'message': 'Latent caching started successfully'
+    })
+
+@app.route('/api/cache_te', methods=['POST'])
+def cache_te():
+    data = request.get_json()
+    config_file = data.get('config_file', '')
+    
+    if not config_file:
+        return jsonify({'error': 'Config file is required'}), 400
+    
+    # Generate unique process ID for caching
+    process_id = str(uuid.uuid4())
+    
+    # Initialize the outputs dictionary for this process_id
+    process_manager.outputs[process_id] = []
+    process_manager.outputs[process_id].append("=== TEXT ENCODER CACHING STARTED ===")
+    process_manager.outputs[process_id].append(f"Process ID: {process_id}")
+    process_manager.outputs[process_id].append(f"Config: {config_file}")
+    
+    def run_cache_te():
+        try:
+            # Mark as running
+            process_manager.processes[process_id] = "CACHING_TE"
+            
+            # Handle config file path
+            if not config_file.startswith('/home/comfyuser/MusubiConfigs/config/'):
+                full_config_path = f"/home/comfyuser/MusubiConfigs/config/{config_file}"
+            else:
+                full_config_path = config_file
+            
+            success = process_manager.cache_te(process_id, full_config_path)
+            
+            if success:
+                process_manager.outputs[process_id].append("=== TEXT ENCODER CACHING COMPLETED SUCCESSFULLY ===")
+            else:
+                process_manager.outputs[process_id].append("=== TEXT ENCODER CACHING FAILED ===")
+                
+        except Exception as e:
+            process_manager.outputs[process_id].append(f"Error during text encoder caching: {str(e)}")
+        finally:
+            if process_id in process_manager.processes:
+                del process_manager.processes[process_id]
+    
+    # Start the caching in a separate thread
+    thread = threading.Thread(target=run_cache_te)
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({
+        'process_id': process_id,
+        'message': 'Text encoder caching started successfully'
     })
 
 @app.route('/api/processes')

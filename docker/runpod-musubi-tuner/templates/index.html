@@ -971,6 +971,20 @@
                 </div>
 
                 <div class="button-container">
+                    <button class="btn" id="cacheLatentsBtn" onclick="cacheLatents()">
+                        <span class="btn-content">💾 Cache Latents</span>
+                        <div class="btn-loading-overlay">
+                            <span class="loading"></span>
+                            <span>Caching...</span>
+                        </div>
+                    </button>
+                    <button class="btn" id="cacheTeBtn" onclick="cacheTextEncoder()">
+                        <span class="btn-content">🧠 Cache Text Encoder</span>
+                        <div class="btn-loading-overlay">
+                            <span class="loading"></span>
+                            <span>Caching...</span>
+                        </div>
+                    </button>
                     <button class="btn" id="startBtn" onclick="startTraining()">
                         <span class="btn-content">🚀 Start Training</span>
                         <div class="btn-loading-overlay">
@@ -1004,6 +1018,104 @@
     <script>
         let currentProcessId = null;
         let eventSource = null;
+
+        async function cacheLatents() {
+            const configFile = document.getElementById('configFile').value.trim();
+            
+            if (!configFile) {
+                alert('Please select a config file first');
+                return;
+            }
+
+            const cacheLatentsBtn = document.getElementById('cacheLatentsBtn');
+            cacheLatentsBtn.disabled = true;
+            cacheLatentsBtn.classList.add('loading');
+
+            try {
+                const response = await fetch('/api/cache_latents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        config_file: configFile
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Set this as the current process for output streaming
+                    currentProcessId = data.process_id;
+                    
+                    document.getElementById('outputSection').style.display = 'block';
+                    document.getElementById('statusDisplay').className = 'status running';
+                    document.getElementById('statusDisplay').textContent = 'Latent caching is running...';
+                    
+                    // Clear previous output
+                    document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    startOutputStream(currentProcessId);
+                    updateProcessList();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error starting latent caching: ' + error.message);
+            } finally {
+                cacheLatentsBtn.disabled = false;
+                cacheLatentsBtn.classList.remove('loading');
+            }
+        }
+
+        async function cacheTextEncoder() {
+            const configFile = document.getElementById('configFile').value.trim();
+            
+            if (!configFile) {
+                alert('Please select a config file first');
+                return;
+            }
+
+            const cacheTeBtn = document.getElementById('cacheTeBtn');
+            cacheTeBtn.disabled = true;
+            cacheTeBtn.classList.add('loading');
+
+            try {
+                const response = await fetch('/api/cache_te', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        config_file: configFile
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Set this as the current process for output streaming
+                    currentProcessId = data.process_id;
+                    
+                    document.getElementById('outputSection').style.display = 'block';
+                    document.getElementById('statusDisplay').className = 'status running';
+                    document.getElementById('statusDisplay').textContent = 'Text encoder caching is running...';
+                    
+                    // Clear previous output
+                    document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    startOutputStream(currentProcessId);
+                    updateProcessList();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error starting text encoder caching: ' + error.message);
+            } finally {
+                cacheTeBtn.disabled = false;
+                cacheTeBtn.classList.remove('loading');
+            }
+        }
 
         async function startTraining() {
             const configFile = document.getElementById('configFile').value.trim();
@@ -1056,7 +1168,7 @@
                 return;
             }
 
-            if (!blockSwap || blockSwap < 0 || blockSwap > 40) {
+            if (!blockSwap || blockSwap < 0 || blockSwap > 39) {
                 alert('Please enter a valid number for block swap');
                 return;
             }
