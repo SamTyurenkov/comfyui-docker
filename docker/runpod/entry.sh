@@ -249,6 +249,6 @@ start_lora_viewer() {
 start_cloudflared &
 start_comfyui &
 start_comfyui_multigpu &
+start_lora_viewer &
 start_nginx &
-start_jupyterlab & 
-start_lora_viewer
+start_jupyterlab
