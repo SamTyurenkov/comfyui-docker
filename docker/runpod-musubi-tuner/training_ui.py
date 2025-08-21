@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit'):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit', weighting_scheme='logit_normal', logit_mean=0.05, logit_std=0.03, num_timestep_buckets=2, min_timestep=100, max_timestep=900, preserve_distribution_shape=True, sigmoid_scale=5.0, save_last_n_epochs=10, scale_weight_norms=1.0):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -342,28 +342,37 @@ class ProcessManager:
                     f"--network_dim {network_dim} " #int
                     f"--network_alpha {network_alpha} " #int
                     f"--network_dropout {network_dropout} " #float
-                    "--sigmoid_scale 5.0 "
                     f"--timestep_sampling {timestep_sampling} " #shift
                     f"--discrete_flow_shift {flow_shift} " #2.0
                     f"--max_train_epochs {max_train_epochs} " #16
-                    "--weighting_scheme logit_normal "     # logit_normal,mode,cosmap,sigma_sqrt,none
-                    "--logit_mean 0.05 "                   # Biased toward earlier timesteps
-                    "--logit_std 0.03 "
-                    "--num_timestep_buckets 8 "            # ✅ Stratified sampling → stable timesteps
-                    "--preserve_distribution_shape "       # Keeps distribution shape when clamping
-                    "--min_timestep 100 "                  # Skip very high noise (0-100)
-                    "--max_timestep 900 "                  # Skip very clean steps (900-1000)
+                    f"--weighting_scheme {weighting_scheme} "     # logit_normal,mode,cosmap,sigma_sqrt,none
+                    f"--num_timestep_buckets {num_timestep_buckets} "   #int         # ✅ Stratified sampling → stable timesteps
+                    f"--min_timestep {min_timestep} " #int 0-100                 # Skip very high noise (0-100)
+                    f"--max_timestep {max_timestep} " #int 500-1000                 # Skip very clean steps (900-1000)
                     "--save_every_n_epochs 1 "
                     "--seed 42 "
-                    "--scale_weight_norms 1.0 "
+                    f"--scale_weight_norms {scale_weight_norms} " #float
                     "--output_dir /workspace/models/loras/training/wan "
                     f"--output_name {lora_name} "
-                    "--save_last_n_epochs 10 "
+                    f"--save_last_n_epochs {save_last_n_epochs} " #int
                     "--max_grad_norm 1.0 "
                 )
                 
                 if lr_scheduler == 'constant_with_warmup' or lr_scheduler == 'cosine_with_restarts':
                     full_command += f"--lr_warmup_steps {lr_warmup_steps} " #0.1
+
+                # Add logit parameters if weighting scheme is logit_normal
+                if weighting_scheme == 'logit_normal':
+                    full_command += f"--logit_mean {logit_mean} "                   # float - Biased toward earlier timesteps
+                    full_command += f"--logit_std {logit_std} " #float
+
+                # Add sigmoid_scale parameter if timestep sampling is sigmoid or shift
+                if timestep_sampling == 'sigmoid' or timestep_sampling == 'shift':
+                    full_command += f"--sigmoid_scale {sigmoid_scale} " #float
+
+                # Add preserve_distribution_shape parameter if enabled
+                if preserve_distribution_shape:
+                    full_command += "--preserve_distribution_shape "
 
                 # Add blocks_to_swap parameter if block_swap > 0
                 if block_swap > 0:
@@ -513,6 +522,16 @@ def start_training():
     network_alpha = data.get('network_alpha', 16)
     network_dropout = data.get('network_dropout', 0.05)
     optimizer = data.get('optimizer', 'AdamW8bit')
+    weighting_scheme = data.get('weighting_scheme', 'logit_normal')
+    logit_mean = data.get('logit_mean', 0.05)
+    logit_std = data.get('logit_std', 0.03)
+    num_timestep_buckets = data.get('num_timestep_buckets', 2)
+    min_timestep = data.get('min_timestep', 100)
+    max_timestep = data.get('max_timestep', 900)
+    preserve_distribution_shape = data.get('preserve_distribution_shape', True)
+    sigmoid_scale = data.get('sigmoid_scale', 5.0)
+    save_last_n_epochs = data.get('save_last_n_epochs', 10)
+    scale_weight_norms = data.get('scale_weight_norms', 1.0)
 
 
     if not config_file:
@@ -536,7 +555,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer, weighting_scheme, logit_mean, logit_std, num_timestep_buckets, min_timestep, max_timestep, preserve_distribution_shape, sigmoid_scale, save_last_n_epochs, scale_weight_norms)
     
     return jsonify({
         'process_id': process_id,

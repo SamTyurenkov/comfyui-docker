@@ -308,25 +308,75 @@
                 </div>
                 <div class="form-group">
                     <label for="timestepSampling">Timestep Sampling:</label>
-                    <input value="shift" type="hidden" id="timestepSampling" placeholder="Select an attention from the dropdown below" readonly>
-                    <div>
-                        <span id="timestepSamplingStatus" style="color: #666; font-size: 0.9em;"></span>
-                        <select id="timestepSamplingSelect" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-top: 10px; width: 100%;" onchange="selectTimestepSampling(this.value)">
-                            <option value="shift" selected>shift</option>
-                        </select>
-                    </div>
-                    <small>
-                        Способ покадрового сэмплинга, для захвата движения судя по совету автора и GPT - shift подходит больше всего.
-                        <br><br>
-                        Другие варианты:<br>
-                        -"uniform"<br>
-                        -"sigmoid"<br>
-                        -"shift"<br>
-                        -"flux_shift"<br>
-                        -"qwen_shift"<br>
-                        -"logsnr"<br>
-                        -"qinglong_flux"<br>
-                        -"qinglong_qwen"<br>
+                    <select id="timestepSampling" style="padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; width: 100%;" onchange="toggleSigmoidScale()">
+                        <option value="uniform">uniform</option>
+                        <option value="sigmoid">sigmoid</option>
+                        <option value="shift" selected>shift</option>
+                        <option value="flux_shift">flux_shift</option>
+                        <option value="qwen_shift">qwen_shift</option>
+                        <option value="logsnr">logsnr</option>
+                        <option value="qinglong_flux">qinglong_flux</option>
+                        <option value="qinglong_qwen">qinglong_qwen</option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Timestep sampling method (default: shift). Shift is recommended for motion capture according to the author.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="weightingScheme">Weighting Scheme:</label>
+                    <select id="weightingScheme" style="padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; width: 100%;" onchange="toggleLogitParameters()">
+                        <option value="logit_normal" selected>logit_normal</option>
+                        <option value="mode">mode</option>
+                        <option value="cosmap">cosmap</option>
+                        <option value="sigma_sqrt">sigma_sqrt</option>
+                        <option value="none">none</option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Weighting scheme for timestep sampling (default: logit_normal). logit_normal provides better timestep distribution than uniform.
+                    </small>
+                </div>
+                <div class="form-group" id="logitMeanGroup">
+                    <label for="logitMean">Logit Mean:</label>
+                    <input type="number" id="logitMean" placeholder="0.05" value="0.05" step="0.01" min="0.0" max="1.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Mean for logit normal distribution (default: 0.05). Biases toward earlier timesteps.
+                    </small>
+                </div>
+                <div class="form-group" id="logitStdGroup">
+                    <label for="logitStd">Logit Std:</label>
+                    <input type="number" id="logitStd" placeholder="0.03" value="0.03" step="0.01" min="0.001" max="1.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Standard deviation for logit normal distribution (default: 0.03).
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="numTimestepBuckets">Timestep Buckets:</label>
+                    <input type="number" id="numTimestepBuckets" placeholder="2" value="2" step="1" min="1" max="100">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Number of timestep buckets for stratified sampling (default: 2). Provides more stable timesteps.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="minTimestep">Min Timestep:</label>
+                    <input type="number" id="minTimestep" placeholder="100" value="100" step="10" min="0" max="1000">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Minimum timestep value (default: 100). Skips very high noise levels.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="maxTimestep">Max Timestep:</label>
+                    <input type="number" id="maxTimestep" placeholder="900" value="900" step="10" min="0" max="1000">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Maximum timestep value (default: 900). Skips very clean steps.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="preserveDistributionShape" checked style="margin-right: 10px; width: auto;">
+                        Preserve Distribution Shape
+                    </label>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Keeps distribution shape when clamping timesteps (recommended).
                     </small>
                 </div>
                 <div class="form-group">
@@ -334,6 +384,13 @@
                     <input type="number" id="flowShift" placeholder="2.0" value="2.0" step="0.1" min="0.0" max="10.0">
                     <small style="color: #666; margin-top: 5px; display: block;">
                         The flow shift for training (default: 2.0).
+                    </small>
+                </div>
+                <div class="form-group" id="sigmoidScaleGroup">
+                    <label for="sigmoidScale">Sigmoid Scale:</label>
+                    <input type="number" id="sigmoidScale" placeholder="5.0" value="5.0" step="0.1" min="0.1" max="20.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Sigmoid scale for training (default: 5.0). Controls the scaling of sigmoid activation.
                     </small>
                 </div>
                 <div class="form-group">
@@ -355,6 +412,20 @@
                     <input type="number" id="networkDropout" placeholder="0.05" value="0.05" step="0.01" min="0.0" max="1.0">
                     <small style="color: #666; margin-top: 5px; display: block;">
                         The dropout rate for network regularization (default: 0.05). Helps prevent overfitting.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="saveLastNEpochs">Save Last N Epochs:</label>
+                    <input type="number" id="saveLastNEpochs" placeholder="10" value="10" step="1" min="1" max="100">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Number of last epochs to save (default: 10). Keeps the most recent model checkpoints.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="scaleWeightNorms">Scale Weight Norms:</label>
+                    <input type="number" id="scaleWeightNorms" placeholder="1.0" value="1.0" step="0.1" min="0.1" max="10.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Scale factor for weight norms (default: 1.0). Controls the scaling of weight normalization.
                     </small>
                 </div>
                 <div class="form-group">
@@ -404,6 +475,16 @@
             const networkAlpha = document.getElementById('networkAlpha').value;
             const networkDropout = document.getElementById('networkDropout').value;
             const optimizer = document.getElementById('optimizer').value;
+            const weightingScheme = document.getElementById('weightingScheme').value;
+            const logitMean = document.getElementById('logitMean').value;
+            const logitStd = document.getElementById('logitStd').value;
+            const numTimestepBuckets = document.getElementById('numTimestepBuckets').value;
+            const minTimestep = document.getElementById('minTimestep').value;
+            const maxTimestep = document.getElementById('maxTimestep').value;
+            const preserveDistributionShape = document.getElementById('preserveDistributionShape').checked;
+            const sigmoidScale = document.getElementById('sigmoidScale').value;
+            const saveLastNEpochs = document.getElementById('saveLastNEpochs').value;
+            const scaleWeightNorms = document.getElementById('scaleWeightNorms').value;
 
             if (!configFile) {
                 alert('Please enter a config file path');
@@ -450,6 +531,53 @@
                 return;
             }
 
+            if (weightingScheme === 'logit_normal') {
+                if (!logitMean || logitMean < 0 || logitMean > 1) {
+                    alert('Please enter a valid logit mean (0.0 - 1.0)');
+                    return;
+                }
+
+                if (!logitStd || logitStd <= 0 || logitStd > 1) {
+                    alert('Please enter a valid logit std (0.001 - 1.0)');
+                    return;
+                }
+            }
+
+            if (!numTimestepBuckets || numTimestepBuckets <= 0) {
+                alert('Please enter a valid number of timestep buckets');
+                return;
+            }
+
+            if (!minTimestep || minTimestep < 0 || minTimestep > 1000) {
+                alert('Please enter a valid min timestep (0 - 1000)');
+                return;
+            }
+
+            if (!maxTimestep || maxTimestep < 0 || maxTimestep > 1000) {
+                alert('Please enter a valid max timestep (0 - 1000)');
+                return;
+            }
+
+            if (parseInt(minTimestep) >= parseInt(maxTimestep)) {
+                alert('Min timestep must be less than max timestep');
+                return;
+            }
+
+            if ((timestepSampling === 'sigmoid' || timestepSampling === 'shift') && (!sigmoidScale || sigmoidScale <= 0)) {
+                alert('Please enter a valid sigmoid scale (> 0)');
+                return;
+            }
+
+            if (!saveLastNEpochs || saveLastNEpochs <= 0) {
+                alert('Please enter a valid number for save last N epochs');
+                return;
+            }
+
+            if (!scaleWeightNorms || scaleWeightNorms <= 0) {
+                alert('Please enter a valid scale weight norms value (> 0)');
+                return;
+            }
+
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             
@@ -478,7 +606,17 @@
                         network_dim: parseInt(networkDim),
                         network_alpha: parseInt(networkAlpha),
                         network_dropout: parseFloat(networkDropout),
-                        optimizer: optimizer
+                        optimizer: optimizer,
+                        weighting_scheme: weightingScheme,
+                        logit_mean: parseFloat(logitMean),
+                        logit_std: parseFloat(logitStd),
+                        num_timestep_buckets: parseInt(numTimestepBuckets),
+                        min_timestep: parseInt(minTimestep),
+                        max_timestep: parseInt(maxTimestep),
+                        preserve_distribution_shape: preserveDistributionShape,
+                        sigmoid_scale: parseFloat(sigmoidScale),
+                        save_last_n_epochs: parseInt(saveLastNEpochs),
+                        scale_weight_norms: parseFloat(scaleWeightNorms)
                     })
                 });
 
@@ -739,9 +877,15 @@
             }
         }
 
-        function selectTimestepSampling(timestepSampling) {
-            if (timestepSampling) {
-                document.getElementById('timestepSampling').value = timestepSampling;
+        function toggleSigmoidScale() {
+            const timestepSampling = document.getElementById('timestepSampling').value;
+            const sigmoidScaleGroup = document.getElementById('sigmoidScaleGroup');
+            
+            // Show sigmoid scale only for sigmoid and shift timestep sampling
+            if (timestepSampling === 'sigmoid' || timestepSampling === 'shift') {
+                sigmoidScaleGroup.style.display = 'block';
+            } else {
+                sigmoidScaleGroup.style.display = 'none';
             }
         }
 
@@ -757,8 +901,27 @@
             }
         }
 
+        function toggleLogitParameters() {
+            const weightingScheme = document.getElementById('weightingScheme').value;
+            const logitMeanGroup = document.getElementById('logitMeanGroup');
+            const logitStdGroup = document.getElementById('logitStdGroup');
+            
+            // Show logit parameters only for logit_normal weighting scheme
+            if (weightingScheme === 'logit_normal') {
+                logitMeanGroup.style.display = 'block';
+                logitStdGroup.style.display = 'block';
+            } else {
+                logitMeanGroup.style.display = 'none';
+                logitStdGroup.style.display = 'none';
+            }
+        }
+
         // Auto-load configs on page load
         loadConfigs();
+        
+        // Initialize conditional UI elements
+        toggleLogitParameters();
+        toggleSigmoidScale();
         
         // Update process list every 5 seconds
         setInterval(updateProcessList, 5000);
