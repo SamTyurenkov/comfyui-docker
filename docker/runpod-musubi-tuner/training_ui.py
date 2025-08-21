@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit', weighting_scheme='logit_normal', logit_mean=0.05, logit_std=0.03, num_timestep_buckets=2, min_timestep=100, max_timestep=900, preserve_distribution_shape=True, sigmoid_scale=5.0, save_last_n_epochs=10, scale_weight_norms=1.0):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit', weighting_scheme='logit_normal', logit_mean=0.05, logit_std=0.03, num_timestep_buckets=2, min_timestep=100, max_timestep=900, preserve_distribution_shape=True, sigmoid_scale=5.0, save_last_n_epochs=10, scale_weight_norms=1.0, lr_decay_steps=0, lr_scheduler_num_cycles=1, lr_scheduler_min_lr_ratio=0.0):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -358,8 +358,21 @@ class ProcessManager:
                     "--max_grad_norm 1.0 "
                 )
                 
+                # Add lr_warmup_steps parameter for schedulers that support warmup
                 if lr_scheduler == 'constant_with_warmup' or lr_scheduler == 'cosine_with_restarts':
                     full_command += f"--lr_warmup_steps {lr_warmup_steps} " #0.1
+
+                # Add lr_decay_steps parameter for schedulers that support decay
+                if lr_scheduler in ['linear', 'polynomial', 'cosine', 'cosine_with_restarts'] and lr_decay_steps > 0:
+                    full_command += f"--lr_decay_steps {lr_decay_steps} "
+
+                # Add lr_scheduler_num_cycles parameter for cosine_with_restarts
+                if lr_scheduler == 'cosine_with_restarts' and lr_scheduler_num_cycles > 1:
+                    full_command += f"--lr_scheduler_num_cycles {lr_scheduler_num_cycles} "
+
+                # Add lr_scheduler_min_lr_ratio parameter for schedulers that support min lr ratio
+                if lr_scheduler in ['cosine', 'cosine_with_restarts'] and lr_scheduler_min_lr_ratio > 0:
+                    full_command += f"--lr_scheduler_min_lr_ratio {lr_scheduler_min_lr_ratio} "
 
                 # Add logit parameters if weighting scheme is logit_normal
                 if weighting_scheme == 'logit_normal':
@@ -532,6 +545,9 @@ def start_training():
     sigmoid_scale = data.get('sigmoid_scale', 5.0)
     save_last_n_epochs = data.get('save_last_n_epochs', 10)
     scale_weight_norms = data.get('scale_weight_norms', 1.0)
+    lr_decay_steps = data.get('lr_decay_steps', 0)
+    lr_scheduler_num_cycles = data.get('lr_scheduler_num_cycles', 1)
+    lr_scheduler_min_lr_ratio = data.get('lr_scheduler_min_lr_ratio', 0.0)
 
 
     if not config_file:
@@ -555,7 +571,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer, weighting_scheme, logit_mean, logit_std, num_timestep_buckets, min_timestep, max_timestep, preserve_distribution_shape, sigmoid_scale, save_last_n_epochs, scale_weight_norms)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer, weighting_scheme, logit_mean, logit_std, num_timestep_buckets, min_timestep, max_timestep, preserve_distribution_shape, sigmoid_scale, save_last_n_epochs, scale_weight_norms, lr_decay_steps, lr_scheduler_num_cycles, lr_scheduler_min_lr_ratio)
     
     return jsonify({
         'process_id': process_id,
