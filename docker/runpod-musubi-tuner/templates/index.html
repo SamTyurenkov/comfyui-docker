@@ -234,6 +234,17 @@
                     </small>
                 </div>
                 <div class="form-group">
+                    <label for="optimizer">Optimizer:</label>
+                    <select id="optimizer" style="padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; width: 100%;">
+                        <option value="AdamW">AdamW</option>
+                        <option value="AdamW8bit" selected>AdamW8bit</option>
+                        <option value="AdaFactor">AdaFactor</option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Optimizer type for training (default: AdamW8bit). AdamW8bit uses less memory than AdamW.
+                    </small>
+                </div>
+                <div class="form-group">
                     <label for="lrScheduler">Learning Rate Scheduler:</label>
                     <select id="lrScheduler" style="padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; width: 100%;" onchange="toggleWarmupSteps()">
                         <option value="constant" selected>constant</option>
@@ -326,6 +337,27 @@
                     </small>
                 </div>
                 <div class="form-group">
+                    <label for="networkDim">Network Dimension:</label>
+                    <input type="number" id="networkDim" placeholder="32" value="32" step="1" min="1" max="1024">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        The network dimension for LoRA (default: 32). Higher values may improve quality but increase training time and memory usage.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="networkAlpha">Network Alpha:</label>
+                    <input type="number" id="networkAlpha" placeholder="16" value="16" step="1" min="1" max="1024">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        The network alpha for LoRA (default: 16). Usually set to half of network dimension.
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="networkDropout">Network Dropout:</label>
+                    <input type="number" id="networkDropout" placeholder="0.05" value="0.05" step="0.01" min="0.0" max="1.0">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        The dropout rate for network regularization (default: 0.05). Helps prevent overfitting.
+                    </small>
+                </div>
+                <div class="form-group">
                     <label style="display: flex; align-items: center; cursor: pointer;">
                         <input type="checkbox" id="enableLatentCaching" checked style="margin-right: 10px; width: auto;">
                         Enable Latent Caching
@@ -368,6 +400,10 @@
             const flowShift = document.getElementById('flowShift').value;
             const lrScheduler = document.getElementById('lrScheduler').value.trim();
             const lrWarmupSteps = document.getElementById('lrWarmupSteps').value;
+            const networkDim = document.getElementById('networkDim').value;
+            const networkAlpha = document.getElementById('networkAlpha').value;
+            const networkDropout = document.getElementById('networkDropout').value;
+            const optimizer = document.getElementById('optimizer').value;
 
             if (!configFile) {
                 alert('Please enter a config file path');
@@ -394,8 +430,23 @@
                 return;
             }
 
-            if (lrScheduler === 'constant_with_warmup' && (!lrWarmupSteps || lrWarmupSteps < 0)) {
+            if ((lrScheduler === 'constant_with_warmup' || lrScheduler === 'cosine_with_restarts') && (!lrWarmupSteps || lrWarmupSteps < 0)) {
                 alert('Please enter a valid number for learning rate warmup steps');
+                return;
+            }
+
+            if (!networkDim || networkDim <= 0) {
+                alert('Please enter a valid network dimension');
+                return;
+            }
+
+            if (!networkAlpha || networkAlpha <= 0) {
+                alert('Please enter a valid network alpha');
+                return;
+            }
+
+            if (!networkDropout || networkDropout < 0 || networkDropout > 1) {
+                alert('Please enter a valid network dropout (0.0 - 1.0)');
                 return;
             }
 
@@ -423,7 +474,11 @@
                         timestep_sampling: timestepSampling,
                         flow_shift: flowShift,
                         lr_scheduler: lrScheduler,
-                        lr_warmup_steps: parseInt(lrWarmupSteps)
+                        lr_warmup_steps: parseInt(lrWarmupSteps),
+                        network_dim: parseInt(networkDim),
+                        network_alpha: parseInt(networkAlpha),
+                        network_dropout: parseFloat(networkDropout),
+                        optimizer: optimizer
                     })
                 });
 
@@ -695,7 +750,7 @@
             const warmupGroup = document.getElementById('lrWarmupGroup');
             
             // Show warmup steps field only for schedulers that support warmup
-            if (lrScheduler === 'constant_with_warmup' || lrScheduler === 'linear' || lrScheduler === 'polynomial') {
+            if (lrScheduler === 'constant_with_warmup' || lrScheduler === 'cosine_with_restarts' || lrScheduler === 'linear' || lrScheduler === 'polynomial') {
                 warmupGroup.style.display = 'block';
             } else {
                 warmupGroup.style.display = 'none';
