@@ -273,50 +273,6 @@ class ProcessManager:
                 else:
                     full_config_path = config_path
                 
-                # Commenting out cache_latents and cache_te calls as requested
-                # These are now available as separate buttons in the UI
-                
-                # # Cache latents first to speed up training (if enabled)
-                # if enable_latent_caching:
-                #     self.outputs[process_id].append("=== PHASE 1: LATENT CACHING ===")
-                #     self.outputs[process_id].append("Starting latent caching...")
-                #     print(f"[{process_id}] Starting latent caching...")
-                #     time.sleep(0.1)  # Small delay to ensure output is captured
-                #     
-                #     cache_success = self.cache_latents(process_id, full_config_path)
-                #     if not cache_success:
-                #         self.outputs[process_id].append("Warning: Latent caching failed, continuing with training...")
-                #         print(f"[{process_id}] Warning: Latent caching failed, continuing with training...")
-                #         time.sleep(0.1)
-                #     else:
-                #         self.outputs[process_id].append("Latent caching completed successfully!")
-                #         print(f"[{process_id}] Latent caching completed successfully!")
-                #         time.sleep(0.1)
-                # else:
-                #     self.outputs[process_id].append("Latent caching disabled, skipping...")
-                #     print(f"[{process_id}] Latent caching disabled, skipping...")
-                #     time.sleep(0.1)
-
-                # if enable_latent_caching:
-                #     self.outputs[process_id].append("=== PHASE 2: TE CACHING ===")
-                #     self.outputs[process_id].append("Starting TE caching...")
-                #     print(f"[{process_id}] Starting TE caching...")
-                #     time.sleep(0.1)  # Small delay to ensure output is captured
-                #     
-                #     cache_success = self.cache_te(process_id, full_config_path)
-                #     if not cache_success:
-                #         self.outputs[process_id].append("Warning: TE caching failed, continuing with training...")
-                #         print(f"[{process_id}] Warning: TE caching failed, continuing with training...")
-                #         time.sleep(0.1)
-                #     else:
-                #         self.outputs[process_id].append("TE caching completed successfully!")
-                #         print(f"[{process_id}] TE caching completed successfully!")
-                #         time.sleep(0.1)
-                # else:
-                #     self.outputs[process_id].append("TE caching disabled, skipping...")
-                #     print(f"[{process_id}] TE caching disabled, skipping...")
-                #     time.sleep(0.1)
-                
                 self.outputs[process_id].append("=== MAIN TRAINING ===")
                 self.outputs[process_id].append("Starting training process...")
                 print(f"[{process_id}] Starting training process...")

@@ -560,6 +560,28 @@
             display: none;
         }
 
+        .session-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .session-indicator.show {
+            opacity: 1;
+        }
+
+        .session-indicator.restored {
+            background: #17a2b8;
+        }
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .container {
@@ -990,6 +1012,13 @@
                             <span>Stopping...</span>
                         </div>
                     </button>
+                    <button class="btn" id="reconnectBtn" onclick="reconnectToTraining()" style="background: #28a745;">
+                        <span class="btn-content">🔗 Reconnect to Training</span>
+                        <div class="btn-loading-overlay">
+                            <span class="loading"></span>
+                            <span>Reconnecting...</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -1005,10 +1034,114 @@
             </div>
         </div>
     </div>
+    
+    <div id="sessionIndicator" class="session-indicator">Session saved</div>
 
     <script>
         let currentProcessId = null;
         let eventSource = null;
+        
+        // Cookie utility functions
+        const CookieManager = {
+            set: function(name, value, days = 7) {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+            },
+            
+            get: function(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) {
+                        try {
+                            return JSON.parse(c.substring(nameEQ.length, c.length));
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+                }
+                return null;
+            },
+            
+            delete: function(name) {
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+            }
+        };
+        
+        // Session indicator functions
+        function showSessionIndicator(message = 'Session saved', isRestored = false) {
+            const indicator = document.getElementById('sessionIndicator');
+            indicator.textContent = message;
+            indicator.className = 'session-indicator show' + (isRestored ? ' restored' : '');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Training session persistence
+        const TrainingSession = {
+            save: function(showIndicator = false) {
+                const session = {
+                    configFile: document.getElementById('configFile').value,
+                    currentProcessId: currentProcessId,
+                    timestamp: Date.now()
+                };
+                CookieManager.set('trainingSession', session);
+                if (showIndicator) {
+                    showSessionIndicator('Session saved');
+                }
+            },
+            
+            restore: function() {
+                const session = CookieManager.get('trainingSession');
+                if (session) {
+                    // Restore config file selection
+                    if (session.configFile) {
+                        document.getElementById('configFile').value = session.configFile;
+                        // Also update dropdown if it exists
+                        const select = document.getElementById('configSelect');
+                        if (select) {
+                            select.value = session.configFile;
+                        }
+                    }
+                    
+                    // Check if session is recent (within 24 hours) and has active process
+                    const isRecent = (Date.now() - session.timestamp) < (24 * 60 * 60 * 1000);
+                    if (isRecent && session.currentProcessId) {
+                        this.restoreActiveSession(session);
+                    } else {
+                        // Just show restoration of config
+                        showSessionIndicator('Config restored', true);
+                    }
+                }
+            },
+            
+            restoreActiveSession: function(session) {
+                // Check if the process is still running
+                fetch('/api/processes')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.running_processes.includes(session.currentProcessId)) {
+                            // Process is still running
+                            showSessionIndicator('Training session available - click Reconnect', true);
+                        } else {
+                            // Process is no longer running, just show config restoration
+                            showSessionIndicator('Process completed - config restored', true);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking process status:', error);
+                        showSessionIndicator('Error checking process status', true);
+                    });
+            },
+            
+            clear: function() {
+                CookieManager.delete('trainingSession');
+            }
+        };
 
         async function cacheLatents() {
             const configFile = document.getElementById('configFile').value.trim();
@@ -1045,6 +1178,9 @@
                     
                     // Clear previous output
                     document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    // Save session state
+                    TrainingSession.save();
                     
                     startOutputStream(currentProcessId);
                     updateProcessList();
@@ -1094,6 +1230,9 @@
                     
                     // Clear previous output
                     document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    // Save session state
+                    TrainingSession.save();
                     
                     startOutputStream(currentProcessId);
                     updateProcessList();
@@ -1297,6 +1436,7 @@
                     currentProcessId = data.process_id;
                     startBtn.style.display = 'none';
                     stopBtn.style.display = 'inline-block';
+
                     
                     document.getElementById('outputSection').style.display = 'block';
                     document.getElementById('statusDisplay').className = 'status running';
@@ -1304,6 +1444,9 @@
                     
                     // Clear previous output
                     document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    // Save session state
+                    TrainingSession.save();
                     
                     startOutputStream(currentProcessId);
                     updateProcessList();
@@ -1350,6 +1493,10 @@
                     reconnectAttempts = 0;
                     document.getElementById('startBtn').style.display = 'inline-block';
                     stopBtn.style.display = 'none';
+
+                    
+                    // Clear session since training was manually stopped
+                    TrainingSession.clear();
                 } else {
                     alert('Error stopping training: ' + data.message);
                 }
@@ -1432,6 +1579,10 @@
                     reconnectAttempts = 0;
                     document.getElementById('startBtn').style.display = 'inline-block';
                     document.getElementById('stopBtn').style.display = 'none';
+
+                    
+                    // Clear session since training completed
+                    TrainingSession.clear();
                 }
             };
 
@@ -1547,6 +1698,58 @@
         function selectConfig(configPath) {
             if (configPath) {
                 document.getElementById('configFile').value = configPath;
+                // Save config selection immediately
+                TrainingSession.save(true);
+            }
+        }
+        
+        async function reconnectToTraining() {
+            const session = CookieManager.get('trainingSession');
+            if (!session || !session.currentProcessId) {
+                alert('No saved training session found. Please start a new training or check if you have a valid session saved.');
+                return;
+            }
+
+            const reconnectBtn = document.getElementById('reconnectBtn');
+            reconnectBtn.disabled = true;
+            reconnectBtn.classList.add('loading');
+
+            try {
+                // Check if the process is still running
+                const response = await fetch('/api/processes');
+                const data = await response.json();
+                
+                if (data.running_processes.includes(session.currentProcessId)) {
+                    // Process is still running, reconnect
+                    currentProcessId = session.currentProcessId;
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').style.display = 'inline-block';
+
+                    
+                    document.getElementById('outputSection').style.display = 'block';
+                    document.getElementById('statusDisplay').className = 'status running';
+                    document.getElementById('statusDisplay').textContent = 'Reconnected to active training...';
+                    
+                    // Clear any old output and start fresh streaming
+                    document.getElementById('outputDisplay').innerHTML = '';
+                    
+                    // Start streaming current live output
+                    startOutputStream(currentProcessId);
+                    
+                    showSessionIndicator('Successfully reconnected to training!', true);
+                } else {
+                    // Process is no longer running
+                    alert('The training process is no longer running. It may have completed or been stopped.');
+                    // Clear the session since the process is dead
+                    TrainingSession.clear();
+
+                }
+            } catch (error) {
+                console.error('Error reconnecting:', error);
+                alert('Error reconnecting to training: ' + error.message);
+            } finally {
+                reconnectBtn.disabled = false;
+                reconnectBtn.classList.remove('loading');
             }
         }
 
@@ -1626,8 +1829,19 @@
             panel.className = 'description-panel empty';
         }
 
+        // Initialize page - restore session and load configs
+        function initializePage() {
+            // First load configs, then restore session after a brief delay
+            loadConfigs();
+            
+            // Restore session after configs are loaded
+            setTimeout(() => {
+                TrainingSession.restore();
+            }, 1000);
+        }
+        
         // Auto-load configs on page load
-        loadConfigs();
+        initializePage();
         
         // Initialize conditional UI elements
         toggleLrSchedulerParams();
@@ -1642,6 +1856,13 @@
 
         // Initial process list update
         updateProcessList();
+        
+        // Update session timestamp periodically to keep it fresh
+        setInterval(() => {
+            if (currentProcessId) {
+                TrainingSession.save();
+            }
+        }, 60000); // Update every minute when training is active to maintain session validity
     </script>
 </body>
 </html> 
