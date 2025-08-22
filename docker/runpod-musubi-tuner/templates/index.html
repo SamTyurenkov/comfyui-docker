@@ -1041,33 +1041,74 @@
         let currentProcessId = null;
         let eventSource = null;
         
-        // Cookie utility functions
-        const CookieManager = {
+        // Storage utility functions (works with both local files and web servers)
+        const StorageManager = {
             set: function(name, value, days = 7) {
-                const expires = new Date();
-                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-                document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+                try {
+                    const data = {
+                        value: value,
+                        expires: Date.now() + (days * 24 * 60 * 60 * 1000)
+                    };
+                    localStorage.setItem(name, JSON.stringify(data));
+                    console.log('Storage set:', name, 'value length:', JSON.stringify(value).length);
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                    // Fallback to sessionStorage if localStorage fails
+                    try {
+                        sessionStorage.setItem(name, JSON.stringify(value));
+                        console.log('Fallback to sessionStorage for:', name);
+                    } catch (e2) {
+                        console.error('Error saving to sessionStorage:', e2);
+                    }
+                }
             },
             
             get: function(name) {
-                const nameEQ = name + "=";
-                const ca = document.cookie.split(';');
-                for (let i = 0; i < ca.length; i++) {
-                    let c = ca[i];
-                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                    if (c.indexOf(nameEQ) === 0) {
-                        try {
-                            return JSON.parse(c.substring(nameEQ.length, c.length));
-                        } catch (e) {
-                            return null;
+                console.log('StorageManager.get called for:', name);
+                try {
+                    const data = localStorage.getItem(name);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        // Check if it's the new format with expiration
+                        if (parsed.value && parsed.expires) {
+                            if (Date.now() > parsed.expires) {
+                                console.log('Storage expired for:', name);
+                                localStorage.removeItem(name);
+                                return null;
+                            }
+                            console.log('Found and parsed storage value:', parsed.value);
+                            return parsed.value;
+                        } else {
+                            // Old format without expiration
+                            console.log('Found old format storage value:', parsed);
+                            return parsed;
                         }
                     }
+                } catch (e) {
+                    console.error('Error reading from localStorage:', e);
+                    // Try sessionStorage as fallback
+                    try {
+                        const data = sessionStorage.getItem(name);
+                        if (data) {
+                            const parsed = JSON.parse(data);
+                            console.log('Found in sessionStorage:', parsed);
+                            return parsed;
+                        }
+                    } catch (e2) {
+                        console.error('Error reading from sessionStorage:', e2);
+                    }
                 }
+                console.log('Storage not found:', name);
                 return null;
             },
             
             delete: function(name) {
-                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+                try {
+                    localStorage.removeItem(name);
+                    sessionStorage.removeItem(name);
+                } catch (e) {
+                    console.error('Error deleting from storage:', e);
+                }
             }
         };
         
@@ -1083,39 +1124,117 @@
         
         // Training session persistence
         const TrainingSession = {
+            // Flag to prevent saving during restore
+            isRestoring: false,
+            
+            // List of all form inputs to save/restore
+            formInputs: [
+                'configFile', 'configSelect', 'loraName', 'learningRate', 'optimizer', 'lrScheduler',
+                'maxTrainEpochs', 'lrWarmupSteps', 'lrDecaySteps', 'lrSchedulerNumCycles',
+                'lrSchedulerMinLrRatio', 'blockSwap', 'task', 'taskSelect', 'attention', 'attentionSelect', 
+                'timestepSampling', 'weightingScheme', 'logitMean', 'logitStd', 'numTimestepBuckets',
+                'minTimestep', 'maxTimestep', 'preserveDistributionShape', 'flowShift',
+                'sigmoidScale', 'networkDim', 'networkAlpha', 'networkDropout',
+                'saveLastNEpochs', 'scaleWeightNorms'
+            ],
+            
             save: function(showIndicator = false) {
+                // Don't save if we're currently restoring
+                if (this.isRestoring) {
+                    console.log('Skipping save during restore');
+                    return;
+                }
+                
+                console.log('TrainingSession.save() called');
                 const session = {
-                    configFile: document.getElementById('configFile').value,
                     currentProcessId: currentProcessId,
                     timestamp: Date.now()
                 };
-                CookieManager.set('trainingSession', session);
+                
+                // Save all form inputs
+                this.formInputs.forEach(inputId => {
+                    const element = document.getElementById(inputId);
+                    if (element) {
+                        session[inputId] = element.value;
+                    }
+                });
+                
+                StorageManager.set('trainingSession', session);
+                console.log('Session saved:', session);
                 if (showIndicator) {
                     showSessionIndicator('Session saved');
                 }
             },
             
             restore: function() {
-                const session = CookieManager.get('trainingSession');
+                console.log('TrainingSession.restore() called');
+                const session = StorageManager.get('trainingSession');
+                console.log('Retrieved session:', session);
                 if (session) {
-                    // Restore config file selection
-                    if (session.configFile) {
-                        document.getElementById('configFile').value = session.configFile;
-                        // Also update dropdown if it exists
-                        const select = document.getElementById('configSelect');
-                        if (select) {
-                            select.value = session.configFile;
+                    // Set restoring flag to prevent saves during restore
+                    this.isRestoring = true;
+                    
+                    // Temporarily disable event listeners to prevent saving during restore
+                    disableEventListeners();
+                    
+                    // Restore all form inputs
+                    this.formInputs.forEach(inputId => {
+                        const element = document.getElementById(inputId);
+                        if (element && session[inputId] !== undefined) {
+                            console.log('Restoring', inputId, 'to value:', session[inputId]);
+                            element.value = session[inputId];
+                        } else if (element) {
+                            console.log('Element found but no session value for:', inputId);
+                        } else {
+                            console.log('Element not found for:', inputId);
                         }
+                    });
+                    
+                    // Handle special cases for select elements
+                    if (session.configFile && session.configSelect) {
+                        const configFile = document.getElementById('configFile');
+                        const configSelect = document.getElementById('configSelect');
+                        if (configFile) configFile.value = session.configFile;
+                        if (configSelect) configSelect.value = session.configSelect;
                     }
+                    
+                    if (session.task && session.taskSelect) {
+                        const task = document.getElementById('task');
+                        const taskSelect = document.getElementById('taskSelect');
+                        if (task) task.value = session.task;
+                        if (taskSelect) taskSelect.value = session.taskSelect;
+                    }
+                    
+                    if (session.attention && session.attentionSelect) {
+                        const attention = document.getElementById('attention');
+                        const attentionSelect = document.getElementById('attentionSelect');
+                        if (attention) attention.value = session.attention;
+                        if (attentionSelect) attentionSelect.value = session.attentionSelect;
+                    }
+                    
+                    // Update UI elements that depend on form values
+                    toggleLrSchedulerParams();
+                    toggleLogitParameters();
+                    toggleSigmoidScale();
+                    
+                    // Re-enable event listeners and clear restoring flag after restore is complete
+                    setTimeout(() => {
+                        enableEventListeners();
+                        this.isRestoring = false;
+                        console.log('Restore complete, saving re-enabled');
+                    }, 100);
                     
                     // Check if session is recent (within 24 hours) and has active process
                     const isRecent = (Date.now() - session.timestamp) < (24 * 60 * 60 * 1000);
                     if (isRecent && session.currentProcessId) {
                         this.restoreActiveSession(session);
                     } else {
-                        // Just show restoration of config
-                        showSessionIndicator('Config restored', true);
+                        // Show restoration message
+                        showSessionIndicator('Form values restored', true);
                     }
+                } else {
+                    // No session to restore, set up event listeners
+                    setupEventListeners();
                 }
             },
             
@@ -1139,7 +1258,7 @@
             },
             
             clear: function() {
-                CookieManager.delete('trainingSession');
+                StorageManager.delete('trainingSession');
             }
         };
 
@@ -1661,6 +1780,11 @@
             try {
                 showStatus('Loading configs...', 'loading');
                 const response = await fetch('/api/configs');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 configSelect.innerHTML = '<option value="">Select a config file...</option>';
@@ -1690,6 +1814,7 @@
                 console.error('Error loading configs:', error);
                 showStatus('Error loading configs', 'error');
                 // Don't show alert for auto-refresh errors
+                // Don't re-throw the error to prevent blocking session restoration
             }
         }
 
@@ -1702,7 +1827,7 @@
         }
         
         async function reconnectToTraining() {
-            const session = CookieManager.get('trainingSession');
+            const session = StorageManager.get('trainingSession');
             if (!session || !session.currentProcessId) {
                 alert('No saved training session found. Please start a new training or check if you have a valid session saved.');
                 return;
@@ -1754,12 +1879,14 @@
         function selectTask(task) {
             if (task) {
                 document.getElementById('task').value = task;
+                TrainingSession.save();
             }
         }
 
         function selectAttention(attention) {
             if (attention) {
                 document.getElementById('attention').value = attention;
+                TrainingSession.save();
             }
         }
 
@@ -1773,6 +1900,9 @@
             } else {
                 sigmoidScaleGroup.style.display = 'none';
             }
+            
+            // Save session when timestep sampling changes
+            TrainingSession.save();
         }
 
         function toggleLrSchedulerParams() {
@@ -1801,6 +1931,9 @@
             decayGroup.style.display = showDecay ? 'block' : 'none';
             numCyclesGroup.style.display = showCycles ? 'block' : 'none';
             minRatioGroup.style.display = showMinRatio ? 'block' : 'none';
+            
+            // Save session when LR scheduler changes
+            TrainingSession.save();
         }
 
         function toggleLogitParameters() {
@@ -1813,6 +1946,9 @@
             } else {
                 logitParametersGrid.style.display = 'none';
             }
+            
+            // Save session when weighting scheme changes
+            TrainingSession.save();
         }
 
         function showDescription(text) {
@@ -1828,23 +1964,81 @@
         }
 
         // Initialize page - restore session and load configs
-        function initializePage() {
-            // First load configs, then restore session after a brief delay
-            loadConfigs();
-            
-            // Restore session after configs are loaded
-            setTimeout(() => {
+        async function initializePage() {
+            try {
+                // First load configs
+                await loadConfigs();
+                
+                // Wait a bit more to ensure DOM is fully ready
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                console.log('Attempting to restore session...');
+                // Check if key elements exist before restoring
+                const testElement = document.getElementById('lrScheduler');
+                console.log('lrScheduler element exists:', !!testElement);
+                if (testElement) {
+                    console.log('lrScheduler current value:', testElement.value);
+                }
+                
                 TrainingSession.restore();
-            }, 1000);
+                // Event listeners will be set up by the restore function
+            } catch (error) {
+                console.error('Error during page initialization:', error);
+                // Still try to restore session even if config loading fails
+                TrainingSession.restore();
+            }
+        }
+        
+        // Setup event listeners for form inputs
+        function setupEventListeners() {
+            console.log('Setting up event listeners for form inputs...');
+            TrainingSession.formInputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    console.log('Adding listeners to:', inputId);
+                    // Remove existing listeners to avoid duplicates
+                    element.removeEventListener('change', handleInputChange);
+                    element.removeEventListener('input', handleInputChange);
+                    
+                    // Add new listeners
+                    element.addEventListener('change', handleInputChange);
+                    element.addEventListener('input', handleInputChange);
+                } else {
+                    console.log('Element not found:', inputId);
+                }
+            });
+        }
+        
+        // Temporarily disable event listeners during restore
+        function disableEventListeners() {
+            TrainingSession.formInputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    element.removeEventListener('change', handleInputChange);
+                    element.removeEventListener('input', handleInputChange);
+                }
+            });
+        }
+        
+        // Re-enable event listeners after restore
+        function enableEventListeners() {
+            TrainingSession.formInputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    element.addEventListener('change', handleInputChange);
+                    element.addEventListener('input', handleInputChange);
+                }
+            });
+        }
+        
+        // Handler for input changes
+        function handleInputChange(event) {
+            console.log('Input changed:', event.target.id, 'value:', event.target.value);
+            TrainingSession.save();
         }
         
         // Auto-load configs on page load
         initializePage();
-        
-        // Initialize conditional UI elements
-        toggleLrSchedulerParams();
-        toggleLogitParameters();
-        toggleSigmoidScale();
         
         // Update process list every 5 seconds
         setInterval(updateProcessList, 5000);
