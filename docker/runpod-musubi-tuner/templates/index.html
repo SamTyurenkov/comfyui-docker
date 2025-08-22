@@ -1252,7 +1252,6 @@
             const loraName = document.getElementById('loraName').value.trim();
             const learningRate = document.getElementById('learningRate').value;
             const maxTrainEpochs = document.getElementById('maxTrainEpochs').value;
-            const enableLatentCaching = document.getElementById('enableLatentCaching').value === 'true';
             const blockSwap = document.getElementById('blockSwap').value;
             const task = document.getElementById('task').value.trim();
             const attention = document.getElementById('attention').value.trim();
@@ -1402,7 +1401,6 @@
                         lora_name: loraName,
                         learning_rate: parseFloat(learningRate),
                         max_train_epochs: parseInt(maxTrainEpochs),
-                        enable_latent_caching: enableLatentCaching,
                         block_swap: parseInt(blockSwap),
                         task: task,
                         attention: attention,
