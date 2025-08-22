@@ -245,7 +245,7 @@ class ProcessManager:
             print(f"[{process_id}] Error during TE caching: {str(e)}")
             return False
 
-    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, enable_latent_caching=True, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit', weighting_scheme='logit_normal', logit_mean=0.05, logit_std=0.03, num_timestep_buckets=2, min_timestep=100, max_timestep=900, preserve_distribution_shape=True, sigmoid_scale=5.0, save_last_n_epochs=10, scale_weight_norms=1.0, lr_decay_steps=0, lr_scheduler_num_cycles=1, lr_scheduler_min_lr_ratio=0.0):
+    def start_process(self, process_id, config_path, lora_name, learning_rate=2e-4, max_train_epochs=16, block_swap=0, task='t2v-14B', attention='sdpa', timestep_sampling='shift', flow_shift=2.0, lr_scheduler='constant', lr_warmup_steps=100, network_dim=32, network_alpha=16, network_dropout=0.05, optimizer='AdamW8bit', weighting_scheme='logit_normal', logit_mean=0.05, logit_std=0.03, num_timestep_buckets=2, min_timestep=100, max_timestep=900, preserve_distribution_shape=True, sigmoid_scale=5.0, save_last_n_epochs=10, scale_weight_norms=1.0, lr_decay_steps=0, lr_scheduler_num_cycles=1, lr_scheduler_min_lr_ratio=0.0):
         """Start a new process and capture its output"""
         
         # Initialize the outputs dictionary for this process_id IMMEDIATELY
@@ -258,7 +258,7 @@ class ProcessManager:
         self.outputs[process_id].append(f"LoRA Name: {lora_name}")
         self.outputs[process_id].append(f"Learning Rate: {learning_rate}")
         self.outputs[process_id].append(f"Max Epochs: {max_train_epochs}")
-        self.outputs[process_id].append(f"Latent Caching: {'Enabled' if enable_latent_caching else 'Disabled'}")
+        # self.outputs[process_id].append(f"Latent Caching: {'Enabled' if enable_latent_caching else 'Disabled'}")
         self.outputs[process_id].append("Starting training thread...")
         
         def run_process():
@@ -526,7 +526,6 @@ def start_training():
     lora_name = data.get('lora_name', '')
     learning_rate = data.get('learning_rate', 2e-4)
     max_train_epochs = data.get('max_train_epochs', 16)
-    enable_latent_caching = data.get('enable_latent_caching', True)
     block_swap = data.get('block_swap', 0)
     task = data.get('task', 't2v-14B')
     attention = data.get('attention', 'sdpa')
@@ -564,7 +563,6 @@ def start_training():
         learning_rate = float(learning_rate)
         max_train_epochs = int(max_train_epochs)
         block_swap = int(block_swap)
-        enable_latent_caching = bool(enable_latent_caching)
         flow_shift = float(flow_shift)
         lr_warmup_steps = int(lr_warmup_steps)
     except (ValueError, TypeError):
@@ -574,7 +572,7 @@ def start_training():
     process_id = str(uuid.uuid4())
     
     # Start the training process
-    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, enable_latent_caching, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer, weighting_scheme, logit_mean, logit_std, num_timestep_buckets, min_timestep, max_timestep, preserve_distribution_shape, sigmoid_scale, save_last_n_epochs, scale_weight_norms, lr_decay_steps, lr_scheduler_num_cycles, lr_scheduler_min_lr_ratio)
+    process_manager.start_process(process_id, config_file, lora_name, learning_rate, max_train_epochs, block_swap, task, attention, timestep_sampling, flow_shift, lr_scheduler, lr_warmup_steps, network_dim, network_alpha, network_dropout, optimizer, weighting_scheme, logit_mean, logit_std, num_timestep_buckets, min_timestep, max_timestep, preserve_distribution_shape, sigmoid_scale, save_last_n_epochs, scale_weight_norms, lr_decay_steps, lr_scheduler_num_cycles, lr_scheduler_min_lr_ratio)
     
     return jsonify({
         'process_id': process_id,
