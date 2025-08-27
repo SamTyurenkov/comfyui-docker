@@ -76,3 +76,12 @@ jobs:
           file: ./docker/runpod-musubi-tuner/Dockerfile
           push: true
           tags: samtyurenkov/runpod:musubi-tuner
+
+      - name: Build and push Serverless Runpod Image
+        if: steps.flags.outputs.runpod_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile.serverless
+          push: true
+          tags: samtyurenkov/runpod:serverless

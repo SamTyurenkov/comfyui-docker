@@ -1,0 +1,24 @@
+FROM samtyurenkov/runpod:dev as builder
+
+FROM python:3.12
+COPY --from=builder /home/comfyuser /home/comfyuser
+
+RUN rm /home/comfyuser/ComfyUI/extra_model_paths.yaml
+COPY extra_model_paths.serverless.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libssl3 \
+    git
+
+ADD entry.serverless.sh /usr/local/bin/entrypoint.sh
+ADD handler.py /home/comfyuser/handler.py
+ADD test_input.json /home/comfyuser/test_input.json
+
+WORKDIR /home/comfyuser/
+RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
