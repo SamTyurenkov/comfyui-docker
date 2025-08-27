@@ -39,7 +39,7 @@ COPY ssl/self-signed/privkey.pem /home/comfyuser/docker/nginx/ssl/privkey.pem
 RUN mkdir -p /home/comfyuser/musubi-tuner/
 
 RUN cd /home/comfyuser && git clone https://github.com/kohya-ss/musubi-tuner
-
+RUN cd /home/comfyuser/ComfyUI/custom_nodes/musubi-tuner && git checkout video_captions_to_metadata
 RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors
 
 # Copy training UI files
