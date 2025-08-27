@@ -53,7 +53,7 @@ jobs:
           push: true
           tags: samtyurenkov/runpod:dev
 
-      - name: Build and push Runpod Image
+      - name: Build and push Serverless Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
         uses: docker/build-push-action@v6
         with:
