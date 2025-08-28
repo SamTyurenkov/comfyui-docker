@@ -157,13 +157,42 @@ def validate_input(job_input):
     # Validate 'images' in input, if provided
     images = job_input.get("images")
     if images is not None:
-        if not isinstance(images, list) or not all(
-            "name" in image and "image" in image for image in images
-        ):
-            return (
-                None,
-                "'images' must be a list of objects with 'name' and 'image' keys",
-            )
+        if not isinstance(images, list):
+            return None, "'images' must be a list"
+        
+        # Validate each image object
+        for i, image in enumerate(images):
+            if not isinstance(image, dict):
+                return None, f"Image at index {i} must be an object"
+            
+            # Check for required fields
+            if "name" not in image:
+                return None, f"Image at index {i} missing 'name' field"
+            
+            if "image" not in image:
+                return None, f"Image at index {i} missing 'image' field"
+            
+            # Validate image data format
+            image_data = image["image"]
+            if not isinstance(image_data, str):
+                return None, f"Image data at index {i} must be a string"
+            
+            # Check if it's a valid base64 or data URL
+            if "," in image_data:
+                # Data URL format: data:image/png;base64,<base64_data>
+                parts = image_data.split(",", 1)
+                if len(parts) != 2 or not parts[0].startswith("data:image/"):
+                    return None, f"Invalid data URL format at index {i}"
+                base64_data = parts[1]
+            else:
+                # Pure base64 format
+                base64_data = image_data
+            
+            # Validate base64 data
+            try:
+                base64.b64decode(base64_data)
+            except Exception:
+                return None, f"Invalid base64 data at index {i}"
 
     # Return validated data and no error
     return {"workflow": workflow, "images": images}, None
@@ -213,31 +242,37 @@ def upload_images(images):
         images (list): A list of dictionaries, each containing the 'name' of the image and the 'image' as a base64 encoded string.
 
     Returns:
-        dict: A dictionary indicating success or error.
+        dict: A dictionary indicating success or error with detailed information about uploaded images.
     """
     if not images:
-        return {"status": "success", "message": "No images to upload", "details": []}
+        return {"status": "success", "message": "No images to upload", "details": [], "uploaded_images": []}
 
     responses = []
     upload_errors = []
+    uploaded_images = []
 
     print(f"worker-comfyui - Uploading {len(images)} image(s)...")
 
-    for image in images:
+    for i, image in enumerate(images):
         try:
             name = image["name"]
             image_data_uri = image["image"]  # Get the full string (might have prefix)
+
+            print(f"worker-comfyui - Processing image {i+1}/{len(images)}: {name}")
 
             # --- Strip Data URI prefix if present ---
             if "," in image_data_uri:
                 # Find the comma and take everything after it
                 base64_data = image_data_uri.split(",", 1)[1]
+                print(f"worker-comfyui - Extracted base64 data from data URL for {name}")
             else:
                 # Assume it's already pure base64
                 base64_data = image_data_uri
+                print(f"worker-comfyui - Using pure base64 data for {name}")
             # --- End strip ---
 
             blob = base64.b64decode(base64_data)  # Decode the cleaned data
+            print(f"worker-comfyui - Decoded {len(blob)} bytes for {name}")
 
             # Prepare the form data
             files = {
@@ -252,26 +287,56 @@ def upload_images(images):
             response.raise_for_status()
 
             responses.append(f"Successfully uploaded {name}")
-            print(f"worker-comfyui - Successfully uploaded {name}")
+            uploaded_images.append({
+                "name": name,
+                "original_index": i,
+                "uploaded": True,
+                "size_bytes": len(blob)
+            })
+            print(f"worker-comfyui - Successfully uploaded {name} ({len(blob)} bytes)")
 
         except base64.binascii.Error as e:
             error_msg = f"Error decoding base64 for {image.get('name', 'unknown')}: {e}"
             print(f"worker-comfyui - {error_msg}")
             upload_errors.append(error_msg)
+            uploaded_images.append({
+                "name": image.get('name', f'image_{i}'),
+                "original_index": i,
+                "uploaded": False,
+                "error": error_msg
+            })
         except requests.Timeout:
             error_msg = f"Timeout uploading {image.get('name', 'unknown')}"
             print(f"worker-comfyui - {error_msg}")
             upload_errors.append(error_msg)
+            uploaded_images.append({
+                "name": image.get('name', f'image_{i}'),
+                "original_index": i,
+                "uploaded": False,
+                "error": error_msg
+            })
         except requests.RequestException as e:
             error_msg = f"Error uploading {image.get('name', 'unknown')}: {e}"
             print(f"worker-comfyui - {error_msg}")
             upload_errors.append(error_msg)
+            uploaded_images.append({
+                "name": image.get('name', f'image_{i}'),
+                "original_index": i,
+                "uploaded": False,
+                "error": error_msg
+            })
         except Exception as e:
             error_msg = (
                 f"Unexpected error uploading {image.get('name', 'unknown')}: {e}"
             )
             print(f"worker-comfyui - {error_msg}")
             upload_errors.append(error_msg)
+            uploaded_images.append({
+                "name": image.get('name', f'image_{i}'),
+                "original_index": i,
+                "uploaded": False,
+                "error": error_msg
+            })
 
     if upload_errors:
         print(f"worker-comfyui - image(s) upload finished with errors")
@@ -279,14 +344,103 @@ def upload_images(images):
             "status": "error",
             "message": "Some images failed to upload",
             "details": upload_errors,
+            "uploaded_images": uploaded_images
         }
 
-    print(f"worker-comfyui - image(s) upload complete")
+    print(f"worker-comfyui - image(s) upload complete - {len(uploaded_images)} images uploaded successfully")
     return {
         "status": "success",
         "message": "All images uploaded successfully",
         "details": responses,
+        "uploaded_images": uploaded_images
     }
+
+
+def get_uploaded_images_info(upload_result):
+    """
+    Extract information about successfully uploaded images for workflow integration.
+    
+    Args:
+        upload_result (dict): The result from upload_images function
+        
+    Returns:
+        dict: Information about uploaded images organized by name and index
+    """
+    if not upload_result or upload_result.get("status") != "success":
+        return {}
+    
+    uploaded_images = upload_result.get("uploaded_images", [])
+    images_info = {
+        "by_name": {},
+        "by_index": {},
+        "successful_count": 0,
+        "total_count": len(uploaded_images)
+    }
+    
+    for img_info in uploaded_images:
+        if img_info.get("uploaded", False):
+            name = img_info["name"]
+            index = img_info["original_index"]
+            
+            images_info["by_name"][name] = {
+                "index": index,
+                "size_bytes": img_info.get("size_bytes", 0),
+                "uploaded": True
+            }
+            images_info["by_index"][index] = {
+                "name": name,
+                "size_bytes": img_info.get("size_bytes", 0),
+                "uploaded": True
+            }
+            images_info["successful_count"] += 1
+    
+    return images_info
+
+
+def log_workflow_image_usage(workflow, images_info):
+    """
+    Log information about how uploaded images might be used in the workflow.
+    
+    Args:
+        workflow (dict): The workflow object
+        images_info (dict): Information about uploaded images
+    """
+    if not images_info or images_info["successful_count"] == 0:
+        print("worker-comfyui - No uploaded images to analyze in workflow")
+        return
+    
+    print(f"worker-comfyui - Analyzing workflow for {images_info['successful_count']} uploaded images...")
+    
+    # Look for nodes that might use uploaded images
+    image_nodes = []
+    for node_id, node in workflow.items():
+        node_class = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+        
+        # Check for common image input nodes
+        if node_class in ["LoadImage", "ImageLoader", "LoadImageFromUrl"]:
+            image_nodes.append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        elif "image" in inputs or "filename" in inputs:
+            # Generic check for any node with image-related inputs
+            image_nodes.append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+    
+    if image_nodes:
+        print(f"worker-comfyui - Found {len(image_nodes)} potential image input nodes:")
+        for node in image_nodes:
+            print(f"worker-comfyui -   - Node {node['node_id']} ({node['class_type']})")
+            for key, value in node['inputs'].items():
+                if key in ["image", "filename", "url"]:
+                    print(f"worker-comfyui -     {key}: {value}")
+    else:
+        print("worker-comfyui - No obvious image input nodes found in workflow")
 
 
 def get_available_models():
@@ -475,6 +629,196 @@ def get_image_data(filename, subfolder, image_type):
         return None
 
 
+def update_workflow_with_images(workflow, images_info):
+    """
+    Update workflow to use uploaded images if needed.
+    This function can be used to automatically map uploaded images to workflow nodes.
+    
+    Args:
+        workflow (dict): The workflow object
+        images_info (dict): Information about uploaded images
+        
+    Returns:
+        dict: The updated workflow (or original if no changes needed)
+    """
+    if not images_info or images_info["successful_count"] == 0:
+        return workflow
+    
+    updated_workflow = workflow.copy()
+    updated_nodes = []
+    
+    print(f"worker-comfyui - Attempting to integrate {images_info['successful_count']} uploaded images into workflow...")
+    
+    # Get list of uploaded image names
+    uploaded_names = list(images_info["by_name"].keys())
+    
+    for node_id, node in workflow.items():
+        node_class = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+        updated = False
+        
+        # Handle LoadImage nodes
+        if node_class == "LoadImage":
+            if "image" in inputs and not inputs["image"]:  # Empty image field
+                if uploaded_names:
+                    # Use the first uploaded image
+                    image_name = uploaded_names[0]
+                    updated_workflow[node_id]["inputs"]["image"] = image_name
+                    updated_nodes.append(f"{node_id} (LoadImage) -> {image_name}")
+                    updated = True
+                    # Remove used image from list
+                    uploaded_names.pop(0)
+        
+        # Handle ImageLoader nodes
+        elif node_class == "ImageLoader":
+            if "image" in inputs and not inputs["image"]:  # Empty image field
+                if uploaded_names:
+                    image_name = uploaded_names[0]
+                    updated_workflow[node_id]["inputs"]["image"] = image_name
+                    updated_nodes.append(f"{node_id} (ImageLoader) -> {image_name}")
+                    updated = True
+                    uploaded_names.pop(0)
+        
+        # Handle generic nodes with image inputs
+        elif "image" in inputs and not inputs["image"] and uploaded_names:
+            # Only update if the node class suggests it's an image input node
+            if any(keyword in node_class.lower() for keyword in ["image", "load", "input"]):
+                image_name = uploaded_names[0]
+                updated_workflow[node_id]["inputs"]["image"] = image_name
+                updated_nodes.append(f"{node_id} ({node_class}) -> {image_name}")
+                updated = True
+                uploaded_names.pop(0)
+        
+        if updated:
+            print(f"worker-comfyui - Updated node {node_id} to use uploaded image")
+    
+    if updated_nodes:
+        print(f"worker-comfyui - Updated {len(updated_nodes)} nodes with uploaded images:")
+        for update in updated_nodes:
+            print(f"worker-comfyui -   - {update}")
+    else:
+        print("worker-comfyui - No workflow nodes were updated with uploaded images")
+    
+    return updated_workflow
+
+
+def analyze_workflow_structure(workflow):
+    """
+    Analyze workflow structure to help with debugging and understanding image handling.
+    
+    Args:
+        workflow (dict): The workflow object
+        
+    Returns:
+        dict: Analysis of the workflow structure
+    """
+    analysis = {
+        "total_nodes": len(workflow),
+        "node_types": {},
+        "image_input_nodes": [],
+        "text_input_nodes": [],
+        "model_nodes": [],
+        "output_nodes": []
+    }
+    
+    for node_id, node in workflow.items():
+        node_class = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+        
+        # Count node types
+        analysis["node_types"][node_class] = analysis["node_types"].get(node_class, 0) + 1
+        
+        # Identify image input nodes
+        if node_class in ["LoadImage", "ImageLoader", "LoadImageFromUrl"]:
+            analysis["image_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        elif "image" in inputs or "filename" in inputs:
+            analysis["image_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        
+        # Identify text input nodes
+        if node_class in ["CLIPTextEncode", "TextInput"]:
+            analysis["text_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        elif "text" in inputs:
+            analysis["text_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        
+        # Identify model nodes
+        if node_class in ["CheckpointLoaderSimple", "CheckpointLoader", "LoraLoader"]:
+            analysis["model_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        
+        # Identify output nodes
+        if node_class in ["SaveImage", "PreviewImage"]:
+            analysis["output_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+    
+    return analysis
+
+
+def log_workflow_analysis(workflow):
+    """
+    Log detailed analysis of workflow structure for debugging.
+    
+    Args:
+        workflow (dict): The workflow object
+    """
+    analysis = analyze_workflow_structure(workflow)
+    
+    print(f"worker-comfyui - Workflow Analysis:")
+    print(f"worker-comfyui -   Total nodes: {analysis['total_nodes']}")
+    print(f"worker-comfyui -   Node types: {len(analysis['node_types'])}")
+    
+    # Log most common node types
+    sorted_types = sorted(analysis["node_types"].items(), key=lambda x: x[1], reverse=True)
+    print(f"worker-comfyui -   Top node types:")
+    for node_type, count in sorted_types[:5]:
+        print(f"worker-comfyui -     {node_type}: {count}")
+    
+    # Log image input nodes
+    if analysis["image_input_nodes"]:
+        print(f"worker-comfyui -   Image input nodes ({len(analysis['image_input_nodes'])}):")
+        for node in analysis["image_input_nodes"]:
+            print(f"worker-comfyui -     {node['node_id']} ({node['class_type']})")
+            for key, value in node['inputs'].items():
+                if key in ["image", "filename", "url"]:
+                    print(f"worker-comfyui -       {key}: {value}")
+    
+    # Log text input nodes
+    if analysis["text_input_nodes"]:
+        print(f"worker-comfyui -   Text input nodes ({len(analysis['text_input_nodes'])}):")
+        for node in analysis["text_input_nodes"]:
+            print(f"worker-comfyui -     {node['node_id']} ({node['class_type']})")
+    
+    # Log model nodes
+    if analysis["model_nodes"]:
+        print(f"worker-comfyui -   Model nodes ({len(analysis['model_nodes'])}):")
+        for node in analysis["model_nodes"]:
+            print(f"worker-comfyui -     {node['node_id']} ({node['class_type']})")
+            for key, value in node['inputs'].items():
+                if key in ["ckpt_name", "model_name", "lora_name"]:
+                    print(f"worker-comfyui -       {key}: {value}")
+
+
 def handler(job):
     """
     Handles a job using ComfyUI via websockets for status and image retrieval.
@@ -496,6 +840,10 @@ def handler(job):
     # Extract validated data
     workflow = validated_data["workflow"]
     input_images = validated_data.get("images")
+    
+    # Log workflow analysis for debugging (can be disabled with environment variable)
+    if os.environ.get("LOG_WORKFLOW_ANALYSIS", "true").lower() == "true":
+        log_workflow_analysis(workflow)
 
     # Make sure that the ComfyUI HTTP API is available before proceeding
     if not check_server(
@@ -508,14 +856,32 @@ def handler(job):
         }
 
     # Upload input images if they exist
+    images_info = {}
     if input_images:
+        print(f"worker-comfyui - Processing {len(input_images)} input image(s)...")
         upload_result = upload_images(input_images)
+        
+        # Extract information about uploaded images
+        images_info = get_uploaded_images_info(upload_result)
+        
+        # Log workflow image usage analysis
+        log_workflow_image_usage(workflow, images_info)
+        
         if upload_result["status"] == "error":
             # Return upload errors
             return {
                 "error": "Failed to upload one or more input images",
                 "details": upload_result["details"],
+                "uploaded_images_info": images_info
             }
+        
+        print(f"worker-comfyui - Successfully uploaded {images_info['successful_count']}/{images_info['total_count']} images")
+        
+        # Automatically update workflow to use uploaded images
+        # This is necessary for workflows to work properly with input images
+        workflow = update_workflow_with_images(workflow, images_info)
+    else:
+        print("worker-comfyui - No input images provided")
 
     ws = None
     client_id = str(uuid.uuid4())
@@ -735,11 +1101,20 @@ def handler(job):
         final_result["errors"] = errors
         print(f"worker-comfyui - Job completed with errors/warnings: {errors}")
 
+    # Include information about uploaded images in the response
+    if images_info and images_info["total_count"] > 0:
+        final_result["uploaded_images_info"] = {
+            "successful_count": images_info["successful_count"],
+            "total_count": images_info["total_count"],
+            "uploaded_images": images_info["by_name"]
+        }
+
     if not output_data and errors:
         print(f"worker-comfyui - Job failed with no output images.")
         return {
             "error": "Job processing failed",
             "details": errors,
+            "uploaded_images_info": images_info if images_info else None
         }
     elif not output_data and not errors:
         print(
