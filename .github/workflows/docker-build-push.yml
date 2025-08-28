@@ -84,4 +84,4 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless
           push: true
-          tags: samtyurenkov/runpod-serverless:v1.0
+          tags: samtyurenkov/runpod-serverless:v1.1

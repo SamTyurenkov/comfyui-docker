@@ -651,6 +651,7 @@ def update_workflow_with_images(workflow, images_info):
     
     # Get list of uploaded image names
     uploaded_names = list(images_info["by_name"].keys())
+    print(f"worker-comfyui - Uploaded image names: {uploaded_names}")
     
     for node_id, node in workflow.items():
         node_class = node.get("class_type", "")
@@ -659,33 +660,40 @@ def update_workflow_with_images(workflow, images_info):
         
         # Handle LoadImage nodes
         if node_class == "LoadImage":
-            if "image" in inputs and not inputs["image"]:  # Empty image field
-                if uploaded_names:
-                    # Use the first uploaded image
-                    image_name = uploaded_names[0]
-                    updated_workflow[node_id]["inputs"]["image"] = image_name
-                    updated_nodes.append(f"{node_id} (LoadImage) -> {image_name}")
-                    updated = True
-                    # Remove used image from list
-                    uploaded_names.pop(0)
+            print(f"worker-comfyui - Found LoadImage node {node_id} with inputs: {inputs}")
+            if "image" in inputs and uploaded_names:
+                # Always update LoadImage nodes if we have uploaded images
+                # This handles both empty fields and placeholder filenames
+                image_name = uploaded_names[0]
+                old_image = inputs["image"]
+                updated_workflow[node_id]["inputs"]["image"] = image_name
+                updated_nodes.append(f"{node_id} (LoadImage) -> {image_name} (was: {old_image})")
+                updated = True
+                print(f"worker-comfyui - Updated LoadImage node {node_id}: '{old_image}' -> '{image_name}'")
+                # Remove used image from list
+                uploaded_names.pop(0)
+            else:
+                print(f"worker-comfyui - Skipping LoadImage node {node_id}: has_image_input={('image' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
         
         # Handle ImageLoader nodes
         elif node_class == "ImageLoader":
-            if "image" in inputs and not inputs["image"]:  # Empty image field
-                if uploaded_names:
-                    image_name = uploaded_names[0]
-                    updated_workflow[node_id]["inputs"]["image"] = image_name
-                    updated_nodes.append(f"{node_id} (ImageLoader) -> {image_name}")
-                    updated = True
-                    uploaded_names.pop(0)
+            if "image" in inputs and uploaded_names:
+                # Always update ImageLoader nodes if we have uploaded images
+                image_name = uploaded_names[0]
+                old_image = inputs["image"]
+                updated_workflow[node_id]["inputs"]["image"] = image_name
+                updated_nodes.append(f"{node_id} (ImageLoader) -> {image_name} (was: {old_image})")
+                updated = True
+                uploaded_names.pop(0)
         
-        # Handle generic nodes with image inputs
-        elif "image" in inputs and not inputs["image"] and uploaded_names:
+        # Handle other image input nodes
+        elif "image" in inputs and uploaded_names:
             # Only update if the node class suggests it's an image input node
             if any(keyword in node_class.lower() for keyword in ["image", "load", "input"]):
                 image_name = uploaded_names[0]
+                old_image = inputs["image"]
                 updated_workflow[node_id]["inputs"]["image"] = image_name
-                updated_nodes.append(f"{node_id} ({node_class}) -> {image_name}")
+                updated_nodes.append(f"{node_id} ({node_class}) -> {image_name} (was: {old_image})")
                 updated = True
                 uploaded_names.pop(0)
         
