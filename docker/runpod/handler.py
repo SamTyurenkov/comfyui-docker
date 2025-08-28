@@ -629,6 +629,67 @@ def get_image_data(filename, subfolder, image_type):
         return None
 
 
+def extract_base64_images_from_workflow(workflow):
+    """
+    Extract base64 image data from workflow nodes and prepare them for upload.
+    
+    Args:
+        workflow (dict): The workflow object
+        
+    Returns:
+        tuple: (extracted_images, cleaned_workflow)
+               extracted_images: list of image objects with name and base64 data
+               cleaned_workflow: workflow with base64 data replaced with placeholder filenames
+    """
+    extracted_images = []
+    cleaned_workflow = workflow.copy()
+    
+    print("worker-comfyui - Scanning workflow for base64 image data...")
+    
+    for node_id, node in workflow.items():
+        node_class = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+        
+        # Look for LoadImage nodes or other image input nodes
+        if node_class in ["LoadImage", "ImageLoader"] or "image" in inputs:
+            for input_key, input_value in inputs.items():
+                if input_key == "image" and isinstance(input_value, str):
+                    # Check if this looks like base64 data or data URL
+                    is_base64 = False
+                    image_data = input_value
+                    
+                    # Handle data URL format: data:image/png;base64,<base64_data>
+                    if input_value.startswith('data:image/'):
+                        if ',' in input_value:
+                            image_data = input_value.split(',', 1)[1]
+                            is_base64 = True
+                            print(f"worker-comfyui - Found data URL in node {node_id}, input '{input_key}'")
+                    # Handle pure base64 (long string, starts with common base64 chars)
+                    elif len(input_value) > 100 and input_value.startswith(('iVBORw0KGgo', '/9j/', 'UklGR')):
+                        is_base64 = True
+                        print(f"worker-comfyui - Found base64 image data in node {node_id}, input '{input_key}'")
+                    
+                    if is_base64:
+                        # Generate a filename for this image
+                        filename = f"uploaded_image_{node_id}_{input_key}.png"
+                        
+                        # Add to extracted images list
+                        extracted_images.append({
+                            "name": filename,
+                            "image": image_data,  # Pure base64 data (without data URL prefix)
+                            "node_id": node_id,
+                            "input_key": input_key
+                        })
+                        
+                        # Replace base64 with filename in the cleaned workflow
+                        cleaned_workflow[node_id]["inputs"][input_key] = filename
+                        
+                        print(f"worker-comfyui - Extracted base64 image from {node_id}.{input_key} -> {filename}")
+    
+    print(f"worker-comfyui - Extracted {len(extracted_images)} base64 images from workflow")
+    return extracted_images, cleaned_workflow
+
+
 def update_workflow_with_images(workflow, images_info):
     """
     Update workflow to use uploaded images if needed.
@@ -853,6 +914,17 @@ def handler(job):
     if os.environ.get("LOG_WORKFLOW_ANALYSIS", "true").lower() == "true":
         log_workflow_analysis(workflow)
 
+    # Extract base64 images from workflow nodes
+    extracted_images, cleaned_workflow = extract_base64_images_from_workflow(workflow)
+    
+    # Combine extracted images with any additional input images
+    all_images = extracted_images.copy()
+    if input_images:
+        all_images.extend(input_images)
+    
+    # Use the cleaned workflow (base64 replaced with filenames)
+    workflow = cleaned_workflow
+
     # Make sure that the ComfyUI HTTP API is available before proceeding
     if not check_server(
         f"http://{COMFY_HOST}/",
@@ -863,11 +935,11 @@ def handler(job):
             "error": f"ComfyUI server ({COMFY_HOST}) not reachable after multiple retries."
         }
 
-    # Upload input images if they exist
+    # Upload all images (extracted from workflow + additional input images)
     images_info = {}
-    if input_images:
-        print(f"worker-comfyui - Processing {len(input_images)} input image(s)...")
-        upload_result = upload_images(input_images)
+    if all_images:
+        print(f"worker-comfyui - Processing {len(all_images)} image(s) ({len(extracted_images)} from workflow, {len(input_images) if input_images else 0} additional)...")
+        upload_result = upload_images(all_images)
         
         # Extract information about uploaded images
         images_info = get_uploaded_images_info(upload_result)
@@ -884,12 +956,8 @@ def handler(job):
             }
         
         print(f"worker-comfyui - Successfully uploaded {images_info['successful_count']}/{images_info['total_count']} images")
-        
-        # Automatically update workflow to use uploaded images
-        # This is necessary for workflows to work properly with input images
-        workflow = update_workflow_with_images(workflow, images_info)
     else:
-        print("worker-comfyui - No input images provided")
+        print("worker-comfyui - No images found in workflow or provided as input")
 
     ws = None
     client_id = str(uuid.uuid4())
