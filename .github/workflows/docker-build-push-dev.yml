@@ -52,15 +52,3 @@ jobs:
           file: ./docker/runpod/Dockerfile
           push: true
           tags: samtyurenkov/runpod:dev
-
-      - name: Build and push Serverless Runpod Image
-        if: steps.flags.outputs.runpod_changed == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile.serverless
-          push: true
-          tags: samtyurenkov/runpod:serverless
-          # secrets: |
-          #   "runpod_userid=${{ secrets.RUNPOD_USERID }}"
-          #   "runpod_token=${{ secrets.RUNPOD_TOKEN }}"
