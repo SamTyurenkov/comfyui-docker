@@ -31,6 +31,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # libfuse2 \
     nginx
 
+
 # Nginx folders
 RUN mkdir -p /var/cache/nginx/client_temp \
 	&& mkdir -p /var/cache/nginx/proxy_temp \
