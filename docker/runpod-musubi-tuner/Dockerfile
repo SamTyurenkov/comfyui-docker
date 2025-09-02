@@ -42,6 +42,7 @@ RUN cd /home/comfyuser && git clone https://github.com/kohya-ss/musubi-tuner
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/musubi-tuner && git checkout video_captions_to_metadata
 RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors
 
+
 # Copy training UI files
 COPY training_ui.py /home/comfyuser/training_ui.py
 COPY templates/ /home/comfyuser/templates/
