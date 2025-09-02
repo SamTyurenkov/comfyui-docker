@@ -144,6 +144,7 @@ RUN git clone https://github.com/kijai/ComfyUI-segment-anything-2 /home/comfyuse
 RUN git clone https://github.com/scraed/LanPaint.git /home/comfyuser/ComfyUI/custom_nodes/LanPaint
 RUN git clone https://github.com/1038lab/ComfyUI-JoyCaption /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-JoyCaption
 RUN git clone https://github.com/Saquib764/omini-kontext /home/comfyuser/ComfyUI/custom_nodes/omini-kontext
+RUN git clone https://github.com/kijai/ComfyUI-MMAudio /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MMAudio
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 

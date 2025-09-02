@@ -181,6 +181,7 @@ else
   rm -rf /home/comfyuser/OneTrainerConfigs && ln -s /workspace/OneTrainer /home/comfyuser/OneTrainerConfigs
   rm -rf /home/comfyuser/MusubiConfigs && ln -s /workspace/Musubi /home/comfyuser/MusubiConfigs
   rm -rf /home/comfyuser/loras && ln -s /workspace/models/loras /home/comfyuser/loras
+  rm -rf /home/comfyuser/ComfyUI/models/mmaudio && ln -s /workspace/models/mmaudio /home/comfyuser/ComfyUI/models/mmaudio
 fi
 
 # Start cloudflared in the background
