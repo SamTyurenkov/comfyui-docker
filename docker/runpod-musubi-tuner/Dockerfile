@@ -57,7 +57,7 @@ RUN apt-get update && apt-get -y install cuda-toolkit
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV CUDA_HOME="/usr/local/cuda-12.9"
+ENV CUDA_HOME="/usr/local/cuda"
 ENV PATH="$CUDA_HOME/bin:$PATH"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
 # ENV BNB_CUDA_VERSION=129
