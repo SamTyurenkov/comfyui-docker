@@ -79,7 +79,7 @@ RUN git clone https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /home/comfyus
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-inspyrenet-rembg && git checkout 87ac452ef1182e8f35f59b04010158d74dcefd06
 RUN git clone https://github.com/Gourieff/ComfyUI-ReActor /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node && git checkout v0.6.0
-RUN git clone https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
+RUN git clone https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
 RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack && git checkout 8.15.1
 RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack
