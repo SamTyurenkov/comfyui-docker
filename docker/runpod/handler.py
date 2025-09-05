@@ -1086,6 +1086,8 @@ def handler(job):
                 errors.append(warning_msg)
 
         print(f"worker-comfyui - Processing {len(outputs)} output nodes...")
+        text_outputs = {}
+        
         for node_id, node_output in outputs.items():
             if "images" in node_output:
                 print(
@@ -1136,16 +1138,26 @@ def handler(job):
                         error_msg = f"Failed to fetch image data for {filename} from /view endpoint."
                         errors.append(error_msg)
 
+            # Handle text outputs (tags, strings, etc.)
+            text_output_types = ["tags", "text", "string", "strings"]
+            for output_type in text_output_types:
+                if output_type in node_output:
+                    print(f"worker-comfyui - Node {node_id} contains {output_type}: {node_output[output_type]}")
+                    text_outputs[node_id] = text_outputs.get(node_id, {})
+                    text_outputs[node_id][output_type] = node_output[output_type]
+
             # Check for other output types
-            other_keys = [k for k in node_output.keys() if k != "images"]
+            handled_keys = ["images"] + text_output_types
+            other_keys = [k for k in node_output.keys() if k not in handled_keys]
             if other_keys:
-                warn_msg = (
-                    f"Node {node_id} produced unhandled output keys: {other_keys}."
-                )
-                print(f"worker-comfyui - WARNING: {warn_msg}")
-                print(
-                    f"worker-comfyui - --> If this output is useful, please consider opening an issue on GitHub to discuss adding support."
-                )
+                print(f"worker-comfyui - Node {node_id} produced unhandled output keys: {other_keys}")
+                # Store unhandled outputs as generic text
+                for key in other_keys:
+                    value = node_output[key]
+                    if isinstance(value, (str, list)):
+                        print(f"worker-comfyui - Storing {key} as text output: {value}")
+                        text_outputs[node_id] = text_outputs.get(node_id, {})
+                        text_outputs[node_id][key] = value
 
     except websocket.WebSocketException as e:
         print(f"worker-comfyui - WebSocket Error: {e}")
@@ -1173,6 +1185,11 @@ def handler(job):
     if output_data:
         final_result["images"] = output_data
 
+    # Include text outputs if any were found
+    if text_outputs:
+        final_result["outputs"] = text_outputs
+        print(f"worker-comfyui - Including text outputs from {len(text_outputs)} nodes")
+
     if errors:
         final_result["errors"] = errors
         print(f"worker-comfyui - Job completed with errors/warnings: {errors}")
@@ -1185,21 +1202,30 @@ def handler(job):
             "uploaded_images": images_info["by_name"]
         }
 
-    if not output_data and errors:
-        print(f"worker-comfyui - Job failed with no output images.")
+    # Check if we have any outputs (images or text)
+    has_outputs = output_data or text_outputs
+    
+    if not has_outputs and errors:
+        print(f"worker-comfyui - Job failed with no outputs.")
         return {
             "error": "Job processing failed",
             "details": errors,
             "uploaded_images_info": images_info if images_info else None
         }
-    elif not output_data and not errors:
+    elif not has_outputs and not errors:
         print(
-            f"worker-comfyui - Job completed successfully, but the workflow produced no images."
+            f"worker-comfyui - Job completed successfully, but the workflow produced no outputs."
         )
-        final_result["status"] = "success_no_images"
+        final_result["status"] = "success_no_outputs"
         final_result["images"] = []
 
-    print(f"worker-comfyui - Job completed. Returning {len(output_data)} image(s).")
+    output_summary = []
+    if output_data:
+        output_summary.append(f"{len(output_data)} image(s)")
+    if text_outputs:
+        output_summary.append(f"text outputs from {len(text_outputs)} node(s)")
+    
+    print(f"worker-comfyui - Job completed. Returning {', '.join(output_summary)}.")
     return final_result
 
 
