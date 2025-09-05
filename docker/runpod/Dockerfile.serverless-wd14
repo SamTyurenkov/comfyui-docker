@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+#see https://stackoverflow.com/questions/58018300/using-a-pip-cache-directory-in-docker-builds
+FROM python:3.12-bookworm as builder
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libssl3 \
+    git
+
+RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
+COPY extra_model_paths.serverless.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
+
+RUN git clone https://github.com/pythongosssss/ComfyUI-WD14-Tagger /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger
+RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
+RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use && git checkout 71c7865d2d3c934ccb99f24171e08ae5a81148ac
+
+ADD entry.serverless-cpu.sh /usr/local/bin/entrypoint.sh
+ADD handler.py /home/comfyuser/handler.py
+ADD test_input.json /home/comfyuser/test_input.json
+ADD test_input_with_images.json /home/comfyuser/test_input_with_images.json
+
+
+WORKDIR /home/comfyuser/
+RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

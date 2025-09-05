@@ -38,18 +38,21 @@ jobs:
           runpod_trainer=false
           runpod_musubi_tuner=false
           serverless_faceswap=false
+          serverless_wd14=false
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
           for file in "${files[@]}"; do
-            [[ "$file" == docker/runpod/* ]] && runpod=true
+            [[ "$file" == docker/runpod/Dockerfile ]] && runpod=true
             [[ "$file" == docker/runpod/Dockerfile.serverless-faceswap ]] && serverless_faceswap=true
+            [[ "$file" == docker/runpod/Dockerfile.serverless-wd14 ]] && serverless_wd14=true
             [[ "$file" == docker/runpod-trainer/* ]] && runpod_trainer=true
             [[ "$file" == docker/runpod-musubi-tuner/* ]] && runpod_musubi_tuner=true
           done
 
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
           echo "serverless_faceswap_changed=$serverless_faceswap" >> $GITHUB_OUTPUT
+          echo "serverless_wd14_changed=$serverless_wd14" >> $GITHUB_OUTPUT
           echo "runpod_trainer_changed=$runpod_trainer" >> $GITHUB_OUTPUT
           echo "runpod_musubi_changed=$runpod_musubi_tuner" >> $GITHUB_OUTPUT
 
@@ -97,3 +100,12 @@ jobs:
           file: ./docker/runpod/Dockerfile.serverless-faceswap
           push: true
           tags: samtyurenkov/runpod-serverless-faceswap:v1.0
+
+      - name: Build and push Serverless WD14 Runpod Image
+        if: steps.flags.outputs.serverless_wd14_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile.serverless-wd14
+          push: true
+          tags: samtyurenkov/runpod-serverless-wd14:v1.0
