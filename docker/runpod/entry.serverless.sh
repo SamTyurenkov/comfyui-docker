@@ -3,7 +3,7 @@ set -x
 
 export PATH="/runpod-volume/venv_cc12_cuda129/bin:$PATH"
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
-
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts
 cp /runpod-volume/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /runpod-volume/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
 rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /runpod-volume/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
