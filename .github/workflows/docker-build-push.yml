@@ -108,4 +108,4 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wd14
           push: true
-          tags: samtyurenkov/runpod-serverless-wd14:v1.3
+          tags: samtyurenkov/runpod-serverless-wd14:v1.4

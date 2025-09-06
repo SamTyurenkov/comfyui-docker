@@ -2,6 +2,9 @@
 set -x
 
 export PATH="/runpod-volume/venv_cc12_cuda129/bin:$PATH"
+export OMP_NUM_THREADS=4
+export ONNXRT_NUM_THREADS=4
+
 rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /runpod-volume/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
 rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /runpod-volume/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
 rm -rf /home/comfyuser/ComfyUI/models/facedetection && ln -s /runpod-volume/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
