@@ -56,7 +56,7 @@ elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "8.9" ]; then
   export PATH="/workspace/venv_cc8_9_cuda129/bin:$PATH"
 elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
-    export PATH="/workspace/venv/bin:$PATH"
+    export PATH="/workspace/venv_cc12_cuda129/bin:$PATH"
 else
   #default CC 8.0
   export PATH="/workspace/venv/bin:$PATH"
