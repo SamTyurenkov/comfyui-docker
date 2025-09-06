@@ -182,6 +182,7 @@ else
   rm -rf /home/comfyuser/MusubiConfigs && ln -s /workspace/Musubi /home/comfyuser/MusubiConfigs
   rm -rf /home/comfyuser/loras && ln -s /workspace/models/loras /home/comfyuser/loras
   rm -rf /home/comfyuser/ComfyUI/models/mmaudio && ln -s /workspace/models/mmaudio /home/comfyuser/ComfyUI/models/mmaudio
+  rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /runpod-volume/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
 fi
 
 # Start cloudflared in the background
