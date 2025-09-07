@@ -83,15 +83,6 @@ jobs:
           push: true
           tags: samtyurenkov/runpod:musubi-tuner
 
-      - name: Build and push Serverless Runpod Image
-        if: steps.flags.outputs.runpod_changed == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile.serverless
-          push: true
-          tags: samtyurenkov/runpod-serverless:v1.2
-
       - name: Build and push Serverless Faceswap Runpod Image
         if: steps.flags.outputs.serverless_faceswap_changed == 'true'
         uses: docker/build-push-action@v6
@@ -99,7 +90,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-faceswap
           push: true
-          tags: samtyurenkov/runpod-serverless-faceswap:v1.7
+          tags: samtyurenkov/runpod-serverless-faceswap:v1.8
 
       - name: Build and push Serverless WD14 Runpod Image
         if: steps.flags.outputs.serverless_wd14_changed == 'true'
@@ -108,4 +99,4 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wd14
           push: true
-          tags: samtyurenkov/runpod-serverless-wd14:v1.7
+          tags: samtyurenkov/runpod-serverless-wd14:v1.8
