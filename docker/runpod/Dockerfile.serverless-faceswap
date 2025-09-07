@@ -34,6 +34,7 @@ ADD handler.py /home/comfyuser/handler.py
 ADD test_input.json /home/comfyuser/test_input.json
 ADD test_input_with_images.json /home/comfyuser/test_input_with_images.json
 
+
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

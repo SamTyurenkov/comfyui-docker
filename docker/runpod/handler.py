@@ -1231,7 +1231,4 @@ def handler(job):
 
 if __name__ == "__main__":
     print("worker-comfyui - Starting handler...")
-    runpod.serverless.start({
-        "handler": handler,
-        "concurrency_modifier": 2
-    })
+    runpod.serverless.start({"handler": handler})
