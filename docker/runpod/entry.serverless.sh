@@ -23,7 +23,7 @@ rm -rf /home/comfyuser/ComfyUI/models/text_encoders && ln -s /runpod-volume/mode
 rm -rf /home/comfyuser/ComfyUI/models/clip_vision && ln -s /runpod-volume/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
 rm -rf /home/comfyuser/ComfyUI/models/stablesr && ln -s /runpod-volume/models/stablesr /home/comfyuser/ComfyUI/models/stablesr
 rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /runpod-volume/models/style_models /home/comfyuser/ComfyUI/models/style_models
-
+rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /runpod-volume/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
 rm -rf /home/comfyuser/ComfyUI/user && ln -s /runpod-volume/user /home/comfyuser/ComfyUI/user
 
 # Start ComfyUI
