@@ -30,7 +30,7 @@ rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -
 start_comfyui() {
     # Capture additional arguments from environment variables
     echo "Starting ComfyUI..."
-    /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --preview-method taesd --enable-cors-header "*" --use-sage-attention --disable-xformers --fast fp16_accumulation --disable-auto-launch --disable-metadata --log-stdout
+    /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --preview-method taesd --enable-cors-header "*" --disable-xformers --fast fp16_accumulation --disable-auto-launch --disable-metadata --log-stdout
 }
 
 start_handler() {
