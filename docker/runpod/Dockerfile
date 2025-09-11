@@ -72,7 +72,6 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager /home/comfyuser/ComfyU
 RUN git clone https://github.com/chrisgoringe/cg-use-everywhere /home/comfyuser/ComfyUI/custom_nodes/cg-use-everywhere
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/cg-use-everywhere && git checkout 5ae64f462ec24fc0100a309c42c3def6aae18d7b
 RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux && git checkout 7c4f6fb6ff18aa6dbfd4f77c2e8ad46119b5d84d
 RUN git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus /home/comfyuser/ComfyUI/custom_nodes/comfyui_ipadapter_plus
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui_ipadapter_plus && git checkout a0f451a5113cf9becb0847b92884cb10cbdec0ef
 RUN git clone https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /home/comfyuser/ComfyUI/custom_nodes/comfyui-inspyrenet-rembg
