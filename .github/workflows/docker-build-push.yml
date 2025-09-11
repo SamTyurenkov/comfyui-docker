@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile
+          file: ./docker/runpod/Dockerfile.videogen
           push: true
           tags: samtyurenkov/runpod:videogen
 
