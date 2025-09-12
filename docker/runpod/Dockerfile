@@ -153,7 +153,6 @@ RUN pip install --upgrade pip && pip install jupyter
 RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
 
-
 ADD entry.sh /usr/local/bin/entrypoint.sh
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
