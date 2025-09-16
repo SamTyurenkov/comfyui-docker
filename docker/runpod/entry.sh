@@ -185,6 +185,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/mmaudio && ln -s /workspace/models/mmaudio /home/comfyuser/ComfyUI/models/mmaudio
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /workspace/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /workspace/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
+  rm -rf /home/comfyuser/ComfyUI/models/bagel && ln -s /workspace/models/bagel /home/comfyuser/ComfyUI/models/bagel
 fi
 
 # Start cloudflared in the background
