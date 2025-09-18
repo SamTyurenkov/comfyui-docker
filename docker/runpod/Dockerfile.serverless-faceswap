@@ -33,7 +33,6 @@ ADD entry.serverless.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 
-
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

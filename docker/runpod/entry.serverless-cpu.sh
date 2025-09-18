@@ -23,10 +23,12 @@ rm -rf /home/comfyuser/ComfyUI/models/text_encoders && ln -s /runpod-volume/mode
 rm -rf /home/comfyuser/ComfyUI/models/clip_vision && ln -s /runpod-volume/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
 rm -rf /home/comfyuser/ComfyUI/models/stablesr && ln -s /runpod-volume/models/stablesr /home/comfyuser/ComfyUI/models/stablesr
 rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /runpod-volume/models/style_models /home/comfyuser/ComfyUI/models/style_models
-rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /runpod-volume/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
 rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /runpod-volume/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
 rm -rf /home/comfyuser/ComfyUI/user && ln -s /runpod-volume/user /home/comfyuser/ComfyUI/user
-rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
+
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /runpod-volume/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
+
 
 # Start ComfyUI
 start_comfyui() {

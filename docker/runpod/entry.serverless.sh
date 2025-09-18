@@ -25,7 +25,10 @@ rm -rf /home/comfyuser/ComfyUI/models/stablesr && ln -s /runpod-volume/models/st
 rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /runpod-volume/models/style_models /home/comfyuser/ComfyUI/models/style_models
 rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /runpod-volume/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
 rm -rf /home/comfyuser/ComfyUI/user && ln -s /runpod-volume/user /home/comfyuser/ComfyUI/user
-rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
+
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /runpod-volume/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
+
 # Start ComfyUI
 start_comfyui() {
     # Capture additional arguments from environment variables
