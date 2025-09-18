@@ -1,0 +1,20 @@
+{
+    "settings_version": "0.0.6",
+    "datasets_dir": "/home/comfyuser/datasets",
+    "weights_dir": "weights",
+    "runs_dir": "runs",
+    "uuid": "0368bb8d5b938d71d84271913adf6f1fe57db22933d7fa8a141bcbe4a6e37d7d",
+    "sync": true,
+    "api_key": "",
+    "openai_api_key": "",
+    "clearml": true,
+    "comet": true,
+    "dvc": true,
+    "hub": true,
+    "mlflow": true,
+    "neptune": true,
+    "raytune": true,
+    "tensorboard": true,
+    "wandb": false,
+    "vscode_msg": true
+  }

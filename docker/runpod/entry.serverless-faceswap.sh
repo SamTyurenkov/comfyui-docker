@@ -2,9 +2,9 @@
 set -x
 
 export PATH="/runpod-volume/venv_cc12_cuda129/bin:$PATH"
-export OMP_NUM_THREADS=4
-export ONNXRT_NUM_THREADS=4
-
+rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
+mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts
+cp /runpod-volume/reactor_sfw.py /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 rm -rf /home/comfyuser/ComfyUI/models/vae_approx && ln -s /runpod-volume/models/vae_approx /home/comfyuser/ComfyUI/models/vae_approx
 rm -rf /home/comfyuser/ComfyUI/models/facerestore_models && ln -s /runpod-volume/models/facerestore_models /home/comfyuser/ComfyUI/models/facerestore_models
 rm -rf /home/comfyuser/ComfyUI/models/facedetection && ln -s /runpod-volume/models/facedetection /home/comfyuser/ComfyUI/models/facedetection
@@ -26,15 +26,13 @@ rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /runpod-volume/model
 rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /runpod-volume/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
 rm -rf /home/comfyuser/ComfyUI/user && ln -s /runpod-volume/user /home/comfyuser/ComfyUI/user
 
-mkdir -p /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /runpod-volume/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
 mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
-
 
 # Start ComfyUI
 start_comfyui() {
     # Capture additional arguments from environment variables
     echo "Starting ComfyUI..."
-    /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --enable-cors-header "*" --cpu --disable-auto-launch --disable-metadata --log-stdout
+    /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --preview-method taesd --enable-cors-header "*" --disable-xformers --fast fp16_accumulation --disable-auto-launch --disable-metadata --log-stdout
 }
 
 start_handler() {

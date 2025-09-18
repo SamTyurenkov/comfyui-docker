@@ -970,7 +970,7 @@ def handler(job):
         ws_url = f"ws://{COMFY_HOST}/ws?clientId={client_id}"
         print(f"worker-comfyui - Connecting to websocket: {ws_url}")
         ws = websocket.WebSocket()
-        ws.connect(ws_url, timeout=10)
+        ws.connect(ws_url, timeout=50)
         print(f"worker-comfyui - Websocket connected")
 
         # Queue the workflow
