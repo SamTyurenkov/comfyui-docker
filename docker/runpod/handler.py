@@ -177,12 +177,12 @@ def validate_input(job_input):
             if not isinstance(image_data, str):
                 return None, f"Image data at index {i} must be a string"
             
-            # Check if it's a valid base64 or data URL
+            # Check if it's a valid base64 or data URL (support both image and video)
             if "," in image_data:
-                # Data URL format: data:image/png;base64,<base64_data>
+                # Data URL format: data:image/png;base64,<base64_data> or data:video/mp4;base64,<base64_data>
                 parts = image_data.split(",", 1)
-                if len(parts) != 2 or not parts[0].startswith("data:image/"):
-                    return None, f"Invalid data URL format at index {i}"
+                if len(parts) != 2 or not (parts[0].startswith("data:image/") or parts[0].startswith("data:video/")):
+                    return None, f"Invalid data URL format at index {i}. Must be data:image/* or data:video/*"
                 base64_data = parts[1]
             else:
                 # Pure base64 format
@@ -236,13 +236,13 @@ def check_server(url, retries=500, delay=50):
 
 def upload_images(images):
     """
-    Upload a list of base64 encoded images to the ComfyUI server using the /upload/image endpoint.
+    Upload a list of base64 encoded images/videos to the ComfyUI server using the appropriate upload endpoint.
 
     Args:
-        images (list): A list of dictionaries, each containing the 'name' of the image and the 'image' as a base64 encoded string.
+        images (list): A list of dictionaries, each containing the 'name' of the media file and the 'image' as a base64 encoded string (can be image or video).
 
     Returns:
-        dict: A dictionary indicating success or error with detailed information about uploaded images.
+        dict: A dictionary indicating success or error with detailed information about uploaded media files.
     """
     if not images:
         return {"status": "success", "message": "No images to upload", "details": [], "uploaded_images": []}
@@ -260,11 +260,27 @@ def upload_images(images):
 
             print(f"worker-comfyui - Processing image {i+1}/{len(images)}: {name}")
 
-            # --- Strip Data URI prefix if present ---
+            # --- Strip Data URI prefix if present and detect media type ---
+            media_type = "image/png"  # default
             if "," in image_data_uri:
                 # Find the comma and take everything after it
-                base64_data = image_data_uri.split(",", 1)[1]
-                print(f"worker-comfyui - Extracted base64 data from data URL for {name}")
+                prefix, base64_data = image_data_uri.split(",", 1)
+                # Extract media type from data URL prefix
+                if prefix.startswith("data:video/"):
+                    if "mp4" in prefix:
+                        media_type = "video/mp4"
+                    elif "webm" in prefix:
+                        media_type = "video/webm"
+                    else:
+                        media_type = "video/mp4"  # default video type
+                elif prefix.startswith("data:image/"):
+                    if "jpeg" in prefix or "jpg" in prefix:
+                        media_type = "image/jpeg"
+                    elif "png" in prefix:
+                        media_type = "image/png"
+                    else:
+                        media_type = "image/png"  # default image type
+                print(f"worker-comfyui - Extracted base64 data from data URL for {name}, detected type: {media_type}")
             else:
                 # Assume it's already pure base64
                 base64_data = image_data_uri
@@ -274,16 +290,17 @@ def upload_images(images):
             blob = base64.b64decode(base64_data)  # Decode the cleaned data
             print(f"worker-comfyui - Decoded {len(blob)} bytes for {name}")
 
-            # Prepare the form data
+            # Use the same upload endpoint for both images and videos
+            endpoint = f"http://{COMFY_HOST}/upload/image"
+            
+            # ComfyUI uses 'image' form field for all media types
             files = {
-                "image": (name, BytesIO(blob), "image/png"),
+                "image": (name, BytesIO(blob), media_type),
                 "overwrite": (None, "true"),
             }
 
-            # POST request to upload the image
-            response = requests.post(
-                f"http://{COMFY_HOST}/upload/image", files=files, timeout=30
-            )
+            # POST request to upload the media file
+            response = requests.post(endpoint, files=files, timeout=30)
             response.raise_for_status()
 
             responses.append(f"Successfully uploaded {name}")
@@ -650,28 +667,40 @@ def extract_base64_images_from_workflow(workflow):
         node_class = node.get("class_type", "")
         inputs = node.get("inputs", {})
         
-        # Look for LoadImage nodes or other image input nodes
-        if node_class in ["LoadImage", "ImageLoader"] or "image" in inputs:
+        # Look for LoadImage nodes, video nodes, or other media input nodes
+        is_video_node = node_class in ["VHS_LoadVideoFFmpeg", "VHS_LoadVideo", "LoadVideo"] or "video" in inputs
+        is_image_node = node_class in ["LoadImage", "ImageLoader"] or "image" in inputs
+        
+        if is_image_node or is_video_node:
             for input_key, input_value in inputs.items():
-                if input_key == "image" and isinstance(input_value, str):
+                if (input_key in ["image", "video"]) and isinstance(input_value, str):
                     # Check if this looks like base64 data or data URL
                     is_base64 = False
                     image_data = input_value
                     
-                    # Handle data URL format: data:image/png;base64,<base64_data>
-                    if input_value.startswith('data:image/'):
+                    # Handle data URL format: data:image/png;base64,<base64_data> or data:video/mp4;base64,<base64_data>
+                    if input_value.startswith('data:image/') or input_value.startswith('data:video/'):
                         if ',' in input_value:
                             image_data = input_value.split(',', 1)[1]
                             is_base64 = True
-                            print(f"worker-comfyui - Found data URL in node {node_id}, input '{input_key}'")
+                            media_type = "video" if input_value.startswith('data:video/') else "image"
+                            print(f"worker-comfyui - Found {media_type} data URL in node {node_id}, input '{input_key}'")
                     # Handle pure base64 (long string, starts with common base64 chars)
                     elif len(input_value) > 100 and input_value.startswith(('iVBORw0KGgo', '/9j/', 'UklGR')):
                         is_base64 = True
                         print(f"worker-comfyui - Found base64 image data in node {node_id}, input '{input_key}'")
                     
                     if is_base64:
-                        # Generate a filename for this image
-                        filename = f"uploaded_image_{node_id}_{input_key}.png"
+                        # Generate a filename for this media file
+                        if input_value.startswith('data:video/'):
+                            if 'webm' in input_value:
+                                extension = 'webm'
+                            else:
+                                extension = 'mp4'  # default video extension
+                            filename = f"uploaded_video_{node_id}_{input_key}.{extension}"
+                        else:
+                            # Default to image
+                            filename = f"uploaded_image_{node_id}_{input_key}.png"
                         
                         # Add to extracted images list
                         extracted_images.append({
@@ -735,6 +764,22 @@ def update_workflow_with_images(workflow, images_info):
                 uploaded_names.pop(0)
             else:
                 print(f"worker-comfyui - Skipping LoadImage node {node_id}: has_image_input={('image' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
+        
+        # Handle Video nodes
+        elif node_class in ["VHS_LoadVideoFFmpeg", "VHS_LoadVideo", "LoadVideo"]:
+            print(f"worker-comfyui - Found video node {node_id} ({node_class}) with inputs: {inputs}")
+            if "video" in inputs and uploaded_names:
+                # Always update video nodes if we have uploaded media
+                video_name = uploaded_names[0]
+                old_video = inputs["video"]
+                updated_workflow[node_id]["inputs"]["video"] = video_name
+                updated_nodes.append(f"{node_id} ({node_class}) -> {video_name} (was: {old_video})")
+                updated = True
+                print(f"worker-comfyui - Updated video node {node_id}: '{old_video}' -> '{video_name}'")
+                # Remove used video from list
+                uploaded_names.pop(0)
+            else:
+                print(f"worker-comfyui - Skipping video node {node_id}: has_video_input={('video' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
         
         # Handle ImageLoader nodes
         elif node_class == "ImageLoader":
@@ -806,6 +851,24 @@ def analyze_workflow_structure(workflow):
             })
         elif "image" in inputs or "filename" in inputs:
             analysis["image_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        
+        # Identify video input nodes
+        if node_class in ["VHS_LoadVideoFFmpeg", "VHS_LoadVideo", "LoadVideo"]:
+            if "video_input_nodes" not in analysis:
+                analysis["video_input_nodes"] = []
+            analysis["video_input_nodes"].append({
+                "node_id": node_id,
+                "class_type": node_class,
+                "inputs": inputs
+            })
+        elif "video" in inputs:
+            if "video_input_nodes" not in analysis:
+                analysis["video_input_nodes"] = []
+            analysis["video_input_nodes"].append({
                 "node_id": node_id,
                 "class_type": node_class,
                 "inputs": inputs
@@ -1136,6 +1199,62 @@ def handler(job):
                             errors.append(error_msg)
                     else:
                         error_msg = f"Failed to fetch image data for {filename} from /view endpoint."
+                        errors.append(error_msg)
+
+            # Handle video outputs
+            if "videos" in node_output:
+                print(
+                    f"worker-comfyui - Node {node_id} contains {len(node_output['videos'])} video(s)"
+                )
+                for video_info in node_output["videos"]:
+                    filename = video_info.get("filename")
+                    subfolder = video_info.get("subfolder", "")
+                    vid_type = video_info.get("type")
+
+                    # skip temp videos
+                    if vid_type == "temp":
+                        print(
+                            f"worker-comfyui - Skipping video {filename} because type is 'temp'"
+                        )
+                        continue
+
+                    if not filename:
+                        warn_msg = f"Skipping video in node {node_id} due to missing filename: {video_info}"
+                        print(f"worker-comfyui - {warn_msg}")
+                        errors.append(warn_msg)
+                        continue
+
+                    # Try to get video data using the same endpoint (ComfyUI might serve videos via /view)
+                    video_bytes = get_image_data(filename, subfolder, vid_type)
+
+                    if video_bytes:
+                        file_extension = os.path.splitext(filename)[1] or ".mp4"
+                        
+                        # Return as base64 string
+                        try:
+                            base64_video = base64.b64encode(video_bytes).decode(
+                                "utf-8"
+                            )
+                            # Determine video format from extension
+                            video_format = "video/webm" if file_extension.lower() == ".webm" else "video/mp4"
+                            
+                            # Append dictionary with filename and base64 data
+                            output_data.append(
+                                {
+                                    "filename": filename,
+                                    "type": "base64",
+                                    "data": base64_video,
+                                    "format": video_format,
+                                    "media_type": "video"
+                                }
+                            )
+                            print(f"worker-comfyui - Encoded video {filename} as base64")
+                        except Exception as e:
+                            error_msg = f"Error encoding video {filename} to base64: {e}"
+                            print(f"worker-comfyui - {error_msg}")
+                            errors.append(error_msg)
+                    else:
+                        error_msg = f"Failed to fetch video data for {filename} from /view endpoint."
                         errors.append(error_msg)
 
             # Handle text outputs (tags, strings, etc.)

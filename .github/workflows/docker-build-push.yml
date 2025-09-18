@@ -126,7 +126,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-inpaint
           push: true
-          tags: samtyurenkov/runpod-serverless-inpaint:v2.4
+          tags: samtyurenkov/runpod-serverless-inpaint:v2.5
 
       - name: Build and push Serverless Wan2.2I2V Runpod Image
         if: steps.flags.outputs.serverless_wan2_2_i2v_changed == 'true'
@@ -135,4 +135,4 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wan2-2-i2v
           push: true
-          tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v2.3
+          tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v2.5
