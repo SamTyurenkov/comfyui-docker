@@ -90,10 +90,6 @@ The handler provides extensive logging for debugging:
 3. **Image Integration**: Shows which nodes were updated with images
 4. **Error Handling**: Comprehensive error messages with context
 
-## Testing
-
-Use `test_input_with_images.json` to test the enhanced image handling functionality.
-
 ## Benefits
 
 1. **Multiple Image Support**: Handle workflows with multiple image inputs

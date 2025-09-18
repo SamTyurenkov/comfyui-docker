@@ -27,11 +27,11 @@ EOL
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
   dpkg -i cuda-keyring_1.1-1_all.deb
-  apt-get update && apt-get -y install cuda-toolkit-12-9
-  export CUDA_HOME="/usr/local/cuda-12.9" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
+  apt-get update && apt-get -y install cuda-toolkit
+  export CUDA_HOME="/usr/local/cuda" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
   git clone https://github.com/thu-ml/SageAttention.git /home/comfyuser/sageattention
   pip install --upgrade pip
-  pip install torch==2.7.1 protobuf==4.25.3 numpy==1.26.4 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
+  pip install torch==2.8.0 protobuf==4.25.3 numpy==1.26.4 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
   pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background
   pip install simsimd --prefer-binary
   pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
