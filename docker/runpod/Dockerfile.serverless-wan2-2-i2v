@@ -15,7 +15,26 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
 COPY extra_model_paths.serverless.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
 
 RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux && git checkout 7c4f6fb6ff18aa6dbfd4f77c2e8ad46119b5d84d
+
+RUN git clone https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /home/comfyuser/ComfyUI/custom_nodes/comfyui-inspyrenet-rembg
+
+RUN git clone https://github.com/rgthree/rgthree-comfy /home/comfyuser/ComfyUI/custom_nodes/rgthree-comfy
+
+RUN git clone https://github.com/cubiq/ComfyUI_essentials /home/comfyuser/ComfyUI/custom_nodes/comfyui_essentials
+
+RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
+
+RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
+
+RUN git clone https://github.com/M1kep/ComfyLiterals /home/comfyuser/ComfyUI/custom_nodes/ComfyLiterals
+
+RUN git clone https://github.com/kijai/ComfyUI-KJNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes
+
+RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
+
+RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
+
+RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
 
 RUN git clone https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
 
