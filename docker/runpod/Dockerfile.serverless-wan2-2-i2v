@@ -19,11 +19,10 @@ RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux && git checko
 
 RUN git clone https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
 
-ADD entry.serverless-inpaint.sh /usr/local/bin/entrypoint.sh
+ADD entry.serverless-wan2-2-i2v.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 ADD .config/Ultralytics/settings.json /root/.config/Ultralytics/settings.json
-
 
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
