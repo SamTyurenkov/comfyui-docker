@@ -30,6 +30,11 @@ mkdir -p /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && rm -
 
 # Start ComfyUI
 start_comfyui() {
+    export OMP_NUM_THREADS=4
+    export ONNXRT_NUM_THREADS=4
+    export MKL_NUM_THREADS=4
+    export OPENBLAS_NUM_THREADS=4
+    export NUMEXPR_NUM_THREADS=4
     # Capture additional arguments from environment variables
     echo "Starting ComfyUI..."
     /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --enable-cors-header "*" --cpu --disable-auto-launch --disable-metadata --log-stdout
@@ -41,5 +46,6 @@ start_handler() {
     /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/handler.py
 }
 
+# Start ComfyUI in background and wait for it to be ready
 start_comfyui &
 start_handler

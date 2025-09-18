@@ -30,6 +30,10 @@ mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && rm
 
 # Start ComfyUI
 start_comfyui() {
+    # Set memory optimization environment variables
+    export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+    export CUDA_LAUNCH_BLOCKING=0
+    export CUBLAS_WORKSPACE_CONFIG=:16:8
     # Capture additional arguments from environment variables
     echo "Starting ComfyUI..."
     /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/ComfyUI/main.py --max-upload-size 20 --dont-print-server --preview-method taesd --enable-cors-header "*" --disable-xformers --fast fp16_accumulation --disable-auto-launch --disable-metadata --log-stdout
