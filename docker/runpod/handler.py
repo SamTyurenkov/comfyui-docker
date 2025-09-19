@@ -1273,6 +1273,72 @@ def handler(job):
                         error_msg = f"Failed to fetch video data for {filename} from /view endpoint."
                         errors.append(error_msg)
 
+            # Handle gif outputs (which can contain video files)
+            if "gifs" in node_output:
+                print(
+                    f"worker-comfyui - Node {node_id} contains {len(node_output['gifs'])} gif/video(s)"
+                )
+                for gif_info in node_output["gifs"]:
+                    filename = gif_info.get("filename")
+                    subfolder = gif_info.get("subfolder", "")
+                    gif_type = gif_info.get("type")
+
+                    # skip temp gifs/videos
+                    if gif_type == "temp":
+                        print(
+                            f"worker-comfyui - Skipping gif/video {filename} because type is 'temp'"
+                        )
+                        continue
+
+                    if not filename:
+                        warn_msg = f"Skipping gif/video in node {node_id} due to missing filename: {gif_info}"
+                        print(f"worker-comfyui - {warn_msg}")
+                        errors.append(warn_msg)
+                        continue
+
+                    # Try to get gif/video data using the same endpoint
+                    gif_bytes = get_image_data(filename, subfolder, gif_type)
+
+                    if gif_bytes:
+                        file_extension = os.path.splitext(filename)[1] or ".mp4"
+                        
+                        # Return as base64 string
+                        try:
+                            base64_gif = base64.b64encode(gif_bytes).decode(
+                                "utf-8"
+                            )
+                            # Determine format from extension or format field
+                            gif_format = gif_info.get("format", "")
+                            if not gif_format:
+                                if file_extension.lower() == ".webm":
+                                    gif_format = "video/webm"
+                                elif file_extension.lower() == ".gif":
+                                    gif_format = "image/gif"
+                                else:
+                                    gif_format = "video/mp4"
+                            
+                            # Determine media type based on format
+                            media_type = "video" if gif_format.startswith("video/") else "image"
+                            
+                            # Append dictionary with filename and base64 data
+                            output_data.append(
+                                {
+                                    "filename": filename,
+                                    "type": "base64",
+                                    "data": base64_gif,
+                                    "format": gif_format,
+                                    "media_type": media_type
+                                }
+                            )
+                            print(f"worker-comfyui - Encoded gif/video {filename} as base64")
+                        except Exception as e:
+                            error_msg = f"Error encoding gif/video {filename} to base64: {e}"
+                            print(f"worker-comfyui - {error_msg}")
+                            errors.append(error_msg)
+                    else:
+                        error_msg = f"Failed to fetch gif/video data for {filename} from /view endpoint."
+                        errors.append(error_msg)
+
             # Handle text outputs (tags, strings, etc.)
             text_output_types = ["tags", "text", "string", "strings"]
             for output_type in text_output_types:
