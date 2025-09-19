@@ -646,17 +646,19 @@ def get_image_data(filename, subfolder, image_type):
         return None
 
 
-def extract_base64_images_from_workflow(workflow):
+def extract_base64_images_from_workflow(workflow, unique_id=None):
     """
     Extract base64 image data from workflow nodes and prepare them for upload.
     
     Args:
         workflow (dict): The workflow object
+        unique_id (str, optional): Unique identifier to prevent filename conflicts in concurrent requests
         
     Returns:
-        tuple: (extracted_images, cleaned_workflow)
+        tuple: (extracted_images, cleaned_workflow, error_message)
                extracted_images: list of image objects with name and base64 data
                cleaned_workflow: workflow with base64 data replaced with placeholder filenames
+               error_message: None if successful, error string if failed
     """
     extracted_images = []
     cleaned_workflow = workflow.copy()
@@ -691,16 +693,28 @@ def extract_base64_images_from_workflow(workflow):
                         print(f"worker-comfyui - Found base64 image data in node {node_id}, input '{input_key}'")
                     
                     if is_base64:
-                        # Generate a filename for this media file
+                        # Generate a unique filename for this media file
+                        # Use unique_id if provided, otherwise generate a UUID to prevent conflicts
+                        if unique_id:
+                            unique_suffix = unique_id
+                        else:
+                            unique_suffix = str(uuid.uuid4())[:8]  # Use first 8 chars of UUID for brevity
+                        
                         if input_value.startswith('data:video/'):
-                            if 'webm' in input_value:
+                            if 'video/webm' in input_value:
                                 extension = 'webm'
+                            elif 'video/mp4' in input_value:
+                                extension = 'mp4'
                             else:
-                                extension = 'mp4'  # default video extension
-                            filename = f"uploaded_video_{node_id}_{input_key}.{extension}"
+                                # Unsupported video format - extract the format from the data URL
+                                format_part = input_value.split(';')[0].replace('data:video/', '')
+                                error_msg = f"Unsupported video format '{format_part}' in node {node_id}, input '{input_key}'. Supported formats: mp4, webm"
+                                print(f"worker-comfyui - ERROR: {error_msg}")
+                                return [], workflow, error_msg
+                            filename = f"uploaded_video_{node_id}_{input_key}_{unique_suffix}.{extension}"
                         else:
                             # Default to image
-                            filename = f"uploaded_image_{node_id}_{input_key}.png"
+                            filename = f"uploaded_image_{node_id}_{input_key}_{unique_suffix}.png"
                         
                         # Add to extracted images list
                         extracted_images.append({
@@ -716,7 +730,7 @@ def extract_base64_images_from_workflow(workflow):
                         print(f"worker-comfyui - Extracted base64 image from {node_id}.{input_key} -> {filename}")
     
     print(f"worker-comfyui - Extracted {len(extracted_images)} base64 images from workflow")
-    return extracted_images, cleaned_workflow
+    return extracted_images, cleaned_workflow, None
 
 
 def update_workflow_with_images(workflow, images_info):
@@ -978,7 +992,9 @@ def handler(job):
         log_workflow_analysis(workflow)
 
     # Extract base64 images from workflow nodes
-    extracted_images, cleaned_workflow = extract_base64_images_from_workflow(workflow)
+    extracted_images, cleaned_workflow, extraction_error = extract_base64_images_from_workflow(workflow, job_id)
+    if extraction_error:
+        return {"error": extraction_error}
     
     # Combine extracted images with any additional input images
     all_images = extracted_images.copy()
