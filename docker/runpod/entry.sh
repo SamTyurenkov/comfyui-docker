@@ -186,6 +186,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models && ln -s /workspace/models/ComfyUI-WD14-Tagger/models /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WD14-Tagger/models
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /workspace/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
   rm -rf /home/comfyuser/ComfyUI/models/bagel && ln -s /workspace/models/bagel /home/comfyuser/ComfyUI/models/bagel
+  rm -rf /home/comfyuser/ComfyUI/models/detection && ln -s /workspace/models/detection /home/comfyuser/ComfyUI/models/detection
 fi
 
 # Start cloudflared in the background
@@ -213,9 +214,6 @@ start_comfyui() {
       /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
       /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --cpu
-    else
-      #default CC 8.0
-      /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-serve --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     fi
 
     #/workspace/venv_cc12_cuda129/bin/python -m pip install --force-reinstall --no-deps protobuf==4.25.3 numpy==1.26.4
@@ -228,9 +226,7 @@ start_comfyui_multigpu() {
       if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
         python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
       elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
-          /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
-      else
-          /workspace/venv/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
+        /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation --port 8288 --cuda-device 1
       fi
     fi
 }
