@@ -146,6 +146,7 @@ RUN git clone https://github.com/Saquib764/omini-kontext /home/comfyuser/ComfyUI
 RUN git clone https://github.com/kijai/ComfyUI-MMAudio /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MMAudio
 RUN git clone https://github.com/neverbiasu/ComfyUI-BAGEL /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-BAGEL
 RUN git clone https://github.com/ShmuelRonen/ComfyUI-VideoUpscale_WithModel /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-VideoUpscale_WithModel
+RUN git clone https://github.com/kijai/ComfyUI-WanAnimatePreprocess /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanAnimatePreprocess
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 
