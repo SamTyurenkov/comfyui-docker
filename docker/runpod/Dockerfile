@@ -153,8 +153,8 @@ RUN git clone https://github.com/kijai/ComfyUI-WanAnimatePreprocess /home/comfyu
 RUN git clone https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
 RUN pip install --upgrade pip && pip install jupyter
 
-RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
+# RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+# RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
 WORKDIR /home/comfyuser/

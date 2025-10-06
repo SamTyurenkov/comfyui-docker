@@ -189,19 +189,19 @@ else
 fi
 
 # Start cloudflared in the background
-start_cloudflared() {
-    if [ -n "$TUNNEL_TOKEN" ] && [ "$TUNNEL_TOKEN" != "SET_YOUR_TUNNEL_TOKEN" ]; then
-      echo "Starting cloudflared..."
-      echo "Using tunnel token and name..."
-      cloudflared tunnel \
-          --loglevel info \
-          --logfile /var/log/cloudflared.log \
-          run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
-    else
-      echo "Skipping private cloudflared, tunnel data not specified"
-      cloudflared tunnel --url https://127.0.0.1 --loglevel info
-    fi
-} 
+# start_cloudflared() {
+#     if [ -n "$TUNNEL_TOKEN" ] && [ "$TUNNEL_TOKEN" != "SET_YOUR_TUNNEL_TOKEN" ]; then
+#       echo "Starting cloudflared..."
+#       echo "Using tunnel token and name..."
+#       cloudflared tunnel \
+#           --loglevel info \
+#           --logfile /var/log/cloudflared.log \
+#           run --token "$TUNNEL_TOKEN" "$TUNNEL_NAME"
+#     else
+#       echo "Skipping private cloudflared, tunnel data not specified"
+#       cloudflared tunnel --url https://127.0.0.1 --loglevel info
+#     fi
+# } 
 
 # Start ComfyUI
 start_comfyui() {
@@ -251,7 +251,7 @@ start_lora_viewer() {
     /workspace/venv_onetrainer/bin/python /home/comfyuser/lora-metadata-viewer-fork/app.py --directory /workspace/models/loras
 }
 
-start_cloudflared &
+# start_cloudflared &
 start_comfyui &
 start_comfyui_multigpu &
 start_lora_viewer &
