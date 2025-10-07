@@ -72,7 +72,7 @@ RUN git clone --depth 1 https://github.com/chrisgoringe/cg-use-everywhere /home/
 RUN git clone --depth 1 https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
 RUN git clone --depth 1 https://github.com/cubiq/ComfyUI_IPAdapter_plus /home/comfyuser/ComfyUI/custom_nodes/comfyui_ipadapter_plus
 RUN git clone --depth 1 https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /home/comfyuser/ComfyUI/custom_nodes/comfyui-inspyrenet-rembg
-RUN git clone --depth 1 https://github.com/Gourieff/ComfyUI-ReActor /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node
+RUN git clone https://github.com/Gourieff/ComfyUI-ReActor /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node
 RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node && git checkout v0.6.0
 RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
 RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Pack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack
