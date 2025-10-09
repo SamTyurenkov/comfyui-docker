@@ -13,6 +13,7 @@ import uuid
 import tempfile
 import socket
 import traceback
+import subprocess
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = 50
@@ -39,9 +40,169 @@ COMFY_HOST = "127.0.0.1:8188"
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
 
+# GPU pricing configuration (credits per second)
+GPU_PRICING = {
+    "RTX 3070": 0.03,
+    "RTX 3080": 0.03,
+    "RTX 3090": 0.03,
+    "RTX 4070": 0.04,
+    "RTX 4080": 0.04,
+    "RTX 4090": 0.04,
+    "RTX 5090": 0.06,
+    "A4000": 0.04,
+    "A5000": 0.05,
+    "A6000": 0.06,
+    "RTX A6000": 0.05,
+    "RTX PRO 6000": 0.09,  # Professional cards
+    "A40": 0.05,
+    "A100": 0.06,
+    "H100": 0.1,
+    "default": 0.10,  # fallback pricing
+}
+
+# Base cost per job (to prevent abuse and cover overhead)
+BASE_COST_PER_JOB = 1.0
+
+# Cache for GPU type (to avoid calling nvidia-smi on every job)
+_GPU_TYPE_CACHE = None
+
 # ---------------------------------------------------------------------------
 # Helper: quick reachability probe of ComfyUI HTTP endpoint (port 8188)
 # ---------------------------------------------------------------------------
+
+
+def detect_gpu_type():
+    """
+    Detect the GPU type using nvidia-smi. Results are cached to avoid repeated calls.
+    
+    Returns:
+        str: GPU type (e.g., "RTX 4090", "A100") or "unknown" if detection fails
+    """
+    global _GPU_TYPE_CACHE
+    
+    # Return cached value if available
+    if _GPU_TYPE_CACHE is not None:
+        return _GPU_TYPE_CACHE
+    
+    try:
+        # Run nvidia-smi to get GPU name
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0 and result.stdout:
+            gpu_name = result.stdout.strip().split('\n')[0]  # Get first GPU
+            print(f"worker-comfyui - Detected GPU (raw): {gpu_name}")
+            
+            # Normalize GPU name to match our pricing keys
+            # Remove common prefixes but preserve important parts
+            normalized_name = gpu_name.replace("NVIDIA ", "")
+            normalized_name = normalized_name.replace("GeForce ", "")
+            normalized_name = normalized_name.strip()
+            
+            # Remove trailing descriptors like "Black", "Ada", etc. but keep important parts
+            # Split and remove common suffixes
+            parts = normalized_name.split()
+            # Keep relevant parts (RTX, PRO, numbers, letters like A100, etc.)
+            filtered_parts = []
+            for part in parts:
+                # Keep if it's a known keyword or starts with a number or is short
+                if part in ["RTX", "PRO", "Ti", "SUPER"] or part[0].isdigit() or part in ["A100", "A40", "A6000", "A5000", "A4000", "H100"]:
+                    filtered_parts.append(part)
+                # Also keep if it starts with 'A' and has numbers (like A6000)
+                elif part.startswith('A') and any(c.isdigit() for c in part):
+                    filtered_parts.append(part)
+            
+            normalized_name = " ".join(filtered_parts) if filtered_parts else normalized_name
+            
+            print(f"worker-comfyui - Normalized GPU name: {normalized_name}")
+            
+            # Check if the GPU name matches any of our pricing keys
+            # First try exact match
+            if normalized_name in GPU_PRICING:
+                print(f"worker-comfyui - Exact match found in pricing table")
+                _GPU_TYPE_CACHE = normalized_name
+                return normalized_name
+            
+            # Try partial matches for common GPUs (check if pricing key is in GPU name)
+            for gpu_key in GPU_PRICING.keys():
+                if gpu_key != "default" and gpu_key in normalized_name:
+                    print(f"worker-comfyui - Matched GPU '{normalized_name}' to pricing key '{gpu_key}'")
+                    _GPU_TYPE_CACHE = gpu_key
+                    return gpu_key
+            
+            # If no match found, log the GPU name and use default
+            print(f"worker-comfyui - GPU '{normalized_name}' not in pricing table, using default pricing")
+            _GPU_TYPE_CACHE = normalized_name  # Cache the actual name even if not in pricing table
+            return normalized_name
+        else:
+            print(f"worker-comfyui - nvidia-smi failed with return code {result.returncode}")
+            _GPU_TYPE_CACHE = "unknown"
+            return "unknown"
+            
+    except subprocess.TimeoutExpired:
+        print("worker-comfyui - nvidia-smi timed out")
+        _GPU_TYPE_CACHE = "unknown"
+        return "unknown"
+    except FileNotFoundError:
+        print("worker-comfyui - nvidia-smi not found")
+        _GPU_TYPE_CACHE = "unknown"
+        return "unknown"
+    except Exception as e:
+        print(f"worker-comfyui - Error detecting GPU: {e}")
+        _GPU_TYPE_CACHE = "unknown"
+        return "unknown"
+
+
+def calculate_job_cost(execution_time_ms, gpu_type=None):
+    """
+    Calculate the cost of a job based on GPU type and execution time.
+    
+    Args:
+        execution_time_ms (int): Execution time in milliseconds
+        gpu_type (str, optional): GPU type identifier. If None, auto-detects using nvidia-smi.
+        
+    Returns:
+        dict: Dictionary containing cost breakdown with the following keys:
+            - total_cost: Total credits to charge (float)
+            - base_cost: Base cost per job (float)
+            - execution_cost: Cost based on execution time (float)
+            - execution_time_sec: Execution time in seconds (float)
+            - gpu_type: GPU type used (str)
+            - rate_per_second: Rate per second for this GPU (float)
+    """
+    execution_time_sec = execution_time_ms / 1000.0
+    
+    # Detect GPU type if not provided
+    if gpu_type is None:
+        gpu_type = detect_gpu_type()
+    
+    # Get pricing rate for this GPU type
+    rate_per_second = GPU_PRICING.get(gpu_type, GPU_PRICING["default"])
+    
+    # Calculate execution cost
+    execution_cost = execution_time_sec * rate_per_second
+    
+    # Total cost = base cost + execution cost
+    total_cost = BASE_COST_PER_JOB + execution_cost
+    
+    # Round to 2 decimal places
+    total_cost = round(total_cost, 2)
+    execution_cost = round(execution_cost, 2)
+    execution_time_sec = round(execution_time_sec, 2)
+    
+    return {
+        "total_cost": total_cost,
+        "base_cost": BASE_COST_PER_JOB,
+        "execution_cost": execution_cost,
+        "execution_time_sec": execution_time_sec,
+        "execution_time_ms": execution_time_ms,
+        "gpu_type": gpu_type,
+        "rate_per_second": rate_per_second,
+    }
 
 
 def _comfy_server_status():
@@ -1043,6 +1204,9 @@ def handler(job):
     prompt_id = None
     output_data = []
     errors = []
+    
+    # Track execution time for cost calculation
+    execution_start_time = time.time()
 
     try:
         # Establish WebSocket connection
@@ -1420,6 +1584,18 @@ def handler(job):
         final_result["status"] = "success_no_outputs"
         final_result["images"] = []
 
+    # Calculate execution time and cost
+    execution_end_time = time.time()
+    execution_time_ms = int((execution_end_time - execution_start_time) * 1000)
+    
+    # Calculate cost based on GPU type and execution time
+    cost_info = calculate_job_cost(execution_time_ms)
+    final_result["cost_info"] = cost_info
+    
+    print(f"worker-comfyui - Execution time: {cost_info['execution_time_sec']}s")
+    print(f"worker-comfyui - GPU type: {cost_info['gpu_type']}")
+    print(f"worker-comfyui - Total cost: {cost_info['total_cost']} credits (base: {cost_info['base_cost']}, execution: {cost_info['execution_cost']})")
+    
     output_summary = []
     if output_data:
         output_summary.append(f"{len(output_data)} image(s)")
