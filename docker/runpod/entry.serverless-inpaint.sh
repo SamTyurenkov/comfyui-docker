@@ -40,7 +40,8 @@ start_comfyui() {
 start_handler() {
     # Capture additional arguments from environment variables
     echo "Starting Handler..."
-    /runpod-volume/venv_cc12_cuda129/bin/python -u /home/comfyuser/handler.py
+    cd /home/comfyuser
+    /runpod-volume/venv_cc12_cuda129/bin/python -u handler.py
 }
 
 start_comfyui &

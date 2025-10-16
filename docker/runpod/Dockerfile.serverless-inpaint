@@ -25,6 +25,7 @@ ADD firebase_credits.py /home/comfyuser/firebase_credits.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 ADD .config/Ultralytics/settings.json /root/.config/Ultralytics/settings.json
 
+
 WORKDIR /home/comfyuser/
 RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
