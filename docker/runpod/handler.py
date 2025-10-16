@@ -15,6 +15,21 @@ import socket
 import traceback
 import subprocess
 
+# Import Firebase credits module for server-side credit deduction
+try:
+    from firebase_credits import (
+        verify_user_token,
+        get_user_credits,
+        check_sufficient_credits,
+        deduct_credits,
+        _firebase_initialized as firebase_available
+    )
+    FIREBASE_CREDITS_AVAILABLE = True
+    print("worker-comfyui - Firebase credits module loaded successfully")
+except ImportError as e:
+    print(f"worker-comfyui - Firebase credits module not available: {e}")
+    FIREBASE_CREDITS_AVAILABLE = False
+
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = 50
 # Maximum number of API check attempts
@@ -355,8 +370,18 @@ def validate_input(job_input):
             except Exception:
                 return None, f"Invalid base64 data at index {i}"
 
+    # Optional: user authentication for credit system
+    # The frontend can send a Firebase ID token for server-side credit deduction
+    user_token = job_input.get("user_token")
+    workflow_id = job_input.get("workflow_id")
+
     # Return validated data and no error
-    return {"workflow": workflow, "images": images}, None
+    return {
+        "workflow": workflow,
+        "images": images,
+        "user_token": user_token,
+        "workflow_id": workflow_id
+    }, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -894,101 +919,101 @@ def extract_base64_images_from_workflow(workflow, unique_id=None):
     return extracted_images, cleaned_workflow, None
 
 
-def update_workflow_with_images(workflow, images_info):
-    """
-    Update workflow to use uploaded images if needed.
-    This function can be used to automatically map uploaded images to workflow nodes.
+# def update_workflow_with_images(workflow, images_info):
+#     """
+#     Update workflow to use uploaded images if needed.
+#     This function can be used to automatically map uploaded images to workflow nodes.
     
-    Args:
-        workflow (dict): The workflow object
-        images_info (dict): Information about uploaded images
+#     Args:
+#         workflow (dict): The workflow object
+#         images_info (dict): Information about uploaded images
         
-    Returns:
-        dict: The updated workflow (or original if no changes needed)
-    """
-    if not images_info or images_info["successful_count"] == 0:
-        return workflow
+#     Returns:
+#         dict: The updated workflow (or original if no changes needed)
+#     """
+#     if not images_info or images_info["successful_count"] == 0:
+#         return workflow
     
-    updated_workflow = workflow.copy()
-    updated_nodes = []
+#     updated_workflow = workflow.copy()
+#     updated_nodes = []
     
-    print(f"worker-comfyui - Attempting to integrate {images_info['successful_count']} uploaded images into workflow...")
+#     print(f"worker-comfyui - Attempting to integrate {images_info['successful_count']} uploaded images into workflow...")
     
-    # Get list of uploaded image names
-    uploaded_names = list(images_info["by_name"].keys())
-    print(f"worker-comfyui - Uploaded image names: {uploaded_names}")
+#     # Get list of uploaded image names
+#     uploaded_names = list(images_info["by_name"].keys())
+#     print(f"worker-comfyui - Uploaded image names: {uploaded_names}")
     
-    for node_id, node in workflow.items():
-        node_class = node.get("class_type", "")
-        inputs = node.get("inputs", {})
-        updated = False
+#     for node_id, node in workflow.items():
+#         node_class = node.get("class_type", "")
+#         inputs = node.get("inputs", {})
+#         updated = False
         
-        # Handle LoadImage nodes
-        if node_class == "LoadImage":
-            print(f"worker-comfyui - Found LoadImage node {node_id} with inputs: {inputs}")
-            if "image" in inputs and uploaded_names:
-                # Always update LoadImage nodes if we have uploaded images
-                # This handles both empty fields and placeholder filenames
-                image_name = uploaded_names[0]
-                old_image = inputs["image"]
-                updated_workflow[node_id]["inputs"]["image"] = image_name
-                updated_nodes.append(f"{node_id} (LoadImage) -> {image_name} (was: {old_image})")
-                updated = True
-                print(f"worker-comfyui - Updated LoadImage node {node_id}: '{old_image}' -> '{image_name}'")
-                # Remove used image from list
-                uploaded_names.pop(0)
-            else:
-                print(f"worker-comfyui - Skipping LoadImage node {node_id}: has_image_input={('image' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
+#         # Handle LoadImage nodes
+#         if node_class == "LoadImage":
+#             print(f"worker-comfyui - Found LoadImage node {node_id} with inputs: {inputs}")
+#             if "image" in inputs and uploaded_names:
+#                 # Always update LoadImage nodes if we have uploaded images
+#                 # This handles both empty fields and placeholder filenames
+#                 image_name = uploaded_names[0]
+#                 old_image = inputs["image"]
+#                 updated_workflow[node_id]["inputs"]["image"] = image_name
+#                 updated_nodes.append(f"{node_id} (LoadImage) -> {image_name} (was: {old_image})")
+#                 updated = True
+#                 print(f"worker-comfyui - Updated LoadImage node {node_id}: '{old_image}' -> '{image_name}'")
+#                 # Remove used image from list
+#                 uploaded_names.pop(0)
+#             else:
+#                 print(f"worker-comfyui - Skipping LoadImage node {node_id}: has_image_input={('image' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
         
-        # Handle Video nodes
-        elif node_class in ["VHS_LoadVideoFFmpeg", "VHS_LoadVideo", "LoadVideo"]:
-            print(f"worker-comfyui - Found video node {node_id} ({node_class}) with inputs: {inputs}")
-            if "video" in inputs and uploaded_names:
-                # Always update video nodes if we have uploaded media
-                video_name = uploaded_names[0]
-                old_video = inputs["video"]
-                updated_workflow[node_id]["inputs"]["video"] = video_name
-                updated_nodes.append(f"{node_id} ({node_class}) -> {video_name} (was: {old_video})")
-                updated = True
-                print(f"worker-comfyui - Updated video node {node_id}: '{old_video}' -> '{video_name}'")
-                # Remove used video from list
-                uploaded_names.pop(0)
-            else:
-                print(f"worker-comfyui - Skipping video node {node_id}: has_video_input={('video' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
+#         # Handle Video nodes
+#         elif node_class in ["VHS_LoadVideoFFmpeg", "VHS_LoadVideo", "LoadVideo"]:
+#             print(f"worker-comfyui - Found video node {node_id} ({node_class}) with inputs: {inputs}")
+#             if "video" in inputs and uploaded_names:
+#                 # Always update video nodes if we have uploaded media
+#                 video_name = uploaded_names[0]
+#                 old_video = inputs["video"]
+#                 updated_workflow[node_id]["inputs"]["video"] = video_name
+#                 updated_nodes.append(f"{node_id} ({node_class}) -> {video_name} (was: {old_video})")
+#                 updated = True
+#                 print(f"worker-comfyui - Updated video node {node_id}: '{old_video}' -> '{video_name}'")
+#                 # Remove used video from list
+#                 uploaded_names.pop(0)
+#             else:
+#                 print(f"worker-comfyui - Skipping video node {node_id}: has_video_input={('video' in inputs)}, has_uploaded_names={bool(uploaded_names)}")
         
-        # Handle ImageLoader nodes
-        elif node_class == "ImageLoader":
-            if "image" in inputs and uploaded_names:
-                # Always update ImageLoader nodes if we have uploaded images
-                image_name = uploaded_names[0]
-                old_image = inputs["image"]
-                updated_workflow[node_id]["inputs"]["image"] = image_name
-                updated_nodes.append(f"{node_id} (ImageLoader) -> {image_name} (was: {old_image})")
-                updated = True
-                uploaded_names.pop(0)
+#         # Handle ImageLoader nodes
+#         elif node_class == "ImageLoader":
+#             if "image" in inputs and uploaded_names:
+#                 # Always update ImageLoader nodes if we have uploaded images
+#                 image_name = uploaded_names[0]
+#                 old_image = inputs["image"]
+#                 updated_workflow[node_id]["inputs"]["image"] = image_name
+#                 updated_nodes.append(f"{node_id} (ImageLoader) -> {image_name} (was: {old_image})")
+#                 updated = True
+#                 uploaded_names.pop(0)
         
-        # Handle other image input nodes
-        elif "image" in inputs and uploaded_names:
-            # Only update if the node class suggests it's an image input node
-            if any(keyword in node_class.lower() for keyword in ["image", "load", "input"]):
-                image_name = uploaded_names[0]
-                old_image = inputs["image"]
-                updated_workflow[node_id]["inputs"]["image"] = image_name
-                updated_nodes.append(f"{node_id} ({node_class}) -> {image_name} (was: {old_image})")
-                updated = True
-                uploaded_names.pop(0)
+#         # Handle other image input nodes
+#         elif "image" in inputs and uploaded_names:
+#             # Only update if the node class suggests it's an image input node
+#             if any(keyword in node_class.lower() for keyword in ["image", "load", "input"]):
+#                 image_name = uploaded_names[0]
+#                 old_image = inputs["image"]
+#                 updated_workflow[node_id]["inputs"]["image"] = image_name
+#                 updated_nodes.append(f"{node_id} ({node_class}) -> {image_name} (was: {old_image})")
+#                 updated = True
+#                 uploaded_names.pop(0)
         
-        if updated:
-            print(f"worker-comfyui - Updated node {node_id} to use uploaded image")
+#         if updated:
+#             print(f"worker-comfyui - Updated node {node_id} to use uploaded image")
     
-    if updated_nodes:
-        print(f"worker-comfyui - Updated {len(updated_nodes)} nodes with uploaded images:")
-        for update in updated_nodes:
-            print(f"worker-comfyui -   - {update}")
-    else:
-        print("worker-comfyui - No workflow nodes were updated with uploaded images")
+#     if updated_nodes:
+#         print(f"worker-comfyui - Updated {len(updated_nodes)} nodes with uploaded images:")
+#         for update in updated_nodes:
+#             print(f"worker-comfyui -   - {update}")
+#     else:
+#         print("worker-comfyui - No workflow nodes were updated with uploaded images")
     
-    return updated_workflow
+#     return updated_workflow
 
 
 def analyze_workflow_structure(workflow):
@@ -1147,6 +1172,40 @@ def handler(job):
     # Extract validated data
     workflow = validated_data["workflow"]
     input_images = validated_data.get("images")
+    user_token = validated_data.get("user_token")
+    workflow_id = validated_data.get("workflow_id")
+    
+    # Verify user and check credits if token is provided
+    user_id = None
+    user_email = None
+    if user_token and FIREBASE_CREDITS_AVAILABLE:
+        print("worker-comfyui - Verifying user authentication...")
+        user_info = verify_user_token(user_token)
+        if user_info:
+            user_id = user_info["uid"]
+            user_email = user_info.get("email", "unknown")
+            print(f"worker-comfyui - User authenticated: {user_email} (ID: {user_id})")
+            
+            # Get current credits
+            credits_result = get_user_credits(user_id)
+            if credits_result["error"]:
+                print(f"worker-comfyui - Warning: Failed to fetch user credits: {credits_result['error']}")
+            else:
+                current_credits = credits_result["credits"]
+                print(f"worker-comfyui - User has {current_credits} credits")
+                
+                # Optional: Enforce minimum credit check (BASE_COST_PER_JOB)
+                # Uncomment to require minimum credits before execution:
+                # if current_credits < BASE_COST_PER_JOB:
+                #     return {
+                #         "error": f"Insufficient credits. You have {current_credits} credits, but minimum {BASE_COST_PER_JOB} required.",
+                #         "current_credits": current_credits,
+                #         "required_credits": BASE_COST_PER_JOB
+                #     }
+        else:
+            print("worker-comfyui - Warning: Failed to verify user token. Proceeding without credit system.")
+    elif user_token and not FIREBASE_CREDITS_AVAILABLE:
+        print("worker-comfyui - User token provided but Firebase credits not available. Proceeding without credit system.")
     
     # Log workflow analysis for debugging (can be disabled with environment variable)
     if os.environ.get("LOG_WORKFLOW_ANALYSIS", "true").lower() == "true":
@@ -1595,6 +1654,40 @@ def handler(job):
     print(f"worker-comfyui - Execution time: {cost_info['execution_time_sec']}s")
     print(f"worker-comfyui - GPU type: {cost_info['gpu_type']}")
     print(f"worker-comfyui - Total cost: {cost_info['total_cost']} credits (base: {cost_info['base_cost']}, execution: {cost_info['execution_cost']})")
+    
+    # Deduct credits from user's account (server-side, independent of frontend)
+    if user_id and FIREBASE_CREDITS_AVAILABLE:
+        print(f"worker-comfyui - Deducting {cost_info['total_cost']} credits from user {user_email}...")
+        deduction_result = deduct_credits(
+            user_id=user_id,
+            cost_info=cost_info,
+            workflow_id=workflow_id,
+            job_id=job_id
+        )
+        
+        if deduction_result["success"]:
+            print(f"worker-comfyui - Successfully charged {deduction_result['cost']} credits. New balance: {deduction_result['new_balance']}")
+            final_result["credit_deduction"] = {
+                "success": True,
+                "charged": deduction_result["cost"],
+                "new_balance": deduction_result["new_balance"],
+                "user_id": user_id
+            }
+        else:
+            print(f"worker-comfyui - Failed to deduct credits: {deduction_result['error']}")
+            final_result["credit_deduction"] = {
+                "success": False,
+                "error": deduction_result["error"],
+                "user_id": user_id
+            }
+    elif user_id and not FIREBASE_CREDITS_AVAILABLE:
+        print("worker-comfyui - User authenticated but Firebase credits not available. No credits deducted.")
+        final_result["credit_deduction"] = {
+            "success": False,
+            "error": "Firebase credits system not available"
+        }
+    else:
+        print("worker-comfyui - No user authentication provided. No credits deducted.")
     
     output_summary = []
     if output_data:
