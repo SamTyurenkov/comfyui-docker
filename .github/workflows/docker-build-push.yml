@@ -108,7 +108,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-faceswap
           push: true
-          tags: samtyurenkov/runpod-serverless-faceswap:v2.9
+          tags: samtyurenkov/runpod-serverless-faceswap:v3.0
 
       - name: Build and push Serverless WD14 Runpod Image
         if: steps.flags.outputs.serverless_wd14_changed == 'true'
@@ -117,7 +117,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wd14
           push: true
-          tags: samtyurenkov/runpod-serverless-wd14:v2.9
+          tags: samtyurenkov/runpod-serverless-wd14:v3.0
 
       - name: Build and push Serverless Inpaint Runpod Image
         if: steps.flags.outputs.serverless_inpaint_changed == 'true'
@@ -126,7 +126,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-inpaint
           push: true
-          tags: samtyurenkov/runpod-serverless-inpaint:v2.9
+          tags: samtyurenkov/runpod-serverless-inpaint:v3.0
 
       - name: Build and push Serverless Wan2.2I2V Runpod Image
         if: steps.flags.outputs.serverless_wan2_2_i2v_changed == 'true'
@@ -135,4 +135,4 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wan2-2-i2v
           push: true
-          tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v2.9
+          tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v3.0

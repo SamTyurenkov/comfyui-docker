@@ -31,6 +31,7 @@ RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2 /home/comfyuser/ComfyUI
 
 ADD entry.serverless-faceswap.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
+ADD firebase_credits.py /home/comfyuser/firebase_credits.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 ADD .config/Ultralytics/settings.json /root/.config/Ultralytics/settings.json
 

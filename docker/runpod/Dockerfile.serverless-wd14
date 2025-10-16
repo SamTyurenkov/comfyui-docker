@@ -20,6 +20,7 @@ RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use && git checkout 71c
 
 ADD entry.serverless-wd14.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
+ADD firebase_credits.py /home/comfyuser/firebase_credits.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 
 WORKDIR /home/comfyuser/

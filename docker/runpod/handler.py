@@ -28,7 +28,9 @@ try:
     print("worker-comfyui - Firebase credits module loaded successfully")
 except ImportError as e:
     print(f"worker-comfyui - Firebase credits module not available: {e}")
+    print("worker-comfyui - Firebase credits are required for this worker.")
     FIREBASE_CREDITS_AVAILABLE = False
+    FIREBASE_IMPORT_ERROR = str(e)
 
 # Time to wait between API check attempts in milliseconds
 COMFY_API_AVAILABLE_INTERVAL_MS = 50
@@ -1163,6 +1165,12 @@ def handler(job):
     """
     job_input = job["input"]
     job_id = job["id"]
+    
+    # Check if Firebase credits module is available (required for this worker)
+    if not FIREBASE_CREDITS_AVAILABLE:
+        error_msg = f"Firebase credits module is required but not available: {FIREBASE_IMPORT_ERROR}"
+        print(f"worker-comfyui - {error_msg}")
+        return {"error": error_msg}
 
     # Make sure that the input is valid
     validated_data, error_message = validate_input(job_input)
@@ -1175,37 +1183,47 @@ def handler(job):
     user_token = validated_data.get("user_token")
     workflow_id = validated_data.get("workflow_id")
     
-    # Verify user and check credits if token is provided
-    user_id = None
-    user_email = None
-    if user_token and FIREBASE_CREDITS_AVAILABLE:
-        print("worker-comfyui - Verifying user authentication...")
-        user_info = verify_user_token(user_token)
-        if user_info:
-            user_id = user_info["uid"]
-            user_email = user_info.get("email", "unknown")
-            print(f"worker-comfyui - User authenticated: {user_email} (ID: {user_id})")
-            
-            # Get current credits
-            credits_result = get_user_credits(user_id)
-            if credits_result["error"]:
-                print(f"worker-comfyui - Warning: Failed to fetch user credits: {credits_result['error']}")
-            else:
-                current_credits = credits_result["credits"]
-                print(f"worker-comfyui - User has {current_credits} credits")
-                
-                # Optional: Enforce minimum credit check (BASE_COST_PER_JOB)
-                # Uncomment to require minimum credits before execution:
-                # if current_credits < BASE_COST_PER_JOB:
-                #     return {
-                #         "error": f"Insufficient credits. You have {current_credits} credits, but minimum {BASE_COST_PER_JOB} required.",
-                #         "current_credits": current_credits,
-                #         "required_credits": BASE_COST_PER_JOB
-                #     }
-        else:
-            print("worker-comfyui - Warning: Failed to verify user token. Proceeding without credit system.")
-    elif user_token and not FIREBASE_CREDITS_AVAILABLE:
-        print("worker-comfyui - User token provided but Firebase credits not available. Proceeding without credit system.")
+    # User authentication is required
+    if not user_token:
+        error_msg = "User authentication required. Please provide a valid user_token."
+        print(f"worker-comfyui - {error_msg}")
+        return {"error": error_msg}
+    
+    # Verify user and check credits
+    print("worker-comfyui - Verifying user authentication...")
+    user_info = verify_user_token(user_token)
+    if not user_info:
+        error_msg = "Invalid or expired user token. Please authenticate again."
+        print(f"worker-comfyui - {error_msg}")
+        return {"error": error_msg}
+    
+    user_id = user_info["uid"]
+    user_email = user_info.get("email", "unknown")
+    print(f"worker-comfyui - User authenticated: {user_email} (ID: {user_id})")
+    
+    # Get current credits
+    credits_result = get_user_credits(user_id)
+    if credits_result["error"]:
+        error_msg = f"Failed to fetch user credits: {credits_result['error']}"
+        print(f"worker-comfyui - {error_msg}")
+        return {
+            "error": error_msg,
+            "user_id": user_id
+        }
+    
+    current_credits = credits_result["credits"]
+    print(f"worker-comfyui - User has {current_credits} credits")
+    
+    # Enforce minimum credit check - user must have positive credits
+    if current_credits <= 0:
+        error_msg = f"Insufficient credits. You have {current_credits} credits. Please add credits to continue."
+        print(f"worker-comfyui - {error_msg}")
+        return {
+            "error": error_msg,
+            "current_credits": current_credits,
+            "required_credits": BASE_COST_PER_JOB,
+            "user_id": user_id
+        }
     
     # Log workflow analysis for debugging (can be disabled with environment variable)
     if os.environ.get("LOG_WORKFLOW_ANALYSIS", "true").lower() == "true":
@@ -1655,39 +1673,30 @@ def handler(job):
     print(f"worker-comfyui - GPU type: {cost_info['gpu_type']}")
     print(f"worker-comfyui - Total cost: {cost_info['total_cost']} credits (base: {cost_info['base_cost']}, execution: {cost_info['execution_cost']})")
     
-    # Deduct credits from user's account (server-side, independent of frontend)
-    if user_id and FIREBASE_CREDITS_AVAILABLE:
-        print(f"worker-comfyui - Deducting {cost_info['total_cost']} credits from user {user_email}...")
-        deduction_result = deduct_credits(
-            user_id=user_id,
-            cost_info=cost_info,
-            workflow_id=workflow_id,
-            job_id=job_id
-        )
-        
-        if deduction_result["success"]:
-            print(f"worker-comfyui - Successfully charged {deduction_result['cost']} credits. New balance: {deduction_result['new_balance']}")
-            final_result["credit_deduction"] = {
-                "success": True,
-                "charged": deduction_result["cost"],
-                "new_balance": deduction_result["new_balance"],
-                "user_id": user_id
-            }
-        else:
-            print(f"worker-comfyui - Failed to deduct credits: {deduction_result['error']}")
-            final_result["credit_deduction"] = {
-                "success": False,
-                "error": deduction_result["error"],
-                "user_id": user_id
-            }
-    elif user_id and not FIREBASE_CREDITS_AVAILABLE:
-        print("worker-comfyui - User authenticated but Firebase credits not available. No credits deducted.")
+    # Deduct credits from user's account (server-side)
+    print(f"worker-comfyui - Deducting {cost_info['total_cost']} credits from user {user_email}...")
+    deduction_result = deduct_credits(
+        user_id=user_id,
+        cost_info=cost_info,
+        workflow_id=workflow_id,
+        job_id=job_id
+    )
+    
+    if deduction_result["success"]:
+        print(f"worker-comfyui - Successfully charged {deduction_result['cost']} credits. New balance: {deduction_result['new_balance']}")
         final_result["credit_deduction"] = {
-            "success": False,
-            "error": "Firebase credits system not available"
+            "success": True,
+            "charged": deduction_result["cost"],
+            "new_balance": deduction_result["new_balance"],
+            "user_id": user_id
         }
     else:
-        print("worker-comfyui - No user authentication provided. No credits deducted.")
+        print(f"worker-comfyui - Failed to deduct credits: {deduction_result['error']}")
+        final_result["credit_deduction"] = {
+            "success": False,
+            "error": deduction_result["error"],
+            "user_id": user_id
+        }
     
     output_summary = []
     if output_data:

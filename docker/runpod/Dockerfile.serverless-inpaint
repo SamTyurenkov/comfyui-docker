@@ -21,6 +21,7 @@ RUN git clone https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /hom
 
 ADD entry.serverless-inpaint.sh /usr/local/bin/entrypoint.sh
 ADD handler.py /home/comfyuser/handler.py
+ADD firebase_credits.py /home/comfyuser/firebase_credits.py
 ADD test_input.min.json /home/comfyuser/test_input.json
 ADD .config/Ultralytics/settings.json /root/.config/Ultralytics/settings.json
 
