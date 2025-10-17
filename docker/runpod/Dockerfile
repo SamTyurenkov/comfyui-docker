@@ -130,7 +130,7 @@ RUN git clone --depth 1 https://github.com/scraed/LanPaint.git /home/comfyuser/C
 RUN git clone --depth 1 https://github.com/1038lab/ComfyUI-JoyCaption /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-JoyCaption
 RUN git clone --depth 1 https://github.com/Saquib764/omini-kontext /home/comfyuser/ComfyUI/custom_nodes/omini-kontext
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-MMAudio /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MMAudio
-RUN git clone --depth 1 https://github.com/neverbiasu/ComfyUI-BAGEL /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-BAGEL
+RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-BAGEL /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-BAGEL
 RUN git clone --depth 1 https://github.com/ShmuelRonen/ComfyUI-VideoUpscale_WithModel /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-VideoUpscale_WithModel
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-WanAnimatePreprocess /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanAnimatePreprocess
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
