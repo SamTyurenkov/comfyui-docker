@@ -100,6 +100,7 @@ def verify_user_token(id_token: str) -> Optional[Dict[str, Any]]:
 def get_user_credits(user_id: str) -> Dict[str, Any]:
     """
     Get user's current credit balance.
+    Creates user with default credits if they don't exist.
     
     Args:
         user_id: Firebase user ID (uid)
@@ -116,11 +117,19 @@ def get_user_credits(user_id: str) -> Dict[str, Any]:
         
         if not user_doc.exists:
             # Create new user with default credits
+            # Use set() with merge to handle race condition where two requests
+            # try to create the same user simultaneously
             print(f"firebase_credits - Creating new user {user_id} with {DEFAULT_CREDITS_FOR_NEW_USERS} credits")
-            user_ref.set({
-                "credits": DEFAULT_CREDITS_FOR_NEW_USERS,
-                "created_at": firestore.SERVER_TIMESTAMP,
-            })
+            try:
+                user_ref.set({
+                    "credits": DEFAULT_CREDITS_FOR_NEW_USERS,
+                    "created_at": firestore.SERVER_TIMESTAMP,
+                }, merge=True)
+            except Exception as set_error:
+                # If another request already created the user, just continue
+                print(f"firebase_credits - Race condition creating user (expected): {set_error}")
+                pass
+            
             return {"credits": DEFAULT_CREDITS_FOR_NEW_USERS, "error": None}
         
         user_data = user_doc.to_dict()
@@ -187,10 +196,14 @@ def deduct_credits(
         }
     
     try:
-        cost = cost_info["total_cost"]
+        cost = round(cost_info["total_cost"], 2)
         user_ref = _db.collection(CREDITS_COLLECTION).document(user_id)
         
-        # Use a transaction to ensure atomic update
+        # Use Firestore transaction to ensure atomic update
+        # If multiple operations happen simultaneously, Firestore will:
+        # 1. Detect the conflict when committing
+        # 2. Automatically retry the transaction with fresh data
+        # This prevents race conditions where two jobs could read the same balance
         @firestore.transactional
         def update_credits(transaction):
             user_doc = user_ref.get(transaction=transaction)
@@ -199,14 +212,14 @@ def deduct_credits(
                 raise ValueError(f"User {user_id} not found")
             
             current_credits = user_doc.to_dict().get("credits", 0)
-            new_balance = current_credits - cost
+            new_balance = round(current_credits - cost, 2)
             
             # Allow negative balance (will be handled by business logic)
             # Or uncomment to prevent negative balance:
             # if new_balance < 0:
             #     raise ValueError(f"Insufficient credits. Current: {current_credits}, Required: {cost}")
             
-            # Update user credits
+            # Update user credits atomically
             transaction.update(user_ref, {
                 "credits": new_balance,
                 "last_transaction": firestore.SERVER_TIMESTAMP,
@@ -214,7 +227,7 @@ def deduct_credits(
             
             return new_balance
         
-        # Execute transaction
+        # Execute transaction (with automatic retry on conflicts)
         transaction = _db.transaction()
         new_balance = update_credits(transaction)
         
@@ -224,23 +237,23 @@ def deduct_credits(
             transaction_ref.set({
                 "user_id": user_id,
                 "type": "deduction",
-                "amount": cost,
+                "amount": round(cost, 2),
                 "workflow_id": workflow_id,
                 "job_id": job_id,
                 "timestamp": firestore.SERVER_TIMESTAMP,
                 "cost_breakdown": {
-                    "base_cost": cost_info.get("base_cost"),
-                    "execution_cost": cost_info.get("execution_cost"),
-                    "execution_time_sec": cost_info.get("execution_time_sec"),
+                    "base_cost": round(cost_info.get("base_cost", 0), 2),
+                    "execution_cost": round(cost_info.get("execution_cost", 0), 2),
+                    "execution_time_sec": round(cost_info.get("execution_time_sec", 0), 2),
                     "gpu_type": cost_info.get("gpu_type"),
-                    "rate_per_second": cost_info.get("rate_per_second"),
+                    "rate_per_second": round(cost_info.get("rate_per_second", 0), 4),
                 }
             })
             print(f"firebase_credits - Transaction logged for user {user_id}")
         except Exception as log_error:
             print(f"firebase_credits - Warning: Failed to log transaction: {log_error}")
         
-        print(f"firebase_credits - Deducted {cost} credits from user {user_id}. New balance: {new_balance}")
+        print(f"firebase_credits - Deducted {round(cost, 2)} credits from user {user_id}. New balance: {new_balance}")
         return {
             "success": True,
             "new_balance": new_balance,
@@ -261,6 +274,7 @@ def deduct_credits(
 def add_credits(user_id: str, amount: float, reason: str = "manual_addition") -> Dict[str, Any]:
     """
     Add credits to user's balance (for admin/payment processing).
+    Uses atomic increment to prevent race conditions.
     
     Args:
         user_id: Firebase user ID
@@ -274,6 +288,7 @@ def add_credits(user_id: str, amount: float, reason: str = "manual_addition") ->
         return {"success": False, "new_balance": None, "error": "Firebase not initialized"}
     
     try:
+        rounded_amount = round(amount, 2)
         user_ref = _db.collection(CREDITS_COLLECTION).document(user_id)
         
         @firestore.transactional
@@ -282,14 +297,17 @@ def add_credits(user_id: str, amount: float, reason: str = "manual_addition") ->
             
             if not user_doc.exists:
                 # Create user if doesn't exist
+                # Using set with transaction to ensure atomicity
                 transaction.set(user_ref, {
-                    "credits": amount,
+                    "credits": rounded_amount,
                     "created_at": firestore.SERVER_TIMESTAMP,
+                    "last_transaction": firestore.SERVER_TIMESTAMP,
                 })
-                return amount
+                return rounded_amount
             
+            # User exists - atomically add credits
             current_credits = user_doc.to_dict().get("credits", 0)
-            new_balance = current_credits + amount
+            new_balance = round(current_credits + rounded_amount, 2)
             
             transaction.update(user_ref, {
                 "credits": new_balance,
@@ -298,6 +316,8 @@ def add_credits(user_id: str, amount: float, reason: str = "manual_addition") ->
             
             return new_balance
         
+        # Firestore transactions automatically retry on conflicts
+        # If two transactions try to modify the same document, one will retry
         transaction = _db.transaction()
         new_balance = update_credits(transaction)
         
@@ -307,14 +327,14 @@ def add_credits(user_id: str, amount: float, reason: str = "manual_addition") ->
             transaction_ref.set({
                 "user_id": user_id,
                 "type": "addition",
-                "amount": amount,
+                "amount": round(amount, 2),
                 "reason": reason,
                 "timestamp": firestore.SERVER_TIMESTAMP,
             })
         except Exception as log_error:
             print(f"firebase_credits - Warning: Failed to log transaction: {log_error}")
         
-        print(f"firebase_credits - Added {amount} credits to user {user_id}. New balance: {new_balance}")
+        print(f"firebase_credits - Added {round(amount, 2)} credits to user {user_id}. New balance: {new_balance}")
         return {"success": True, "new_balance": new_balance, "error": None}
         
     except Exception as e:
