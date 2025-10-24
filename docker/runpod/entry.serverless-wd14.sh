@@ -49,20 +49,32 @@ start_handler() {
 
 cleanup_old_folders() {
     echo "Starting cleanup of old date folders..."
+    
+    # Safety check: ensure we're only working in the correct directory
+    CLEANUP_DIR="/runpod-volume/serverless-input"
+    
+    if [ ! -d "$CLEANUP_DIR" ]; then
+        echo "Warning: Cleanup directory $CLEANUP_DIR does not exist, skipping cleanup"
+        return
+    fi
+    
     # Calculate date 2 days ago in YYYYMMDD format
     TWO_DAYS_AGO=$(date -d "2 days ago" +%Y%m%d)
-    echo "Cleaning up folders older than ${TWO_DAYS_AGO}..."
+    echo "Cleaning up folders older than ${TWO_DAYS_AGO} in $CLEANUP_DIR..."
     
     # Find and remove date folders older than 2 days
-    if [ -d "/runpod-volume/serverless-input" ]; then
-        find /runpod-volume/serverless-input -maxdepth 1 -type d -name "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" | while read folder; do
+    # Extra safety: ensure folder path starts with our cleanup directory
+    find "$CLEANUP_DIR" -maxdepth 1 -type d -name "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" | while read folder; do
+        # Double-check the folder is within our target directory
+        if [[ "$folder" == "$CLEANUP_DIR"/* ]] && [ -d "$folder" ]; then
             folder_date=$(basename "$folder")
-            if [ "$folder_date" -lt "$TWO_DAYS_AGO" ]; then
+            # Validate the folder name is exactly 8 digits
+            if [[ "$folder_date" =~ ^[0-9]{8}$ ]] && [ "$folder_date" -lt "$TWO_DAYS_AGO" ]; then
                 echo "Removing old folder: $folder"
-                # rm -rf "$folder"
+                rm -rf "$CLEANUP_DIR/$folder_date"
             fi
-        done
-    fi
+        fi
+    done
     echo "Cleanup completed."
 }
 
