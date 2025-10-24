@@ -117,7 +117,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-wd14
           push: true
-          tags: samtyurenkov/runpod-serverless-wd14:v3.3
+          tags: samtyurenkov/runpod-serverless-wd14:v3.4
 
       - name: Build and push Serverless Inpaint Runpod Image
         if: steps.flags.outputs.serverless_inpaint_changed == 'true'

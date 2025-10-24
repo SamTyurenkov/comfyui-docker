@@ -47,6 +47,26 @@ start_handler() {
     /runpod-volume/venv_cc12_cuda129/bin/python -u handler.py
 }
 
-# Start ComfyUI in background and wait for it to be ready
+cleanup_old_folders() {
+    echo "Starting cleanup of old date folders..."
+    # Calculate date 2 days ago in YYYYMMDD format
+    TWO_DAYS_AGO=$(date -d "2 days ago" +%Y%m%d)
+    echo "Cleaning up folders older than ${TWO_DAYS_AGO}..."
+    
+    # Find and remove date folders older than 2 days
+    if [ -d "/runpod-volume/serverless-input" ]; then
+        find /runpod-volume/serverless-input -maxdepth 1 -type d -name "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" | while read folder; do
+            folder_date=$(basename "$folder")
+            if [ "$folder_date" -lt "$TWO_DAYS_AGO" ]; then
+                echo "Removing old folder: $folder"
+                # rm -rf "$folder"
+            fi
+        done
+    fi
+    echo "Cleanup completed."
+}
+
+# Start all services in parallel
 start_comfyui &
+cleanup_old_folders &
 start_handler
