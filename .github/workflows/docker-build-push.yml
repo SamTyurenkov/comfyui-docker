@@ -136,3 +136,12 @@ jobs:
           file: ./docker/runpod/Dockerfile.serverless-wan2-2-i2v
           push: true
           tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v3.3
+
+      - name: Build and push Serverless Videotools Runpod Image
+        if: steps.flags.outputs.serverless_videotools_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile.serverless-videotools
+          push: true
+          tags: samtyurenkov/runpod-serverless-videotools:v3.5
