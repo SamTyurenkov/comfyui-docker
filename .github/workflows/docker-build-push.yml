@@ -42,6 +42,7 @@ jobs:
           serverless_wd14=false
           serverless_inpaint=false
           serverless_wan2_2_i2v=false
+          serverless_vace=false
 
           # Loop through all changed files
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
@@ -54,6 +55,7 @@ jobs:
             [[ "$file" == docker/runpod/Dockerfile.serverless-wan2-2-i2v ]] && serverless_wan2_2_i2v=true
             [[ "$file" == docker/runpod-trainer/* ]] && runpod_trainer=true
             [[ "$file" == docker/runpod-musubi-tuner/* ]] && runpod_musubi_tuner=true
+            [[ "$file" == docker/runpod/Dockerfile.serverless-vace ]] && serverless_vace=true
           done
 
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
@@ -64,7 +66,8 @@ jobs:
           echo "serverless_wan2_2_i2v_changed=$serverless_wan2_2_i2v" >> $GITHUB_OUTPUT
           echo "runpod_trainer_changed=$runpod_trainer" >> $GITHUB_OUTPUT
           echo "runpod_musubi_changed=$runpod_musubi_tuner" >> $GITHUB_OUTPUT
-
+          echo "serverless_vace_changed=$serverless_vace" >> $GITHUB_OUTPUT
+          
       - name: Build and push Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
         uses: docker/build-push-action@v5
@@ -136,6 +139,15 @@ jobs:
           file: ./docker/runpod/Dockerfile.serverless-wan2-2-i2v
           push: true
           tags: samtyurenkov/runpod-serverless-wan2-2-i2v:v3.3
+
+      - name: Build and push Serverless Wan Vace Runpod Image
+        if: steps.flags.outputs.serverless_vace_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile.serverless-vace
+          push: true
+          tags: samtyurenkov/runpod-serverless-vace:v1.0
 
       - name: Build and push Serverless Videotools Runpod Image
         if: steps.flags.outputs.serverless_videotools_changed == 'true'

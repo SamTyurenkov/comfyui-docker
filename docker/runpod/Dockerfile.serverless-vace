@@ -1,0 +1,49 @@
+# syntax=docker/dockerfile:1
+#see https://stackoverflow.com/questions/58018300/using-a-pip-cache-directory-in-docker-builds
+FROM python:3.12-bookworm as builder
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libssl3 \
+    git
+
+RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
+COPY extra_model_paths.serverless.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
+
+RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
+
+RUN git clone https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /home/comfyuser/ComfyUI/custom_nodes/comfyui-inspyrenet-rembg
+
+RUN git clone https://github.com/rgthree/rgthree-comfy /home/comfyuser/ComfyUI/custom_nodes/rgthree-comfy
+
+RUN git clone https://github.com/cubiq/ComfyUI_essentials /home/comfyuser/ComfyUI/custom_nodes/comfyui_essentials
+
+RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
+
+RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
+
+RUN git clone https://github.com/M1kep/ComfyLiterals /home/comfyuser/ComfyUI/custom_nodes/ComfyLiterals
+
+RUN git clone https://github.com/kijai/ComfyUI-KJNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-KJNodes
+
+RUN git clone https://github.com/Fannovel16/ComfyUI-Frame-Interpolation /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation
+
+RUN git clone https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
+
+RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_LayerStyle
+
+RUN git clone https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
+
+ADD entry.serverless-vace.sh /usr/local/bin/entrypoint.sh
+ADD handler.py /home/comfyuser/handler.py
+ADD firebase_credits.py /home/comfyuser/firebase_credits.py
+ADD test_input.min.json /home/comfyuser/test_input.json
+ADD .config/Ultralytics/settings.json /root/.config/Ultralytics/settings.json
+
+WORKDIR /home/comfyuser/
+RUN ["chmod", "+x", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
