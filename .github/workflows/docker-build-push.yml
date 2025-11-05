@@ -67,7 +67,7 @@ jobs:
           echo "runpod_trainer_changed=$runpod_trainer" >> $GITHUB_OUTPUT
           echo "runpod_musubi_changed=$runpod_musubi_tuner" >> $GITHUB_OUTPUT
           echo "serverless_vace_changed=$serverless_vace" >> $GITHUB_OUTPUT
-          
+
       - name: Build and push Runpod Image
         if: steps.flags.outputs.runpod_changed == 'true'
         uses: docker/build-push-action@v5
@@ -147,7 +147,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-vace
           push: true
-          tags: samtyurenkov/runpod-serverless-vace:v1.0
+          tags: samtyurenkov/runpod-serverless-vace:v3.5
 
       - name: Build and push Serverless Videotools Runpod Image
         if: steps.flags.outputs.serverless_videotools_changed == 'true'
