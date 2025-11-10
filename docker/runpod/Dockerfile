@@ -117,7 +117,7 @@ RUN git clone --depth 1 https://github.com/gameltb/comfyui-stablesr /home/comfyu
 RUN git clone --depth 1 https://github.com/ethansmith2000/comfy-todo /home/comfyuser/ComfyUI/custom_nodes/comfy-todo
 RUN git clone --depth 1 https://github.com/kaibioinfo/ComfyUI_AdvancedRefluxControl.git /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_AdvancedRefluxControl
 RUN git clone --depth 1 https://github.com/Jonseed/ComfyUI-Detail-Daemon /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Detail-Daemon
-RUN git clone --depth 1 https://github.com/Lightricks/ComfyUI-LTXVideo /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LTXVideo
+# RUN git clone --depth 1 https://github.com/Lightricks/ComfyUI-LTXVideo /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LTXVideo
 RUN git clone --depth 1 https://github.com/spacepxl/ComfyUI-Image-Filters /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Image-Filters
 RUN git clone --depth 1 https://github.com/Clybius/ComfyUI-ClybsChromaNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-ClybsChromaNodes
 RUN git clone --depth 1 https://github.com/Extraltodeus/sigmas_tools_and_the_golden_scheduler /home/comfyuser/ComfyUI/custom_nodes/sigmas_tools_and_the_golden_scheduler
