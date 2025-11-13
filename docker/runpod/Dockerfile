@@ -138,7 +138,7 @@ RUN git clone --depth 1 https://github.com/kijai/ComfyUI-WanAnimatePreprocess /h
 
 RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
 
-RUN pip install --upgrade pip && pip install jupyter
+RUN pip install --upgrade pip && pip install jupyter ninja
 
 # RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 # RUN dpkg -i /tmp/cloudflared-linux-amd64.deb

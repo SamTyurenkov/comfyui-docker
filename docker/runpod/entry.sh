@@ -30,7 +30,8 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   apt-get update && apt-get -y install cuda-toolkit
   export CUDA_HOME="/usr/local/cuda" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
   git clone https://github.com/thu-ml/SageAttention.git /home/comfyuser/sageattention
-  #MAX_JOBS=2 TORCH_CUDA_ARCH_LIST="8.9;12.0" venv_cc12_cuda130/bin/python -m pip install sageattention==2.2.0 --no-build-isolation --verbose
+  # MAX_JOBS=8 TORCH_CUDA_ARCH_LIST="8.9;12.0" /workspace/venv_cc12_cuda130/bin/python -m pip install flash_attn==2.8.2 --no-build-isolation --verbose
+  # MAX_JOBS=2 TORCH_CUDA_ARCH_LIST="8.9;12.0" venv_cc12_cuda130/bin/python -m pip install sageattention==2.2.0 --no-build-isolation --verbose
   # sam2 compile from source
   # torch torchvision torchsde xformers from index url
   pip install --upgrade pip
