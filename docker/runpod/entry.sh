@@ -212,8 +212,12 @@ fi
 start_comfyui() {
     # Capture additional arguments from environment variables
     echo "Starting ComfyUI..."
+    DRIVER_VERSION=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader,nounits | head -n1 | cut -d'.' -f1)
+
     if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
       python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
+    elif [ -n "$DEBUG" ] && [ "$DEBUG" = "1" ] && [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ] && [ "$DRIVER_VERSION" -ge 580 ]; then
+      /workspace/venv_cc12_cuda130/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "12" ]; then
       /workspace/venv_cc12_cuda129/bin/python /home/comfyuser/ComfyUI/main.py --max-upload-size 300 --dont-print-server --enable-cors-header "*" --use-pytorch-cross-attention --disable-xformers --fast fp16_accumulation
     elif [ -n "$CC_VERSION" ] && [ "$CC_VERSION" = "CPU" ]; then
