@@ -191,6 +191,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /workspace/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
   rm -rf /home/comfyuser/ComfyUI/models/bagel && ln -s /workspace/models/bagel /home/comfyuser/ComfyUI/models/bagel
   rm -rf /home/comfyuser/ComfyUI/models/detection && ln -s /workspace/models/detection /home/comfyuser/ComfyUI/models/detection
+  rm -rf /home/comfyuser/ComfyUI/models/hyperswap && ln -s /workspace/models/hyperswap /home/comfyuser/ComfyUI/models/hyperswap
 fi
 
 # Start cloudflared in the background
