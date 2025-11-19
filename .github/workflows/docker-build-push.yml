@@ -111,7 +111,7 @@ jobs:
           context: ./docker/runpod
           file: ./docker/runpod/Dockerfile.serverless-faceswap
           push: true
-          tags: samtyurenkov/runpod-serverless-faceswap:v3.3
+          tags: samtyurenkov/runpod-serverless-faceswap:v3.5
 
       - name: Build and push Serverless WD14 Runpod Image
         if: steps.flags.outputs.serverless_wd14_changed == 'true'

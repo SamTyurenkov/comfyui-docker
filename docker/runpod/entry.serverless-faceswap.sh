@@ -26,6 +26,7 @@ rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /runpod-volume/model
 rm -rf /home/comfyuser/ComfyUI/models/grounding-dino && ln -s /runpod-volume/models/grounding-dino /home/comfyuser/ComfyUI/models/grounding-dino
 rm -rf /home/comfyuser/ComfyUI/user && ln -s /runpod-volume/user /home/comfyuser/ComfyUI/user
 rm -rf /home/comfyuser/ComfyUI/input && ln -s /runpod-volume/serverless-input /home/comfyuser/ComfyUI/input
+rm -rf /home/comfyuser/ComfyUI/models/hyperswap && ln -s /runpod-volume/models/hyperswap /home/comfyuser/ComfyUI/models/hyperswap
 mkdir -p /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts && ln -s /runpod-volume/models/comfyui_controlnet_aux/ckpts /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts
 
 # Start ComfyUI
@@ -46,5 +47,38 @@ start_handler() {
     /runpod-volume/venv_cc12_cuda129/bin/python -u handler.py
 }
 
+cleanup_old_folders() {
+    echo "Starting cleanup of old date folders..."
+    
+    # Safety check: ensure we're only working in the correct directory
+    CLEANUP_DIR="/runpod-volume/serverless-input"
+    
+    if [ ! -d "$CLEANUP_DIR" ]; then
+        echo "Warning: Cleanup directory $CLEANUP_DIR does not exist, skipping cleanup"
+        return
+    fi
+    
+    # Calculate date 2 days ago in YYYYMMDD format
+    TWO_DAYS_AGO=$(date -d "2 days ago" +%Y%m%d)
+    echo "Cleaning up folders older than ${TWO_DAYS_AGO} in $CLEANUP_DIR..."
+    
+    # Find and remove date folders older than 2 days
+    # Extra safety: ensure folder path starts with our cleanup directory
+    find "$CLEANUP_DIR" -maxdepth 1 -type d -name "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" | while read folder; do
+        # Double-check the folder is within our target directory
+        if [[ "$folder" == "$CLEANUP_DIR"/* ]] && [ -d "$folder" ]; then
+            folder_date=$(basename "$folder")
+            # Validate the folder name is exactly 8 digits
+            if [[ "$folder_date" =~ ^[0-9]{8}$ ]] && [ "$folder_date" -lt "$TWO_DAYS_AGO" ]; then
+                echo "Removing old folder: $folder"
+                rm -rf "$CLEANUP_DIR/$folder_date"
+            fi
+        fi
+    done
+    echo "Cleanup completed."
+}
+
+# Start all services in parallel
 start_comfyui &
+cleanup_old_folders &
 start_handler
