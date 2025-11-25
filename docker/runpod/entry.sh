@@ -26,10 +26,11 @@ EOL
 
 if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
-  dpkg -i cuda-keyring_1.1-1_all.deb
+  dpkg -i cuda-keyring_1.1-1_all.deb && rm cuda-keyring_1.1-1_all.deb
   apt-get update && apt-get -y install cuda-toolkit
   export CUDA_HOME="/usr/local/cuda" && export PATH="$CUDA_HOME/bin:$PATH" && export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CUDA_HOME/lib64"
   git clone https://github.com/thu-ml/SageAttention.git /home/comfyuser/sageattention
+  # MAX_JOBS=2 TORCH_CUDA_ARCH_LIST="8.9;12.0" /workspace/venv_cc12_cuda129/bin/python -m pip install -v --no-build-isolation -U git+https://github.com/facebookresearch/xformers.git@main#egg=xformers
   # MAX_JOBS=8 TORCH_CUDA_ARCH_LIST="8.9;12.0" /workspace/venv_cc12_cuda130/bin/python -m pip install flash_attn==2.8.2 --no-build-isolation --verbose
   # MAX_JOBS=2 TORCH_CUDA_ARCH_LIST="8.9;12.0" venv_cc12_cuda130/bin/python -m pip install sageattention==2.2.0 --no-build-isolation --verbose
   # sam2 compile from source
@@ -38,7 +39,8 @@ if [ -n "$ROAMING_WAN" ] && [ "$ROAMING_WAN" = "1" ]; then
   pip install torch==2.8.0 protobuf==4.25.3 numpy==1.26.4 torchvision torchaudio torchsde --extra-index-url https://download.pytorch.org/whl/cu128
   pip install diffusers aiohttp aiodns Brotli flet==0.27.6 matplotlib-inline albumentations==2.0.8 transparent-background
   pip install simsimd --prefer-binary
-  pip install setuptools wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
+  pip install setuptools polygraphy wheel build triton spandrel kornia av jedi==0.16 onnxruntime tf-keras==2.19.0
+  pip install tensorrt --no-build-isolation
   pip install -r /home/comfyuser/ComfyUI/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
   pip install -r /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/requirements.txt
