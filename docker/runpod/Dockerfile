@@ -135,7 +135,7 @@ RUN git clone --depth 1 https://github.com/kijai/ComfyUI-WanAnimatePreprocess /h
 # RUN git clone https://github.com/weilin9999/WeiLin-ComfyUI-prompt-all-in-one /home/comfyuser/ComfyUI/custom_nodes/WeiLin-ComfyUI-prompt-all-in-one
 # RUN git clone https://github.com/pollockjj/ComfyUI-MultiGPU /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MultiGPU
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-GIMM-VFI /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-GIMM-VFI
-RUN git clone --depth 1 https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Upscaler-Tensorrt
+RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-Upscaler-Tensorrt /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Upscaler-Tensorrt
 RUN git clone --depth 1 https://github.com/Smirnov75/ComfyUI-mxToolkit /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-mxToolkit
 
 RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
