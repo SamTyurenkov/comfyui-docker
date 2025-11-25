@@ -194,6 +194,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/bagel && ln -s /workspace/models/bagel /home/comfyuser/ComfyUI/models/bagel
   rm -rf /home/comfyuser/ComfyUI/models/detection && ln -s /workspace/models/detection /home/comfyuser/ComfyUI/models/detection
   rm -rf /home/comfyuser/ComfyUI/models/hyperswap && ln -s /workspace/models/hyperswap /home/comfyuser/ComfyUI/models/hyperswap
+  rm -rf /home/comfyuser/ComfyUI/models/interpolation && ln -s /workspace/models/interpolation /home/comfyuser/ComfyUI/models/interpolation
 fi
 
 # Start cloudflared in the background
