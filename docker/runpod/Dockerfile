@@ -138,6 +138,7 @@ RUN git clone --depth 1 https://github.com/kijai/ComfyUI-GIMM-VFI /home/comfyuse
 RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-Upscaler-Tensorrt /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Upscaler-Tensorrt
 RUN git clone --depth 1 https://github.com/Smirnov75/ComfyUI-mxToolkit /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-mxToolkit
 
+
 RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
 
 RUN pip install --upgrade pip && pip install jupyter ninja
