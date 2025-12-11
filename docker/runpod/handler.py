@@ -59,22 +59,22 @@ REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
 
 # GPU pricing configuration (credits per second)
 GPU_PRICING = {
-    "RTX 3070": 0.03,
-    "RTX 3080": 0.03,
-    "RTX 3090": 0.03,
-    "RTX 4070": 0.04,
-    "RTX 4080": 0.04,
-    "RTX 4090": 0.04,
-    "RTX 5090": 0.06,
-    "A4000": 0.04,
-    "A5000": 0.05,
-    "A6000": 0.06,
-    "RTX A6000": 0.05,
-    "RTX PRO 6000": 0.09,  # Professional cards
-    "A40": 0.05,
-    "A100": 0.06,
-    "H100": 0.1,
-    "default": 0.10,  # fallback pricing
+    "RTX 3070": 0.0003,
+    "RTX 3080": 0.0003,
+    "RTX 3090": 0.0003,
+    "RTX 4070": 0.0004,
+    "RTX 4080": 0.0004,
+    "RTX 4090": 0.0004,
+    "RTX 5090": 0.0008,
+    "A4000": 0.0004,
+    "A5000": 0.0005,
+    "A6000": 0.0006,
+    "RTX A6000": 0.0006,
+    "RTX PRO 6000": 0.002,  # Professional cards
+    "A40": 0.0006,
+    "A100": 0.001,
+    "H100": 0.002,
+    "default": 0.001,  # fallback pricing
 }
 
 # Base cost per job (to prevent abuse and cover overhead)
