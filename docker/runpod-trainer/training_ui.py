@@ -8,6 +8,13 @@ from flask import Flask, render_template, request, jsonify, Response, send_file
 from flask_cors import CORS
 import queue
 import uuid
+from io import BytesIO
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 app = Flask(__name__)
 CORS(app)
@@ -353,6 +360,8 @@ def save_caption():
 def get_image():
     """Serve image files"""
     image_path = request.args.get('path', '')
+    thumbnail = request.args.get('thumbnail', 'false').lower() == 'true'
+    size = int(request.args.get('size', 300))
     
     if not image_path:
         return jsonify({'error': 'Image path is required'}), 400
@@ -364,7 +373,30 @@ def get_image():
         return jsonify({'error': 'Path is not a file'}), 400
     
     try:
-        return send_file(image_path)
+        if thumbnail:
+            if not PIL_AVAILABLE:
+                # Fallback: serve original image if PIL not available
+                return send_file(image_path)
+            
+            # Generate thumbnail on-the-fly
+            img = Image.open(image_path)
+            img.thumbnail((size, size), Image.Resampling.LANCZOS)
+            
+            # Convert to RGB if necessary (for formats like PNG with transparency)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                img = background
+            
+            img_io = BytesIO()
+            img.save(img_io, 'JPEG', quality=85, optimize=True)
+            img_io.seek(0)
+            
+            return send_file(img_io, mimetype='image/jpeg')
+        else:
+            return send_file(image_path)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

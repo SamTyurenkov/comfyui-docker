@@ -40,7 +40,7 @@ RUN mkdir -p /home/comfyuser/OneTrainer/
 
 RUN cd /home/comfyuser && git clone https://github.com/Nerogar/OneTrainer.git
 
-RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors
+RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors pillow
 
 RUN mkdir -p /root/.jupyter && \
     echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \

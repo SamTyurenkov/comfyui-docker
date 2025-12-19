@@ -265,6 +265,32 @@
             margin-bottom: 10px;
             color: #333;
         }
+
+        .image-container img {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container img.loaded {
+            opacity: 1;
+        }
+
+        .image-container img.loading {
+            opacity: 0.5;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 <body>
@@ -302,6 +328,14 @@
     <script>
         let currentDirectory = '';
         let saveTimeouts = {};
+        let allImages = [];
+        let loadedImages = new Set();
+        let pendingLoads = [];
+        let loadingQueue = [];
+        let isProcessingQueue = false;
+        const BATCH_SIZE = 5;
+        const BATCH_DELAY = 300; // ms between batches
+        let intersectionObserver = null;
 
         async function loadImages() {
             const directory = document.getElementById('directoryInput').value.trim();
@@ -335,8 +369,13 @@
                 
                 if (response.ok) {
                     currentDirectory = directory;
+                    allImages = data.images;
+                    loadedImages.clear();
+                    pendingLoads = [];
+                    loadingQueue = [];
+                    isProcessingQueue = false;
                     displayImages(data.images);
-                    showStatus(`Loaded ${data.count} image(s)`, 'success');
+                    showStatus(`Found ${data.count} image(s) - loading thumbnails...`, 'success');
                 } else {
                     showStatus('Error: ' + data.error, 'error');
                 }
@@ -366,19 +405,74 @@
 
             imagesGrid.innerHTML = '';
 
-            images.forEach(image => {
+            // Disconnect previous observer if exists
+            if (intersectionObserver) {
+                intersectionObserver.disconnect();
+            }
+
+            // Create Intersection Observer for lazy loading
+            intersectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const imageData = img.dataset.imageData ? JSON.parse(img.dataset.imageData) : null;
+                        
+                        if (imageData && !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path)) {
+                            pendingLoads.push(imageData.image_path);
+                            loadingQueue.push({ imgElement: img, imageData: imageData });
+                            // Unobserve once queued
+                            intersectionObserver.unobserve(img);
+                            
+                            // Start processing queue if not already processing
+                            if (!isProcessingQueue) {
+                                processLoadingQueue();
+                            }
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '200px' // Start loading 200px before entering viewport
+            });
+
+            // Create cards for all images
+            images.forEach((image, index) => {
                 const card = document.createElement('div');
                 card.className = 'image-card';
                 
-                // Create image element
+                // Create image element with placeholder
                 const imageContainer = document.createElement('div');
                 imageContainer.className = 'image-container';
+                
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.id = `placeholder-${index}`;
+                
                 const img = document.createElement('img');
-                img.src = `/api/get_image?path=${encodeURIComponent(image.image_path)}`;
+                img.dataset.imageData = JSON.stringify(image);
+                img.dataset.index = index;
                 img.alt = image.filename;
+                img.style.display = 'none';
+                
+                img.onload = function() {
+                    this.classList.add('loaded');
+                    this.style.display = 'block';
+                    const placeholderEl = document.getElementById(`placeholder-${this.dataset.index}`);
+                    if (placeholderEl) {
+                        placeholderEl.style.display = 'none';
+                    }
+                };
+                
                 img.onerror = function() {
                     this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+                    this.classList.add('loaded');
+                    this.style.display = 'block';
+                    const placeholderEl = document.getElementById(`placeholder-${this.dataset.index}`);
+                    if (placeholderEl) {
+                        placeholderEl.style.display = 'none';
+                    }
                 };
+                
+                imageContainer.appendChild(placeholder);
                 imageContainer.appendChild(img);
 
                 // Create caption container
@@ -410,7 +504,7 @@
 
                     saveTimeouts[image.caption_filename] = setTimeout(() => {
                         saveCaption(image.caption_filename, captionTextarea.value);
-                    }, 1000); // Wait 1 second after user stops typing
+                    }, 1000);
                 });
 
                 captionContainer.appendChild(captionLabel);
@@ -421,7 +515,97 @@
                 card.appendChild(captionContainer);
                 
                 imagesGrid.appendChild(card);
+                
+                // Observe the image for lazy loading
+                intersectionObserver.observe(img);
             });
+
+        }
+
+        function processLoadingQueue() {
+            if (isProcessingQueue && loadingQueue.length === 0) {
+                isProcessingQueue = false;
+                return;
+            }
+            
+            if (loadingQueue.length === 0) {
+                isProcessingQueue = false;
+                return;
+            }
+            
+            isProcessingQueue = true;
+            
+            // Process a batch
+            const batch = loadingQueue.splice(0, BATCH_SIZE);
+            
+            batch.forEach((item, index) => {
+                setTimeout(() => {
+                    loadImage(item.imgElement, item.imageData);
+                }, index * 100); // Stagger loads within batch by 100ms
+            });
+            
+            // Process next batch after delay
+            setTimeout(() => {
+                processLoadingQueue();
+            }, BATCH_DELAY);
+        }
+
+        function loadImage(imgElement, imageData) {
+            if (loadedImages.has(imageData.image_path)) {
+                return;
+            }
+            
+            loadedImages.add(imageData.image_path);
+            const index = pendingLoads.indexOf(imageData.image_path);
+            if (index > -1) {
+                pendingLoads.splice(index, 1);
+            }
+            
+            imgElement.classList.add('loading');
+            
+            // Load thumbnail first (smaller, faster) - 300px max dimension
+            const thumbnailUrl = `/api/get_image?path=${encodeURIComponent(imageData.image_path)}&thumbnail=true&size=300`;
+            
+            // Create a new image to preload
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                imgElement.src = thumbnailUrl;
+                imgElement.classList.remove('loading');
+                imgElement.classList.add('loaded');
+                imgElement.style.display = 'block';
+                const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
+                if (placeholderEl) {
+                    placeholderEl.style.display = 'none';
+                }
+                
+                // Load full image after a delay if still in viewport
+                setTimeout(() => {
+                    if (imgElement.offsetParent !== null) { // Check if still visible
+                        const fullImageUrl = `/api/get_image?path=${encodeURIComponent(imageData.image_path)}`;
+                        const fullImg = new Image();
+                        fullImg.onload = () => {
+                            imgElement.src = fullImageUrl;
+                        };
+                        fullImg.onerror = () => {
+                            // Keep thumbnail if full image fails
+                        };
+                        fullImg.src = fullImageUrl;
+                    }
+                }, 2000); // Wait 2 seconds before loading full image
+            };
+            
+            tempImg.onerror = () => {
+                imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+                imgElement.classList.remove('loading');
+                imgElement.classList.add('loaded');
+                imgElement.style.display = 'block';
+                const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
+                if (placeholderEl) {
+                    placeholderEl.style.display = 'none';
+                }
+            };
+            
+            tempImg.src = thumbnailUrl;
         }
 
         async function saveCaption(captionFilename, captionText) {
