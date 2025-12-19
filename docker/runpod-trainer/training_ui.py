@@ -4,7 +4,7 @@ import subprocess
 import threading
 import time
 import json
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, send_file
 from flask_cors import CORS
 import queue
 import uuid
@@ -166,6 +166,10 @@ process_manager = ProcessManager()
 def index():
     return render_template('index.html')
 
+@app.route('/caption-editor')
+def caption_editor():
+    return render_template('caption_editor.html')
+
 @app.route('/api/start_training', methods=['POST'])
 def start_training():
     data = request.get_json()
@@ -249,6 +253,120 @@ def stream_output(process_id):
             time.sleep(0.1)  # More frequent polling
     
     return Response(generate(), mimetype='text/event-stream')
+
+@app.route('/api/list_images', methods=['POST'])
+def list_images():
+    """List all images and their corresponding caption files from a directory"""
+    data = request.get_json()
+    directory = data.get('directory', '')
+    
+    if not directory:
+        return jsonify({'error': 'Directory is required'}), 400
+    
+    if not os.path.exists(directory):
+        return jsonify({'error': 'Directory does not exist'}), 404
+    
+    if not os.path.isdir(directory):
+        return jsonify({'error': 'Path is not a directory'}), 400
+    
+    try:
+        # Supported image extensions
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
+        images = []
+        
+        # Recursively walk through directory and subdirectories
+        for root, dirs, files in os.walk(directory):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                if os.path.isfile(filepath):
+                    name, ext = os.path.splitext(filename)
+                    if ext.lower() in image_extensions:
+                        # Look for corresponding caption file in the same directory
+                        caption_path = os.path.join(root, name + '.txt')
+                        caption_text = ''
+                        if os.path.exists(caption_path):
+                            try:
+                                with open(caption_path, 'r', encoding='utf-8') as f:
+                                    caption_text = f.read()
+                            except Exception as e:
+                                caption_text = f'Error reading caption: {str(e)}'
+                        
+                        # Get relative path from the root directory for display
+                        rel_path = os.path.relpath(root, directory)
+                        if rel_path == '.':
+                            display_path = filename
+                        else:
+                            display_path = os.path.join(rel_path, filename)
+                        
+                        images.append({
+                            'filename': display_path,
+                            'caption_filename': os.path.join(rel_path, name + '.txt') if rel_path != '.' else (name + '.txt'),
+                            'caption': caption_text,
+                            'image_path': filepath
+                        })
+        
+        # Sort by filename
+        images.sort(key=lambda x: x['filename'])
+        
+        return jsonify({
+            'images': images,
+            'count': len(images)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/save_caption', methods=['POST'])
+def save_caption():
+    """Save a caption file"""
+    data = request.get_json()
+    directory = data.get('directory', '')
+    caption_filename = data.get('caption_filename', '')
+    caption_text = data.get('caption', '')
+    
+    if not directory or not caption_filename:
+        return jsonify({'error': 'Directory and caption filename are required'}), 400
+    
+    try:
+        caption_path = os.path.join(directory, caption_filename)
+        
+        # Ensure root directory exists
+        if not os.path.exists(directory):
+            return jsonify({'error': 'Directory does not exist'}), 404
+        
+        # Ensure the subdirectory for the caption file exists
+        caption_dir = os.path.dirname(caption_path)
+        if caption_dir and not os.path.exists(caption_dir):
+            os.makedirs(caption_dir, exist_ok=True)
+        
+        # Write caption file
+        with open(caption_path, 'w', encoding='utf-8') as f:
+            f.write(caption_text)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Caption saved successfully'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/get_image')
+def get_image():
+    """Serve image files"""
+    image_path = request.args.get('path', '')
+    
+    if not image_path:
+        return jsonify({'error': 'Image path is required'}), 400
+    
+    if not os.path.exists(image_path):
+        return jsonify({'error': 'Image not found'}), 404
+    
+    if not os.path.isfile(image_path):
+        return jsonify({'error': 'Path is not a file'}), 400
+    
+    try:
+        return send_file(image_path)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False) 
