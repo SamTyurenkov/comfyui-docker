@@ -42,6 +42,10 @@ RUN cd /home/comfyuser && git clone https://github.com/Nerogar/OneTrainer.git
 
 RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors
 
+RUN mkdir -p /root/.jupyter && \
+    echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \
+    > /root/.jupyter/jupyter_notebook_config.py
+
 # Copy training UI files
 COPY training_ui.py /home/comfyuser/training_ui.py
 COPY templates/ /home/comfyuser/templates/

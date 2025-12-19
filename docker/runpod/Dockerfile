@@ -144,6 +144,11 @@ RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-for
 RUN git clone --depth 1 https://github.com/AMTPorn/comfyui_amt /home/comfyuser/ComfyUI/custom_nodes/comfyui_amt
 
 RUN pip install --upgrade pip && pip install jupyter ninja
+
+RUN mkdir -p /root/.jupyter && \
+    echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \
+    > /root/.jupyter/jupyter_notebook_config.py
+
 # RUN wget -O /tmp/cloudflared-linux-amd64.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
 # RUN dpkg -i /tmp/cloudflared-linux-amd64.deb
 ADD entry.sh /usr/local/bin/entrypoint.sh
