@@ -174,12 +174,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .image-container img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .image-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .caption-container {
@@ -333,8 +345,12 @@
         let pendingLoads = [];
         let loadingQueue = [];
         let isProcessingQueue = false;
+        let failedLoads = new Map(); // Track failed loads: image_path -> { retryCount, timeoutId }
+        let queueTimeoutId = null; // Track queue processing timeout
         const BATCH_SIZE = 5;
         const BATCH_DELAY = 300; // ms between batches
+        const RETRY_DELAY = 10000; // 10 seconds
+        const MAX_RETRIES = 3; // Maximum number of retries per image
         let intersectionObserver = null;
 
         async function loadImages() {
@@ -343,6 +359,15 @@
             if (!directory) {
                 showStatus('Please enter a directory path', 'error');
                 return;
+            }
+
+            // Clear all pending operations if directory changed
+            if (currentDirectory && currentDirectory !== directory) {
+                clearAllRetries();
+                // Stop processing queue
+                isProcessingQueue = false;
+                loadingQueue = [];
+                pendingLoads = [];
             }
 
             const loadBtn = document.getElementById('loadBtn');
@@ -368,12 +393,18 @@
                 const data = await response.json();
                 
                 if (response.ok) {
+                    // Clear all pending operations before loading new directory
+                    clearAllRetries();
+                    
+                    // Stop processing queue
+                    isProcessingQueue = false;
+                    loadingQueue = [];
+                    pendingLoads = [];
+                    loadedImages.clear();
+                    
                     currentDirectory = directory;
                     allImages = data.images;
-                    loadedImages.clear();
-                    pendingLoads = [];
-                    loadingQueue = [];
-                    isProcessingQueue = false;
+                    
                     displayImages(data.images);
                     showStatus(`Found ${data.count} image(s) - loading thumbnails...`, 'success');
                 } else {
@@ -387,6 +418,22 @@
             }
         }
 
+        function clearAllRetries() {
+            // Clear all retry timeouts
+            failedLoads.forEach((info) => {
+                if (info.timeoutId) {
+                    clearTimeout(info.timeoutId);
+                }
+            });
+            failedLoads.clear();
+            
+            // Clear queue processing timeout
+            if (queueTimeoutId) {
+                clearTimeout(queueTimeoutId);
+                queueTimeoutId = null;
+            }
+        }
+
         function displayImages(images) {
             const imagesContainer = document.getElementById('imagesContainer');
             const imagesGrid = document.getElementById('imagesGrid');
@@ -396,8 +443,16 @@
             if (images.length === 0) {
                 imagesContainer.classList.add('hidden');
                 emptyState.classList.remove('hidden');
+                // Clear retries even if no images
+                clearAllRetries();
                 return;
             }
+
+            // Clear all pending retries and operations before loading new images
+            clearAllRetries();
+            isProcessingQueue = false;
+            loadingQueue = [];
+            pendingLoads = [];
 
             imagesContainer.classList.remove('hidden');
             emptyState.classList.add('hidden');
@@ -408,24 +463,34 @@
             // Disconnect previous observer if exists
             if (intersectionObserver) {
                 intersectionObserver.disconnect();
+                intersectionObserver = null;
             }
 
             // Create Intersection Observer for lazy loading
             intersectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const img = entry.target;
-                        const imageData = img.dataset.imageData ? JSON.parse(img.dataset.imageData) : null;
-                        
-                        if (imageData && !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path)) {
-                            pendingLoads.push(imageData.image_path);
-                            loadingQueue.push({ imgElement: img, imageData: imageData });
-                            // Unobserve once queued
-                            intersectionObserver.unobserve(img);
+                        const container = entry.target;
+                        const img = container.querySelector('img');
+                        if (img && img.dataset.imageData) {
+                            const imageData = JSON.parse(img.dataset.imageData);
                             
-                            // Start processing queue if not already processing
-                            if (!isProcessingQueue) {
-                                processLoadingQueue();
+                            // Check if image needs to be loaded (not loaded yet, or failed and needs retry)
+                            const needsLoad = !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path);
+                            const needsRetry = failedLoads.has(imageData.image_path) && 
+                                             failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
+                                             !failedLoads.get(imageData.image_path).timeoutId;
+                            
+                            if (imageData && (needsLoad || needsRetry)) {
+                                pendingLoads.push(imageData.image_path);
+                                loadingQueue.push({ imgElement: img, imageData: imageData, isRetry: needsRetry });
+                                // Unobserve once queued
+                                intersectionObserver.unobserve(container);
+                                
+                                // Start processing queue if not already processing
+                                if (!isProcessingQueue) {
+                                    processLoadingQueue();
+                                }
                             }
                         }
                     }
@@ -452,25 +517,10 @@
                 img.dataset.index = index;
                 img.alt = image.filename;
                 img.style.display = 'none';
-                
-                img.onload = function() {
-                    this.classList.add('loaded');
-                    this.style.display = 'block';
-                    const placeholderEl = document.getElementById(`placeholder-${this.dataset.index}`);
-                    if (placeholderEl) {
-                        placeholderEl.style.display = 'none';
-                    }
-                };
-                
-                img.onerror = function() {
-                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
-                    this.classList.add('loaded');
-                    this.style.display = 'block';
-                    const placeholderEl = document.getElementById(`placeholder-${this.dataset.index}`);
-                    if (placeholderEl) {
-                        placeholderEl.style.display = 'none';
-                    }
-                };
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                // Don't set onload/onerror here - they'll be set in loadImage()
                 
                 imageContainer.appendChild(placeholder);
                 imageContainer.appendChild(img);
@@ -516,13 +566,50 @@
                 
                 imagesGrid.appendChild(card);
                 
-                // Observe the image for lazy loading
-                intersectionObserver.observe(img);
+                // Observe the image container (not the hidden img) for lazy loading
+                intersectionObserver.observe(imageContainer);
+                imageContainer.dataset.imageIndex = index;
             });
 
+            // Trigger initial load for visible images immediately
+            requestAnimationFrame(() => {
+                // Force check all images that are in viewport
+                const containers = document.querySelectorAll('.image-container');
+                containers.forEach(container => {
+                    const rect = container.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight + 200 && rect.bottom > -200;
+                    if (isVisible) {
+                        const img = container.querySelector('img');
+                        if (img && img.dataset.imageData) {
+                            const imageData = JSON.parse(img.dataset.imageData);
+                            const needsLoad = !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path);
+                            const needsRetry = failedLoads.has(imageData.image_path) && 
+                                             failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
+                                             !failedLoads.get(imageData.image_path).timeoutId;
+                            
+                            if (needsLoad || needsRetry) {
+                                pendingLoads.push(imageData.image_path);
+                                loadingQueue.push({ imgElement: img, imageData: imageData, isRetry: needsRetry });
+                            }
+                        }
+                    }
+                });
+                
+                if (!isProcessingQueue && loadingQueue.length > 0) {
+                    processLoadingQueue();
+                }
+            });
         }
 
+        let queueTimeoutId = null;
+
         function processLoadingQueue() {
+            // Clear any existing queue timeout
+            if (queueTimeoutId) {
+                clearTimeout(queueTimeoutId);
+                queueTimeoutId = null;
+            }
+            
             if (isProcessingQueue && loadingQueue.length === 0) {
                 isProcessingQueue = false;
                 return;
@@ -540,42 +627,73 @@
             
             batch.forEach((item, index) => {
                 setTimeout(() => {
-                    loadImage(item.imgElement, item.imageData);
+                    loadImage(item.imgElement, item.imageData, item.isRetry || false);
                 }, index * 100); // Stagger loads within batch by 100ms
             });
             
             // Process next batch after delay
-            setTimeout(() => {
+            queueTimeoutId = setTimeout(() => {
+                queueTimeoutId = null;
                 processLoadingQueue();
             }, BATCH_DELAY);
         }
 
-        function loadImage(imgElement, imageData) {
-            if (loadedImages.has(imageData.image_path)) {
+        function loadImage(imgElement, imageData, isRetry = false) {
+            // Don't load if already successfully loaded (unless it's a retry)
+            if (!isRetry && loadedImages.has(imageData.image_path)) {
+                // Check if it's actually loaded (has src and displayed)
+                if (imgElement.src && imgElement.style.display !== 'none') {
+                    return;
+                }
+            }
+            
+            // Check retry count
+            const failedInfo = failedLoads.get(imageData.image_path);
+            if (failedInfo && failedInfo.retryCount >= MAX_RETRIES) {
+                // Max retries reached, show error
+                showImageError(imgElement);
                 return;
             }
             
-            loadedImages.add(imageData.image_path);
+            // Mark as attempted (but don't mark as successfully loaded yet)
+            if (!isRetry) {
+                loadedImages.add(imageData.image_path);
+            }
+            
             const index = pendingLoads.indexOf(imageData.image_path);
             if (index > -1) {
                 pendingLoads.splice(index, 1);
             }
             
+            // Clear any existing retry timeout
+            if (failedInfo && failedInfo.timeoutId) {
+                clearTimeout(failedInfo.timeoutId);
+            }
+            
             imgElement.classList.add('loading');
+            
+            // Get current failed info before setting up handlers
+            const currentFailedInfo = failedLoads.get(imageData.image_path);
             
             // Load thumbnail first (smaller, faster) - 300px max dimension
             const thumbnailUrl = `/api/get_image?path=${encodeURIComponent(imageData.image_path)}&thumbnail=true&size=300`;
             
-            // Create a new image to preload
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                imgElement.src = thumbnailUrl;
+            // Set up one-time load handlers
+            const onThumbnailLoad = () => {
+                // Success - remove from failed loads and clear retry timeout
+                const failedInfo = failedLoads.get(imageData.image_path);
+                if (failedInfo && failedInfo.timeoutId) {
+                    clearTimeout(failedInfo.timeoutId);
+                }
+                failedLoads.delete(imageData.image_path);
+                
                 imgElement.classList.remove('loading');
                 imgElement.classList.add('loaded');
                 imgElement.style.display = 'block';
                 const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
                 if (placeholderEl) {
                     placeholderEl.style.display = 'none';
+                    placeholderEl.textContent = ''; // Clear retry message
                 }
                 
                 // Load full image after a delay if still in viewport
@@ -587,25 +705,83 @@
                             imgElement.src = fullImageUrl;
                         };
                         fullImg.onerror = () => {
-                            // Keep thumbnail if full image fails
+                            // Keep thumbnail if full image fails - don't retry full image
                         };
                         fullImg.src = fullImageUrl;
                     }
                 }, 2000); // Wait 2 seconds before loading full image
             };
             
-            tempImg.onerror = () => {
-                imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+            const onThumbnailError = () => {
                 imgElement.classList.remove('loading');
-                imgElement.classList.add('loaded');
-                imgElement.style.display = 'block';
-                const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
-                if (placeholderEl) {
-                    placeholderEl.style.display = 'none';
+                
+                // Track failed load
+                const failedInfo = failedLoads.get(imageData.image_path);
+                const currentRetryCount = failedInfo ? failedInfo.retryCount + 1 : 1;
+                
+                if (currentRetryCount < MAX_RETRIES) {
+                    // Schedule retry
+                    const timeoutId = setTimeout(() => {
+                        // Check if image is still in viewport before retrying
+                        const container = imgElement.closest('.image-container');
+                        if (container) {
+                            const rect = container.getBoundingClientRect();
+                            const isVisible = rect.top < window.innerHeight + 200 && rect.bottom > -200;
+                            if (isVisible) {
+                                loadImage(imgElement, imageData, true);
+                            } else {
+                                // Not visible, wait for intersection observer to trigger
+                                failedLoads.set(imageData.image_path, {
+                                    retryCount: currentRetryCount,
+                                    timeoutId: null
+                                });
+                            }
+                        }
+                    }, RETRY_DELAY);
+                    
+                    failedLoads.set(imageData.image_path, {
+                        retryCount: currentRetryCount,
+                        timeoutId: timeoutId
+                    });
+                    
+                    // Show retry indicator
+                    const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
+                    if (placeholderEl) {
+                        placeholderEl.textContent = `Retrying... (${currentRetryCount}/${MAX_RETRIES})`;
+                        placeholderEl.style.display = 'flex';
+                        placeholderEl.style.alignItems = 'center';
+                        placeholderEl.style.justifyContent = 'center';
+                        placeholderEl.style.color = '#ffc107';
+                    }
+                } else {
+                    // Max retries reached
+                    showImageError(imgElement);
                 }
             };
             
-            tempImg.src = thumbnailUrl;
+            // Remove old handlers and add new ones
+            imgElement.onload = onThumbnailLoad;
+            imgElement.onerror = onThumbnailError;
+            
+            // Start loading
+            imgElement.src = thumbnailUrl;
+        }
+        
+        function showImageError(imgElement) {
+            imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23dc3545"%3EImage load failed%3C/text%3E%3C/svg%3E';
+            imgElement.classList.remove('loading');
+            imgElement.classList.add('loaded');
+            imgElement.style.display = 'block';
+            const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
+            if (placeholderEl) {
+                placeholderEl.style.display = 'none';
+            }
+            
+            // Remove from failed loads since we've given up
+            const imageData = imgElement.dataset.imageData ? JSON.parse(imgElement.dataset.imageData) : null;
+            if (imageData) {
+                failedLoads.delete(imageData.image_path);
+            }
         }
 
         async function saveCaption(captionFilename, captionText) {
