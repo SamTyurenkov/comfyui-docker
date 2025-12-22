@@ -177,6 +177,7 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/sams && ln -s /workspace/models/sams /home/comfyuser/ComfyUI/models/sams
   rm -rf /home/comfyuser/ComfyUI/models/sam2 && ln -s /workspace/models/sam2 /home/comfyuser/ComfyUI/models/sam2
   rm -rf /home/comfyuser/ComfyUI/models/text_encoders && ln -s /workspace/models/text_encoders /home/comfyuser/ComfyUI/models/text_encoders
+  rm -rf /home/comfyuser/ComfyUI/models/audio_encoders && ln -s /workspace/models/audio_encoders /home/comfyuser/ComfyUI/models/audio_encoders
   rm -rf /home/comfyuser/ComfyUI/models/clip_vision && ln -s /workspace/models/clip_vision /home/comfyuser/ComfyUI/models/clip_vision
   rm -rf /home/comfyuser/ComfyUI/models/stablesr && ln -s /workspace/models/stablesr /home/comfyuser/ComfyUI/models/stablesr
   rm -rf /home/comfyuser/ComfyUI/models/style_models && ln -s /workspace/models/style_models /home/comfyuser/ComfyUI/models/style_models
