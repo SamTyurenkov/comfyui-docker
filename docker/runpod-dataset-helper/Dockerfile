@@ -45,8 +45,8 @@ RUN mkdir -p /root/.jupyter && \
 
 # Copy training UI files
 COPY dataset_ui.py /home/comfyuser/dataset_ui.py
+COPY tag_counter.py /home/comfyuser/tag_counter.py
 COPY templates/ /home/comfyuser/templates/
-COPY find_configs.py /home/comfyuser/find_configs.py
 COPY wd14_tagger/ /home/comfyuser/wd14_tagger/
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
