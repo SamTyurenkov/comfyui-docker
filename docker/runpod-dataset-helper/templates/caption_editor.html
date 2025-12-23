@@ -446,6 +446,7 @@
                     allImages = data.images;
 
                     displayImages(data.images);
+                    updateTotalTags();
                     showStatus(`Found ${data.count} image(s) - loading thumbnails...`, 'success');
                 } else {
                     showStatus('Error: ' + data.error, 'error');
@@ -916,11 +917,6 @@
             }
         }
 
-        
-
-        // Call initially
-        updateTotalTags();
-
         // Call after save or autotag
         async function refreshAfterSaveOrAutotag() {
             await updateTotalTags();
@@ -954,8 +950,8 @@
                 btn.style.marginTop = '5px';
                 btn.onclick = () => {
                     if (!confirm('Generate caption for this image?')) return;
-
-                    const imageData = JSON.parse(textarea.previousElementSibling.querySelector('img').dataset.imageData);
+                    const imageData = JSON.parse(textarea.parentElement.previousElementSibling.querySelector('img').getAttribute('data-image-data'));
+                    //const imageData = JSON.parse(textarea.previousElementSibling.querySelector('img').dataset.imageData);
 
                     fetch('/api/caption_single', {
                         method: 'POST',
