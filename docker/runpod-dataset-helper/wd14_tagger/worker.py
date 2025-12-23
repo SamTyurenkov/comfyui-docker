@@ -5,7 +5,13 @@ from .jobs import autotag_jobs, autotag_lock
 from .tagger import WD14Tagger
 from .utils import iter_images  # yields image paths from a directory
 
-def autotag_worker(job_id, path, mode="all", models={}):
+# Fixed models
+FIXED_MODELS = {
+    "wd-v1-4-moat-tagger-v2": {"threshold": 0.35, "character_threshold": 0.85},
+    "wd-convnext-tagger-v3": {"threshold": 0.35, "character_threshold": 0.85}
+}
+
+def autotag_worker(job_id, path, mode="all"):
     """
     Worker for autotagging using tag_multi for all images.
     - Directory: iterates images, calls tag_multi per image
@@ -29,7 +35,7 @@ def autotag_worker(job_id, path, mode="all", models={}):
                 continue
 
             image = Image.open(img_path).convert("RGB")
-            tags = WD14Tagger.tag_multi(image, models, replace_underscore=True)
+            tags = WD14Tagger.tag_multi(image, FIXED_MODELS, replace_underscore=True)
 
             caption = ", ".join(tags)
             with open(txt_path, "w", encoding="utf-8") as f:

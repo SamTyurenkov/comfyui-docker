@@ -955,24 +955,24 @@
                 btn.onclick = () => {
                     if (!confirm('Generate caption for this image?')) return;
 
-                    const captionFilename = textarea.dataset.captionFilename;
-                    fetch(`/api/caption_single`, {
+                    const imageData = JSON.parse(textarea.previousElementSibling.querySelector('img').dataset.imageData);
+
+                    fetch('/api/caption_single', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            directory: currentDirectory,
-                            caption_filename: captionFilename
+                            image_path: imageData.image_path
                         })
                     })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.caption) {
-                                textarea.value = data.caption;
-                                saveCaption(captionFilename, data.caption);
-                                refreshAfterSaveOrAutotag();
-                            }
-                        })
-                        .catch(err => console.error(err));
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.caption) {
+                            textarea.value = data.caption;
+                            saveCaption(imageData.caption_filename, data.caption);
+                            refreshAfterSaveOrAutotag();
+                        }
+                    })
+                    .catch(err => console.error(err));
                 };
                 textarea.parentNode.appendChild(btn);
             });

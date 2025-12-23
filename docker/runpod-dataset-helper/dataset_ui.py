@@ -327,10 +327,9 @@ def get_image():
 @app.post("/api/caption_single")
 def caption_single():
     data = request.json
-    img_path = data.get("image_path") or data.get("caption_filename")
-    models = data.get("models", {})  # model configuration
+    img_path = data.get("image_path")
 
-    if not img_path or not models:
+    if not img_path:
         return jsonify({"error": "Missing image_path or models"}), 400
 
     job_id = str(uuid.uuid4())
@@ -344,7 +343,7 @@ def caption_single():
 
     # Directly process single image
     try:
-        autotag_worker(job_id, img_path, mode="all", models=models)
+        autotag_worker(job_id, img_path, mode="all")
         with autotag_lock:
             result = autotag_jobs[job_id]["results"].get(img_path, "")
         return jsonify({"caption": result})
@@ -371,8 +370,7 @@ def start_autotag():
         args=(
             job_id,
             data["path"],
-            data.get("mode", "all"),
-            data.get("models", {})
+            data.get("mode", "all")
         ),
         daemon=True
     )

@@ -96,11 +96,11 @@ class WD14Tagger:
 
         return tags
 
-    def tag_multi(image, models, replace_underscore=True):
+    def tag_multi(self, image, models, replace_underscore=True):
         all_tags = defaultdict(float)
 
         for model_name, cfg in models.items():
-            tags = tag_single(
+            tags = self.tag_single(
                 image,
                 model_name,
                 threshold=cfg["threshold"],
