@@ -14,6 +14,8 @@ from wd14_tagger.tagger import WD14Tagger
 from wd14_tagger.model_manager import download_model
 from wd14_tagger.utils import iter_images
 from wd14_tagger.worker import autotag_worker   # ✅ REQUIRED
+from wd14_tagger.jobs import autotag_jobs, autotag_lock
+from tag_counter import count_tags_in_directory
 
 try:
     from PIL import Image
@@ -322,6 +324,36 @@ def get_image():
 # AUTOTAG ROUTES (FIXED)
 # =============================
 
+@app.post("/api/caption_single")
+def caption_single():
+    data = request.json
+    img_path = data.get("image_path") or data.get("caption_filename")
+    models = data.get("models", {})  # model configuration
+
+    if not img_path or not models:
+        return jsonify({"error": "Missing image_path or models"}), 400
+
+    job_id = str(uuid.uuid4())
+    with autotag_lock:
+        autotag_jobs[job_id] = {
+            "status": "running",
+            "done": 0,
+            "total": 1,
+            "results": {}
+        }
+
+    # Directly process single image
+    try:
+        autotag_worker(job_id, img_path, mode="all", models=models)
+        with autotag_lock:
+            result = autotag_jobs[job_id]["results"].get(img_path, "")
+        return jsonify({"caption": result})
+    except Exception as e:
+        with autotag_lock:
+            autotag_jobs[job_id]["status"] = "error"
+            autotag_jobs[job_id]["error"] = str(e)
+        return jsonify({"error": str(e)}), 500
+
 @app.post("/api/autotag/start")
 def start_autotag():
     data = request.json
@@ -352,6 +384,18 @@ def start_autotag():
 @app.get("/api/autotag/status/<job_id>")
 def autotag_status(job_id):
     return jsonify(autotag_jobs.get(job_id, {}))
+
+@app.get("/api/tags_count")
+def api_tags_count():
+    directory = request.args.get("directory")
+
+    if not directory:
+        return jsonify({"error": "directory is required"}), 400
+
+    if not os.path.isdir(directory):
+        return jsonify({"error": "invalid directory"}), 400
+
+    return jsonify(count_tags_in_directory(directory))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True) 

@@ -19,6 +19,22 @@
             padding: 20px;
         }
 
+        .tag-list {
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tag-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 6px;
+        }
+
+        .tag-row:nth-child(odd) {
+            background: #111;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -344,7 +360,7 @@
                         <button class="btn" onclick="confirmAndRun('empty')">📝 Caption Empty</button>
                     </div>
                     <div>
-                        Total Tags: <span id="totalTagsCount">0</span>
+                        <div id="tagList" class="tag-list"></div>
                     </div>
                 </div>
             </div>
@@ -873,16 +889,34 @@
         }
 
         async function updateTotalTags() {
+            if (!currentDirectory) return;
+
             try {
-                const response = await fetch('/api/tags_count'); // your endpoint
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('totalTagsCount').textContent = data.total || 0;
+                const response = await fetch(
+                    `/api/tags_count?directory=${encodeURIComponent(currentDirectory)}`
+                );
+                const tags = await response.json();
+
+                if (!response.ok) return;
+
+                const container = document.getElementById('tagList');
+                container.innerHTML = '';
+
+                const sorted = Object.entries(tags)
+                    .sort((a, b) => b[1] - a[1]); // highest count first
+
+                for (const [tag, count] of sorted) {
+                    const row = document.createElement('div');
+                    row.className = 'tag-row';
+                    row.textContent = `${tag} — ${count}`;
+                    container.appendChild(row);
                 }
             } catch (err) {
-                console.error('Error fetching total tags:', err);
+                console.error('Error fetching tags:', err);
             }
         }
+
+        
 
         // Call initially
         updateTotalTags();
