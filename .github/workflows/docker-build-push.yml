@@ -84,8 +84,8 @@ jobs:
         if: steps.flags.outputs.dataset_helper_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./docker/runpod
-          file: ./docker/runpod/Dockerfile
+          context: ./docker/runpod-dataset-helper
+          file: ./docker/runpod-dataset-helper/Dockerfile
           push: true
           tags: samtyurenkov/runpod-dataset-helper:latest
 

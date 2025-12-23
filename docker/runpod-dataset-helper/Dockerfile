@@ -36,7 +36,8 @@ COPY nginx.conf /home/comfyuser/docker/nginx/nginx.conf
 COPY ssl/self-signed/cert.pem /home/comfyuser/docker/nginx/ssl/cert.pem
 COPY ssl/self-signed/privkey.pem /home/comfyuser/docker/nginx/ssl/privkey.pem
 
-RUN pip install --upgrade pip && pip install jupyter virtualenv flask flask-cors pillow Werkzeug safetensors onnxruntime
+RUN pip install --upgrade pip && pip install jupyter 
+#virtualenv flask flask-cors pillow Werkzeug safetensors onnxruntime
 
 RUN mkdir -p /root/.jupyter && \
     echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \
@@ -46,7 +47,7 @@ RUN mkdir -p /root/.jupyter && \
 COPY dataset_ui.py /home/comfyuser/dataset_ui.py
 COPY templates/ /home/comfyuser/templates/
 COPY find_configs.py /home/comfyuser/find_configs.py
-COPY wd14_tagger /home/comfyuser/wd14_tagger
+COPY wd14_tagger/ /home/comfyuser/wd14_tagger/
 
 ADD entry.sh /usr/local/bin/entrypoint.sh
 WORKDIR /home/comfyuser/

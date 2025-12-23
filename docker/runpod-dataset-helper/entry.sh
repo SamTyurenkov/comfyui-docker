@@ -46,7 +46,7 @@ start_jupyterlab() {
 #     tensorboard --logdir=/home/comfyuser/OneTrainer/tensorboard
 # }
 
-start_training_ui() {
+start_dataset_ui() {
     echo "Starting Training UI..."
     # Start the training UI
     /workspace/venv_onetrainer/bin/python /home/comfyuser/dataset_ui.py
@@ -58,6 +58,6 @@ start_nginx() {
 }
 
 # start_tensorboard &
-start_training_ui &
+start_dataset_ui &
 start_nginx &
 start_jupyterlab
