@@ -10,6 +10,11 @@ import queue
 import uuid
 from io import BytesIO
 
+from .wd14_tagger.tagger import WD14Tagger
+from .wd14_tagger.model_manager import download_model
+from .wd14_tagger.utils import iter_images
+from .wd14_tagger.worker import autotag_worker   # ✅ REQUIRED
+
 try:
     from PIL import Image
     PIL_AVAILABLE = True
@@ -171,91 +176,7 @@ process_manager = ProcessManager()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-@app.route('/api/start_training', methods=['POST'])
-def start_training():
-    data = request.get_json()
-    config_file = data.get('config_file', '')
-    
-    if not config_file:
-        return jsonify({'error': 'Config file is required'}), 400
-    
-    # Generate unique process ID
-    process_id = str(uuid.uuid4())
-    
-    # Start the training process
-    process_manager.start_process(process_id, config_file)
-    
-    return jsonify({
-        'process_id': process_id,
-        'message': 'Training started successfully'
-    })
-
-@app.route('/api/stop_training/<process_id>', methods=['POST'])
-def stop_training(process_id):
-    success = process_manager.stop_process(process_id)
-    return jsonify({
-        'success': success,
-        'message': 'Training stopped' if success else 'Process not found'
-    })
-
-@app.route('/api/processes')
-def get_processes():
-    running = process_manager.get_running_processes()
-    return jsonify({
-        'running_processes': running
-    })
-
-@app.route('/api/output/<process_id>')
-def get_output(process_id):
-    output = process_manager.get_output(process_id)
-    return jsonify({
-        'output': output
-    })
-
-@app.route('/api/configs')
-def get_configs():
-    """Get list of available config files"""
-    try:
-        from find_configs import find_config_files
-        configs = find_config_files()
-        return jsonify({
-            'configs': configs
-        })
-    except Exception as e:
-        return jsonify({
-            'configs': [],
-            'error': str(e)
-        })
-
-@app.route('/api/stream_output/<process_id>')
-def stream_output(process_id):
-    def generate():
-        last_length = 0
-        while True:
-            output = process_manager.get_output(process_id)
-            if len(output) > last_length:
-                new_lines = output[last_length:]
-                for line in new_lines:
-                    yield f"data: {json.dumps({'line': line})}\n\n"
-                last_length = len(output)
-            
-            # Check if process is still running
-            if process_id not in process_manager.processes:
-                # Send any remaining output before marking as completed
-                final_output = process_manager.get_output(process_id)
-                if len(final_output) > last_length:
-                    new_lines = final_output[last_length:]
-                    for line in new_lines:
-                        yield f"data: {json.dumps({'line': line})}\n\n"
-                
-                yield f"data: {json.dumps({'status': 'completed'})}\n\n"
-                break
-            
-            time.sleep(0.1)  # More frequent polling
-    
-    return Response(generate(), mimetype='text/event-stream')
+    return render_template('caption_editor.html')
 
 @app.route('/api/list_images', methods=['POST'])
 def list_images():
@@ -396,5 +317,60 @@ def get_image():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False) 
+# =============================
+# AUTOTAG ROUTES (FIXED)
+# =============================
+
+@app.post("/api/autotag/start")
+def start_autotag():
+    data = request.json
+    job_id = str(uuid.uuid4())
+
+    autotag_jobs[job_id] = {
+        "status": "running",
+        "done": 0,
+        "total": 0,
+        "results": {}
+    }
+
+    thread = threading.Thread(
+        target=autotag_worker,
+        args=(
+            job_id,
+            data["path"],
+            data.get("mode", "all"),
+            data.get("models", {})
+        ),
+        daemon=True
+    )
+    thread.start()
+
+    return jsonify({"job_id": job_id})
+
+
+@app.get("/api/autotag/status/<job_id>")
+def autotag_status(job_id):
+    return jsonify(autotag_jobs.get(job_id, {}))
+    data = request.json
+    job_id = str(uuid.uuid4())
+
+    autotag_jobs[job_id] = {
+        "status": "running",
+        "done": 0,
+        "total": 0,
+        "results": {}
+    }
+
+    thread = threading.Thread(
+        target=autotag_worker,
+        args=(
+            job_id,
+            data["path"],
+            data.get("mode", "all"),
+            data.get("models", {})
+        ),
+        daemon=True
+    )
+    thread.start()
+
+    return jsonify({"job_id": job_id})

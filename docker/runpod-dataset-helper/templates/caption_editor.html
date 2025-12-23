@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -163,7 +164,7 @@
 
         .image-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .image-container {
@@ -185,7 +186,7 @@
             top: 0;
             left: 0;
         }
-        
+
         .image-placeholder {
             position: absolute;
             top: 0;
@@ -259,8 +260,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .hidden {
@@ -300,11 +306,17 @@
         }
 
         @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -323,6 +335,18 @@
                 </div>
                 <button class="btn" id="loadBtn" onclick="loadImages()">Load Images</button>
                 <div id="statusMessage" class="status hidden" style="margin-top: 15px;"></div>
+            </div>
+
+            <div class="form-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <button class="btn" onclick="confirmAndRun('all')">📝 Re-caption All</button>
+                        <button class="btn" onclick="confirmAndRun('empty')">📝 Caption Empty</button>
+                    </div>
+                    <div>
+                        Total Tags: <span id="totalTagsCount">0</span>
+                    </div>
+                </div>
             </div>
 
             <div id="imagesContainer" class="hidden">
@@ -355,7 +379,7 @@
 
         async function loadImages() {
             const directory = document.getElementById('directoryInput').value.trim();
-            
+
             if (!directory) {
                 showStatus('Please enter a directory path', 'error');
                 return;
@@ -391,20 +415,20 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     // Clear all pending operations before loading new directory
                     clearAllRetries();
-                    
+
                     // Stop processing queue
                     isProcessingQueue = false;
                     loadingQueue = [];
                     pendingLoads = [];
                     loadedImages.clear();
-                    
+
                     currentDirectory = directory;
                     allImages = data.images;
-                    
+
                     displayImages(data.images);
                     showStatus(`Found ${data.count} image(s) - loading thumbnails...`, 'success');
                 } else {
@@ -426,7 +450,7 @@
                 }
             });
             failedLoads.clear();
-            
+
             // Clear queue processing timeout
             if (queueTimeoutId) {
                 clearTimeout(queueTimeoutId);
@@ -474,19 +498,19 @@
                         const img = container.querySelector('img');
                         if (img && img.dataset.imageData) {
                             const imageData = JSON.parse(img.dataset.imageData);
-                            
+
                             // Check if image needs to be loaded (not loaded yet, or failed and needs retry)
                             const needsLoad = !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path);
-                            const needsRetry = failedLoads.has(imageData.image_path) && 
-                                             failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
-                                             !failedLoads.get(imageData.image_path).timeoutId;
-                            
+                            const needsRetry = failedLoads.has(imageData.image_path) &&
+                                failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
+                                !failedLoads.get(imageData.image_path).timeoutId;
+
                             if (imageData && (needsLoad || needsRetry)) {
                                 pendingLoads.push(imageData.image_path);
                                 loadingQueue.push({ imgElement: img, imageData: imageData, isRetry: needsRetry });
                                 // Unobserve once queued
                                 intersectionObserver.unobserve(container);
-                                
+
                                 // Start processing queue if not already processing
                                 if (!isProcessingQueue) {
                                     processLoadingQueue();
@@ -503,15 +527,15 @@
             images.forEach((image, index) => {
                 const card = document.createElement('div');
                 card.className = 'image-card';
-                
+
                 // Create image element with placeholder
                 const imageContainer = document.createElement('div');
                 imageContainer.className = 'image-container';
-                
+
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.id = `placeholder-${index}`;
-                
+
                 const img = document.createElement('img');
                 img.dataset.imageData = JSON.stringify(image);
                 img.dataset.index = index;
@@ -521,32 +545,32 @@
                 img.style.height = '100%';
                 img.style.objectFit = 'contain';
                 // Don't set onload/onerror here - they'll be set in loadImage()
-                
+
                 imageContainer.appendChild(placeholder);
                 imageContainer.appendChild(img);
 
                 // Create caption container
                 const captionContainer = document.createElement('div');
                 captionContainer.className = 'caption-container';
-                
+
                 const captionLabel = document.createElement('div');
                 captionLabel.className = 'caption-label';
                 captionLabel.textContent = image.filename;
-                
+
                 const captionTextarea = document.createElement('textarea');
                 captionTextarea.className = 'caption-textarea';
                 captionTextarea.value = image.caption;
                 captionTextarea.placeholder = 'Enter caption...';
                 captionTextarea.dataset.captionFilename = image.caption_filename;
-                
+
                 const saveIndicator = document.createElement('div');
                 saveIndicator.className = 'save-indicator';
                 saveIndicator.textContent = '';
 
                 // Handle caption changes with debouncing
-                captionTextarea.addEventListener('input', function() {
+                captionTextarea.addEventListener('input', function () {
                     clearTimeout(saveTimeouts[image.caption_filename]);
-                    
+
                     captionTextarea.classList.remove('saved');
                     captionTextarea.classList.add('saving');
                     saveIndicator.textContent = 'Saving...';
@@ -560,12 +584,12 @@
                 captionContainer.appendChild(captionLabel);
                 captionContainer.appendChild(captionTextarea);
                 captionContainer.appendChild(saveIndicator);
-                
+
                 card.appendChild(imageContainer);
                 card.appendChild(captionContainer);
-                
+
                 imagesGrid.appendChild(card);
-                
+
                 // Observe the image container (not the hidden img) for lazy loading
                 intersectionObserver.observe(imageContainer);
                 imageContainer.dataset.imageIndex = index;
@@ -583,10 +607,10 @@
                         if (img && img.dataset.imageData) {
                             const imageData = JSON.parse(img.dataset.imageData);
                             const needsLoad = !loadedImages.has(imageData.image_path) && !pendingLoads.includes(imageData.image_path);
-                            const needsRetry = failedLoads.has(imageData.image_path) && 
-                                             failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
-                                             !failedLoads.get(imageData.image_path).timeoutId;
-                            
+                            const needsRetry = failedLoads.has(imageData.image_path) &&
+                                failedLoads.get(imageData.image_path).retryCount < MAX_RETRIES &&
+                                !failedLoads.get(imageData.image_path).timeoutId;
+
                             if (needsLoad || needsRetry) {
                                 pendingLoads.push(imageData.image_path);
                                 loadingQueue.push({ imgElement: img, imageData: imageData, isRetry: needsRetry });
@@ -594,11 +618,13 @@
                         }
                     }
                 });
-                
+
                 if (!isProcessingQueue && loadingQueue.length > 0) {
                     processLoadingQueue();
                 }
             });
+
+            addSingleCaptionButtons();
         }
 
         function processLoadingQueue() {
@@ -607,28 +633,28 @@
                 clearTimeout(queueTimeoutId);
                 queueTimeoutId = null;
             }
-            
+
             if (isProcessingQueue && loadingQueue.length === 0) {
                 isProcessingQueue = false;
                 return;
             }
-            
+
             if (loadingQueue.length === 0) {
                 isProcessingQueue = false;
                 return;
             }
-            
+
             isProcessingQueue = true;
-            
+
             // Process a batch
             const batch = loadingQueue.splice(0, BATCH_SIZE);
-            
+
             batch.forEach((item, index) => {
                 setTimeout(() => {
                     loadImage(item.imgElement, item.imageData, item.isRetry || false);
                 }, index * 100); // Stagger loads within batch by 100ms
             });
-            
+
             // Process next batch after delay
             queueTimeoutId = setTimeout(() => {
                 queueTimeoutId = null;
@@ -644,7 +670,7 @@
                     return;
                 }
             }
-            
+
             // Check retry count
             const failedInfo = failedLoads.get(imageData.image_path);
             if (failedInfo && failedInfo.retryCount >= MAX_RETRIES) {
@@ -652,30 +678,30 @@
                 showImageError(imgElement);
                 return;
             }
-            
+
             // Mark as attempted (but don't mark as successfully loaded yet)
             if (!isRetry) {
                 loadedImages.add(imageData.image_path);
             }
-            
+
             const index = pendingLoads.indexOf(imageData.image_path);
             if (index > -1) {
                 pendingLoads.splice(index, 1);
             }
-            
+
             // Clear any existing retry timeout
             if (failedInfo && failedInfo.timeoutId) {
                 clearTimeout(failedInfo.timeoutId);
             }
-            
+
             imgElement.classList.add('loading');
-            
+
             // Get current failed info before setting up handlers
             const currentFailedInfo = failedLoads.get(imageData.image_path);
-            
+
             // Load thumbnail first (smaller, faster) - 300px max dimension
             const thumbnailUrl = `/api/get_image?path=${encodeURIComponent(imageData.image_path)}&thumbnail=true&size=300`;
-            
+
             // Set up one-time load handlers
             const onThumbnailLoad = () => {
                 // Success - remove from failed loads and clear retry timeout
@@ -684,7 +710,7 @@
                     clearTimeout(failedInfo.timeoutId);
                 }
                 failedLoads.delete(imageData.image_path);
-                
+
                 imgElement.classList.remove('loading');
                 imgElement.classList.add('loaded');
                 imgElement.style.display = 'block';
@@ -693,7 +719,7 @@
                     placeholderEl.style.display = 'none';
                     placeholderEl.textContent = ''; // Clear retry message
                 }
-                
+
                 // Load full image after a delay if still in viewport
                 setTimeout(() => {
                     if (imgElement.offsetParent !== null) { // Check if still visible
@@ -709,14 +735,14 @@
                     }
                 }, 2000); // Wait 2 seconds before loading full image
             };
-            
+
             const onThumbnailError = () => {
                 imgElement.classList.remove('loading');
-                
+
                 // Track failed load
                 const failedInfo = failedLoads.get(imageData.image_path);
                 const currentRetryCount = failedInfo ? failedInfo.retryCount + 1 : 1;
-                
+
                 if (currentRetryCount < MAX_RETRIES) {
                     // Schedule retry
                     const timeoutId = setTimeout(() => {
@@ -736,12 +762,12 @@
                             }
                         }
                     }, RETRY_DELAY);
-                    
+
                     failedLoads.set(imageData.image_path, {
                         retryCount: currentRetryCount,
                         timeoutId: timeoutId
                     });
-                    
+
                     // Show retry indicator
                     const placeholderEl = document.getElementById(`placeholder-${imgElement.dataset.index}`);
                     if (placeholderEl) {
@@ -756,15 +782,15 @@
                     showImageError(imgElement);
                 }
             };
-            
+
             // Remove old handlers and add new ones
             imgElement.onload = onThumbnailLoad;
             imgElement.onerror = onThumbnailError;
-            
+
             // Start loading
             imgElement.src = thumbnailUrl;
         }
-        
+
         function showImageError(imgElement) {
             imgElement.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23dc3545"%3EImage load failed%3C/text%3E%3C/svg%3E';
             imgElement.classList.remove('loading');
@@ -774,7 +800,7 @@
             if (placeholderEl) {
                 placeholderEl.style.display = 'none';
             }
-            
+
             // Remove from failed loads since we've given up
             const imageData = imgElement.dataset.imageData ? JSON.parse(imgElement.dataset.imageData) : null;
             if (imageData) {
@@ -797,21 +823,21 @@
                 });
 
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     // Find the textarea and update its status
                     const textarea = document.querySelector(`textarea[data-caption-filename="${captionFilename}"]`);
                     const indicator = textarea?.nextElementSibling;
-                    
+
                     if (textarea) {
                         textarea.classList.remove('saving');
                         textarea.classList.add('saved');
                     }
-                    
+
                     if (indicator) {
                         indicator.textContent = 'Saved';
                         indicator.className = 'save-indicator saved';
-                        
+
                         // Clear the saved indicator after 2 seconds
                         setTimeout(() => {
                             indicator.textContent = '';
@@ -827,11 +853,11 @@
                 console.error('Error saving caption:', error);
                 const textarea = document.querySelector(`textarea[data-caption-filename="${captionFilename}"]`);
                 const indicator = textarea?.nextElementSibling;
-                
+
                 if (textarea) {
                     textarea.classList.remove('saving', 'saved');
                 }
-                
+
                 if (indicator) {
                     indicator.textContent = 'Error saving';
                     indicator.className = 'save-indicator error';
@@ -845,6 +871,118 @@
             statusMessage.className = `status ${type}`;
             statusMessage.classList.remove('hidden');
         }
+
+        async function updateTotalTags() {
+            try {
+                const response = await fetch('/api/tags_count'); // your endpoint
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('totalTagsCount').textContent = data.total || 0;
+                }
+            } catch (err) {
+                console.error('Error fetching total tags:', err);
+            }
+        }
+
+        // Call initially
+        updateTotalTags();
+
+        // Call after save or autotag
+        async function refreshAfterSaveOrAutotag() {
+            await updateTotalTags();
+            // Optionally reload images if needed
+        }
+
+        // Confirm and run batch caption
+        function confirmAndRun(mode) {
+            const msg = mode === 'all'
+                ? 'Are you sure you want to re-caption all images?'
+                : 'Are you sure you want to caption only empty images?';
+            if (!confirm(msg)) return;
+
+            // Start batch job
+            fetch(`/api/caption_batch?mode=${mode}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Batch job started');
+                    updateTotalTags();
+                })
+                .catch(err => alert('Error starting batch job: ' + err));
+        }
+
+        // Single caption per image
+        function addSingleCaptionButtons() {
+            const textareas = document.querySelectorAll('.caption-textarea');
+            textareas.forEach(textarea => {
+                const btn = document.createElement('button');
+                btn.textContent = 'Caption';
+                btn.className = 'btn';
+                btn.style.marginTop = '5px';
+                btn.onclick = () => {
+                    if (!confirm('Generate caption for this image?')) return;
+
+                    const captionFilename = textarea.dataset.captionFilename;
+                    fetch(`/api/caption_single`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            directory: currentDirectory,
+                            caption_filename: captionFilename
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.caption) {
+                                textarea.value = data.caption;
+                                saveCaption(captionFilename, data.caption);
+                                refreshAfterSaveOrAutotag();
+                            }
+                        })
+                        .catch(err => console.error(err));
+                };
+                textarea.parentNode.appendChild(btn);
+            });
+        }
+
+        async function refreshCaptions() {
+            if (!currentDirectory) return;
+
+            try {
+                const response = await fetch('/api/list_images', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ directory: currentDirectory })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.images) {
+                    data.images.forEach(image => {
+                        const textarea = document.querySelector(
+                            `textarea[data-caption-filename="${image.caption_filename}"]`
+                        );
+                        if (textarea && textarea.value !== image.caption) {
+                            textarea.value = image.caption;
+                            // Optional: show a small indicator
+                            const indicator = textarea.nextElementSibling;
+                            if (indicator) {
+                                indicator.textContent = 'Updated';
+                                indicator.className = 'save-indicator saved';
+                                setTimeout(() => {
+                                    indicator.textContent = '';
+                                    indicator.className = 'save-indicator';
+                                }, 1500);
+                            }
+                        }
+                    });
+
+                    // Refresh total tags
+                    updateTotalTags();
+                }
+            } catch (err) {
+                console.error('Error refreshing captions:', err);
+            }
+        }
     </script>
 </body>
+
 </html>

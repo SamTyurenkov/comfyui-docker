@@ -35,6 +35,7 @@ jobs:
         run: |
           # Initialize flags
           runpod=false
+          dataset_helper=false
           videogen=false
           runpod_trainer=false
           runpod_musubi_tuner=false
@@ -48,6 +49,7 @@ jobs:
           IFS=' ' read -r -a files <<< "$CHANGED_FILES"
           for file in "${files[@]}"; do
             [[ "$file" == docker/runpod/Dockerfile ]] && runpod=true
+            [[ "$file" == docker/runpod-dataset-helper/* ]] && dataset_helper=true
             [[ "$file" == docker/runpod/Dockerfile.videogen ]] && videogen=true
             [[ "$file" == docker/runpod/Dockerfile.serverless-faceswap ]] && serverless_faceswap=true
             [[ "$file" == docker/runpod/Dockerfile.serverless-wd14 ]] && serverless_wd14=true
@@ -59,6 +61,7 @@ jobs:
           done
 
           echo "runpod_changed=$runpod" >> $GITHUB_OUTPUT
+          echo "dataset_helper_changed=$dataset_helper" >> $GITHUB_OUTPUT
           echo "videogen_changed=$videogen" >> $GITHUB_OUTPUT
           echo "serverless_faceswap_changed=$serverless_faceswap" >> $GITHUB_OUTPUT
           echo "serverless_wd14_changed=$serverless_wd14" >> $GITHUB_OUTPUT
@@ -76,6 +79,15 @@ jobs:
           file: ./docker/runpod/Dockerfile
           push: true
           tags: samtyurenkov/runpod:latest
+
+      - name: Build and push Runpod Dataset Helper Image
+        if: steps.flags.outputs.dataset_helper_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/runpod
+          file: ./docker/runpod/Dockerfile
+          push: true
+          tags: samtyurenkov/runpod-dataset-helper:latest
 
       - name: Build and push Runpod Videogen Image
         if: steps.flags.outputs.videogen_changed == 'true'
