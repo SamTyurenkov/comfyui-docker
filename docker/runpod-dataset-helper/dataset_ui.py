@@ -27,6 +27,7 @@ CORS(app)
 # Store running processes
 running_processes = {}
 process_outputs = {}
+autotag_jobs = {}
 
 class ProcessManager:
     def __init__(self):
@@ -351,26 +352,6 @@ def start_autotag():
 @app.get("/api/autotag/status/<job_id>")
 def autotag_status(job_id):
     return jsonify(autotag_jobs.get(job_id, {}))
-    data = request.json
-    job_id = str(uuid.uuid4())
 
-    autotag_jobs[job_id] = {
-        "status": "running",
-        "done": 0,
-        "total": 0,
-        "results": {}
-    }
-
-    thread = threading.Thread(
-        target=autotag_worker,
-        args=(
-            job_id,
-            data["path"],
-            data.get("mode", "all"),
-            data.get("models", {})
-        ),
-        daemon=True
-    )
-    thread.start()
-
-    return jsonify({"job_id": job_id})
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True) 
