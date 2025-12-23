@@ -10,10 +10,10 @@ import queue
 import uuid
 from io import BytesIO
 
-from .wd14_tagger.tagger import WD14Tagger
-from .wd14_tagger.model_manager import download_model
-from .wd14_tagger.utils import iter_images
-from .wd14_tagger.worker import autotag_worker   # ✅ REQUIRED
+from wd14_tagger.tagger import WD14Tagger
+from wd14_tagger.model_manager import download_model
+from wd14_tagger.utils import iter_images
+from wd14_tagger.worker import autotag_worker   # ✅ REQUIRED
 
 try:
     from PIL import Image
