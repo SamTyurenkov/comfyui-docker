@@ -49,7 +49,7 @@ start_jupyterlab() {
 start_dataset_ui() {
     echo "Starting Training UI..."
     # Start the training UI
-    /workspace/venv_onetrainer/bin/python -m /home/comfyuser/dataset_ui.py
+    /workspace/venv_onetrainer/bin/python -m /home/comfyuser/dataset_ui
 }
 
 start_nginx() {
