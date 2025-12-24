@@ -843,12 +843,28 @@
                     saveIndicator.textContent = 'Saving...';
                     saveIndicator.className = 'save-indicator saving';
 
-                    // Update token count
+                    // Update token count immediately on input
                     updateTokenCount(captionTextarea.value, tokenCounter);
 
                     saveTimeouts[image.caption_filename] = setTimeout(() => {
                         saveCaption(image.caption_filename, captionTextarea.value);
                     }, 1000);
+                });
+                
+                // Also handle programmatic value changes (e.g., paste, undo/redo)
+                let lastValue = captionTextarea.value;
+                captionTextarea.addEventListener('change', function () {
+                    if (captionTextarea.value !== lastValue) {
+                        lastValue = captionTextarea.value;
+                        updateTokenCount(captionTextarea.value, tokenCounter);
+                    }
+                });
+                
+                // Watch for paste events
+                captionTextarea.addEventListener('paste', function () {
+                    setTimeout(() => {
+                        updateTokenCount(captionTextarea.value, tokenCounter);
+                    }, 10);
                 });
 
                 captionContainer.appendChild(captionLabel);
@@ -1101,13 +1117,16 @@
                 if (response.ok) {
                     // Find the textarea and update its status
                     const textarea = document.querySelector(`textarea[data-caption-filename="${captionFilename}"]`);
-                    const indicator = textarea?.nextElementSibling;
+                    if (!textarea) return;
+                    
+                    const captionContainer = textarea.parentElement;
+                    const indicator = captionContainer.querySelector('.save-indicator');
 
-                    if (textarea) {
-                        textarea.classList.remove('saving');
-                        textarea.classList.add('saved');
-                    }
+                    // Update textarea styling
+                    textarea.classList.remove('saving');
+                    textarea.classList.add('saved');
 
+                    // Update save indicator (separate from token counter)
                     if (indicator) {
                         indicator.textContent = 'Saved';
                         indicator.className = 'save-indicator saved';
@@ -1115,11 +1134,12 @@
                         // Clear the saved indicator after 2 seconds
                         setTimeout(() => {
                             indicator.textContent = '';
-                            if (textarea) {
-                                textarea.classList.remove('saved');
-                            }
+                            textarea.classList.remove('saved');
                         }, 2000);
                     }
+
+                    // Note: Token count is already updated in real-time as user types,
+                    // so no need to update it again after save
 
                     // Refresh tag counts after saving
                     updateTotalTags();
@@ -1485,12 +1505,13 @@
                         if (textarea && textarea.value !== image.caption) {
                             textarea.value = image.caption;
                             // Update token count for refreshed caption
-                            const tokenCounter = textarea.parentElement.querySelector(`.token-counter[data-caption-filename="${image.caption_filename}"]`);
+                            const captionContainer = textarea.parentElement;
+                            const tokenCounter = captionContainer?.querySelector(`.token-counter[data-caption-filename="${image.caption_filename}"]`);
                             if (tokenCounter) {
                                 updateTokenCount(image.caption, tokenCounter);
                             }
                             // Optional: show a small indicator
-                            const indicator = textarea.parentElement.querySelector('.save-indicator');
+                            const indicator = captionContainer?.querySelector('.save-indicator');
                             if (indicator) {
                                 indicator.textContent = 'Updated';
                                 indicator.className = 'save-indicator saved';
