@@ -26,7 +26,7 @@ CORS(app)
 # Store running processes
 running_processes = {}
 process_outputs = {}
-autotag_jobs = {}
+# Note: autotag_jobs is imported from wd14_tagger.jobs, not defined here
 
 class ProcessManager:
     def __init__(self):
@@ -363,12 +363,13 @@ def start_autotag():
     data = request.json
     job_id = str(uuid.uuid4())
 
-    autotag_jobs[job_id] = {
-        "status": "running",
-        "done": 0,
-        "total": 0,
-        "results": {}
-    }
+    with autotag_lock:
+        autotag_jobs[job_id] = {
+            "status": "running",
+            "done": 0,
+            "total": 0,
+            "results": {}
+        }
 
     thread = threading.Thread(
         target=autotag_worker,
