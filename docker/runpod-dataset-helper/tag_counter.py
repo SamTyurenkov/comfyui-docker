@@ -9,23 +9,45 @@ def parse_tags_from_line(line):
     return [tag.strip() for tag in line.split(",") if tag.strip()]
 
 
-def count_tags_in_directory(directory):
+def count_tags_in_directory(directory, recursive=True):
     tag_freq = defaultdict(int)
 
-    for filename in os.listdir(directory):
-        filename_lower = filename.lower()
-        if filename_lower.endswith(".txt") and "-checkpoint.txt" not in filename_lower:
-            filepath = os.path.join(directory, filename)
-            try:
-                with open(filepath, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        for tag in parse_tags_from_line(line):
-                            tag_freq[tag] += 1
-            except Exception as e:
-                print(f"[AMT] Skipping {filepath}: {e}")
+    if recursive:
+        # Recursively walk through directory and subdirectories
+        for dirpath, dirnames, filenames in os.walk(directory):
+            # Skip hidden directories
+            dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+            
+            for filename in filenames:
+                filename_lower = filename.lower()
+                if filename_lower.endswith(".txt") and "-checkpoint.txt" not in filename_lower:
+                    filepath = os.path.join(dirpath, filename)
+                    try:
+                        with open(filepath, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if not line:
+                                    continue
+                                for tag in parse_tags_from_line(line):
+                                    tag_freq[tag] += 1
+                    except Exception as e:
+                        print(f"[AMT] Skipping {filepath}: {e}")
+    else:
+        # Original non-recursive behavior
+        for filename in os.listdir(directory):
+            filename_lower = filename.lower()
+            if filename_lower.endswith(".txt") and "-checkpoint.txt" not in filename_lower:
+                filepath = os.path.join(directory, filename)
+                try:
+                    with open(filepath, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            for tag in parse_tags_from_line(line):
+                                tag_freq[tag] += 1
+                except Exception as e:
+                    print(f"[AMT] Skipping {filepath}: {e}")
 
     return dict(tag_freq)
 
@@ -41,7 +63,7 @@ def build_tag_frequency_tree(root_dir):
         for f in os.listdir(root_dir)
         if os.path.isfile(os.path.join(root_dir, f))
     ):
-        all_tag_data["__ROOT__"] = count_tags_in_directory(root_dir)
+        all_tag_data["__ROOT__"] = count_tags_in_directory(root_dir, recursive=False)
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
         if os.path.normpath(dirpath) == os.path.normpath(root_dir):
@@ -54,7 +76,7 @@ def build_tag_frequency_tree(root_dir):
         dirnames[:] = [d for d in dirnames if not d.startswith(".")]
 
         if any(f.lower().endswith(".txt") for f in filenames):
-            all_tag_data[os.path.basename(dirpath)] = count_tags_in_directory(dirpath)
+            all_tag_data[os.path.basename(dirpath)] = count_tags_in_directory(dirpath, recursive=False)
 
     total_freq = defaultdict(int)
     ss_tag_frequency = {}
