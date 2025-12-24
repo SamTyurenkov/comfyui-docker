@@ -4,3 +4,4 @@ Werkzeug==2.3.7
 aiohttp
 onnxruntime
 safetensors
+transformers

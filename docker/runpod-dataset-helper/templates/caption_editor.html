@@ -471,6 +471,25 @@
             color: #dc3545;
         }
 
+        .token-counter {
+            font-size: 9px;
+            margin-top: 2px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .token-counter.warning {
+            color: #ffc107;
+        }
+
+        .token-counter.error {
+            color: #dc3545;
+        }
+
+        .token-counter.safe {
+            color: #28a745;
+        }
+
         .loading {
             display: inline-block;
             width: 12px;
@@ -810,6 +829,11 @@
                 saveIndicator.className = 'save-indicator';
                 saveIndicator.textContent = '';
 
+                const tokenCounter = document.createElement('div');
+                tokenCounter.className = 'token-counter';
+                tokenCounter.textContent = 'Tokens: --';
+                tokenCounter.dataset.captionFilename = image.caption_filename;
+
                 // Handle caption changes with debouncing
                 captionTextarea.addEventListener('input', function () {
                     clearTimeout(saveTimeouts[image.caption_filename]);
@@ -819,6 +843,9 @@
                     saveIndicator.textContent = 'Saving...';
                     saveIndicator.className = 'save-indicator saving';
 
+                    // Update token count
+                    updateTokenCount(captionTextarea.value, tokenCounter);
+
                     saveTimeouts[image.caption_filename] = setTimeout(() => {
                         saveCaption(image.caption_filename, captionTextarea.value);
                     }, 1000);
@@ -826,7 +853,11 @@
 
                 captionContainer.appendChild(captionLabel);
                 captionContainer.appendChild(captionTextarea);
+                captionContainer.appendChild(tokenCounter);
                 captionContainer.appendChild(saveIndicator);
+
+                // Initial token count
+                updateTokenCount(captionTextarea.value, tokenCounter);
 
                 card.appendChild(imageContainer);
                 card.appendChild(captionContainer);
@@ -1414,6 +1445,11 @@
                     .then(data => {
                         if (data.caption) {
                             textarea.value = data.caption;
+                            // Update token count for the new caption
+                            const tokenCounter = textarea.parentElement.querySelector('.token-counter');
+                            if (tokenCounter) {
+                                updateTokenCount(data.caption, tokenCounter);
+                            }
                             saveCaption(imageData.caption_filename, data.caption);
                             refreshAfterSaveOrAutotag();
                             updateJob(jobId, 'completed', 1, 1);
@@ -1448,8 +1484,13 @@
                         );
                         if (textarea && textarea.value !== image.caption) {
                             textarea.value = image.caption;
+                            // Update token count for refreshed caption
+                            const tokenCounter = textarea.parentElement.querySelector(`.token-counter[data-caption-filename="${image.caption_filename}"]`);
+                            if (tokenCounter) {
+                                updateTokenCount(image.caption, tokenCounter);
+                            }
                             // Optional: show a small indicator
-                            const indicator = textarea.nextElementSibling;
+                            const indicator = textarea.parentElement.querySelector('.save-indicator');
                             if (indicator) {
                                 indicator.textContent = 'Updated';
                                 indicator.className = 'save-indicator saved';
@@ -1467,6 +1508,66 @@
             } catch (err) {
                 console.error('Error refreshing captions:', err);
             }
+        }
+
+        // Token counting with debouncing
+        let tokenCountTimeouts = {};
+
+        async function updateTokenCount(text, tokenCounterElement) {
+            const captionFilename = tokenCounterElement.dataset.captionFilename;
+            
+            // Clear existing timeout
+            if (tokenCountTimeouts[captionFilename]) {
+                clearTimeout(tokenCountTimeouts[captionFilename]);
+            }
+
+            // Show loading state
+            tokenCounterElement.textContent = 'Tokens: ...';
+            tokenCounterElement.className = 'token-counter';
+
+            // Debounce token counting (300ms delay)
+            tokenCountTimeouts[captionFilename] = setTimeout(async () => {
+                try {
+                    const response = await fetch('/api/count_tokens', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: text
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok && !data.error) {
+                        const tokenCount = data.token_count;
+                        const limit = data.limit || 77;
+                        
+                        // Update display
+                        tokenCounterElement.textContent = `Tokens: ${tokenCount}/${limit}`;
+                        
+                        // Update styling based on token count
+                        tokenCounterElement.classList.remove('safe', 'warning', 'error');
+                        if (tokenCount > limit) {
+                            tokenCounterElement.classList.add('error');
+                        } else if (tokenCount > limit * 0.9) {
+                            tokenCounterElement.classList.add('warning');
+                        } else {
+                            tokenCounterElement.classList.add('safe');
+                        }
+                    } else {
+                        const errorMsg = data.error || 'Error counting tokens';
+                        tokenCounterElement.textContent = `Tokens: ${errorMsg}`;
+                        tokenCounterElement.className = 'token-counter error';
+                        console.error('Token counting error:', errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Error counting tokens:', error);
+                    tokenCounterElement.textContent = 'Tokens: Error';
+                    tokenCounterElement.className = 'token-counter error';
+                }
+            }, 300);
         }
 
         // Initialize with dummy data on page load

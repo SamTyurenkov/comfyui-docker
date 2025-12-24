@@ -20,6 +20,93 @@ try:
 except ImportError:
     PIL_AVAILABLE = False
 
+# Token counting for CLIP tokenizer - REQUIRED
+try:
+    from transformers import CLIPTokenizer
+except ImportError as e:
+    print(f"ERROR: transformers library is required for token counting. Please install it: pip install transformers")
+    raise ImportError("transformers library is required. Install with: pip install transformers") from e
+
+# Initialize tokenizer for SDXL (CLIP-L) - supports network volume via symlink
+tokenizer = None
+tokenizer_path = None
+# Use symlinked directory that points to network volume (set up in entry.sh)
+tokenizer_cache_dir = "/home/comfyuser/clip_tokenizer"
+print(f"Tokenizer cache directory (symlinked to network volume): {tokenizer_cache_dir}")
+
+# Check for tokenizer path from environment variable
+if os.environ.get("CLIP_TOKENIZER_PATH"):
+    tokenizer_path = os.environ.get("CLIP_TOKENIZER_PATH")
+    print(f"Using CLIP tokenizer from CLIP_TOKENIZER_PATH: {tokenizer_path}")
+else:
+    # Check symlinked directory first (network volume)
+    if os.path.exists(tokenizer_cache_dir):
+        # Check if it has tokenizer files
+        tokenizer_files = ["tokenizer_config.json", "vocab.json", "merges.txt"]
+        has_tokenizer = any(os.path.exists(os.path.join(tokenizer_cache_dir, f)) for f in tokenizer_files)
+        if has_tokenizer:
+            tokenizer_path = tokenizer_cache_dir
+            print(f"Found CLIP tokenizer files in network volume: {tokenizer_path}")
+        else:
+            # Directory exists but no tokenizer files - will download here
+            tokenizer_path = "openai/clip-vit-large-patch14"
+            print(f"Tokenizer directory exists but empty. Will download to: {tokenizer_cache_dir}")
+    else:
+        # Use Hugging Face model ID - will download tokenizer files (small, ~1-2MB)
+        tokenizer_path = "openai/clip-vit-large-patch14"
+        print(f"No tokenizer directory found. Will download from Hugging Face to: {tokenizer_cache_dir}")
+        print("Note: Only tokenizer files will be downloaded (~1-2MB), not the full model")
+
+try:
+    print(f"Loading CLIP tokenizer from: {tokenizer_path}")
+    
+    # Ensure cache directory exists (symlinked to network volume)
+    os.makedirs(tokenizer_cache_dir, exist_ok=True)
+    
+    # Check if it's a local path with tokenizer files
+    if os.path.exists(tokenizer_path) and os.path.isdir(tokenizer_path) and tokenizer_path != "openai/clip-vit-large-patch14":
+        # Local directory - check if it has tokenizer files
+        tokenizer_files = ["tokenizer_config.json", "vocab.json", "merges.txt"]
+        has_tokenizer = any(os.path.exists(os.path.join(tokenizer_path, f)) for f in tokenizer_files)
+        
+        if has_tokenizer:
+            print(f"Loading tokenizer from network volume: {tokenizer_path}")
+            tokenizer = CLIPTokenizer.from_pretrained(
+                tokenizer_path,
+                local_files_only=True  # Only use local files
+            )
+        else:
+            # Directory exists but no tokenizer files - download to network volume
+            print(f"Directory {tokenizer_path} exists but doesn't contain tokenizer files.")
+            print("Note: .safetensors files are model weights, not tokenizer files.")
+            print("Downloading tokenizer files to network volume...")
+            tokenizer = CLIPTokenizer.from_pretrained(
+                "openai/clip-vit-large-patch14",
+                cache_dir=tokenizer_cache_dir,
+                local_files_only=False
+            )
+            print(f"Tokenizer downloaded to network volume: {tokenizer_cache_dir}")
+    else:
+        # Hugging Face model ID - download tokenizer to network volume
+        print(f"Downloading tokenizer to network volume: {tokenizer_cache_dir}")
+        tokenizer = CLIPTokenizer.from_pretrained(
+            tokenizer_path,
+            cache_dir=tokenizer_cache_dir,
+            local_files_only=False,  # Allow download
+            force_download=False     # Use cache if available
+        )
+        print(f"Tokenizer cached to network volume: {tokenizer_cache_dir}")
+    
+    print("CLIP tokenizer loaded successfully for token counting")
+except Exception as e:
+    print(f"ERROR: Could not load CLIP tokenizer: {e}")
+    print("\nTroubleshooting:")
+    print("1. Ensure transformers is installed: pip install transformers")
+    print("2. Tokenizer files (tokenizer_config.json, vocab.json, merges.txt) are separate from model weights (.safetensors)")
+    print("3. To use network volume, set CLIP_TOKENIZER_PATH to directory with tokenizer files")
+    print("4. Or ensure network access to download from Hugging Face (small download, ~1-2MB)")
+    raise RuntimeError(f"Failed to load CLIP tokenizer") from e
+
 app = Flask(__name__)
 CORS(app)
 
@@ -400,6 +487,36 @@ def api_tags_count():
         return jsonify({"error": "invalid directory"}), 400
 
     return jsonify(count_tags_in_directory(directory))
+
+@app.post("/api/count_tokens")
+def count_tokens():
+    """Count CLIP tokens in a caption text - REQUIRES tokenizer"""
+    data = request.get_json()
+    text = data.get("text", "")
+    
+    if tokenizer is None:
+        return jsonify({
+            "error": "Tokenizer not initialized. Please check server logs.",
+            "token_count": 0,
+            "limit": 77
+        }), 500
+    
+    try:
+        # Tokenize the text
+        tokens = tokenizer(text, return_tensors="pt", truncation=False, padding=False)
+        token_count = tokens.input_ids.shape[1]
+        
+        return jsonify({
+            "token_count": token_count,
+            "estimated": False,
+            "limit": 77
+        })
+    except Exception as e:
+        return jsonify({
+            "error": f"Error counting tokens: {str(e)}",
+            "token_count": 0,
+            "limit": 77
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=True) 
