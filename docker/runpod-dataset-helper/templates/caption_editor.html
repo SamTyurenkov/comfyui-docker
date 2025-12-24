@@ -16,63 +16,266 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 8px;
+            font-size: 13px;
         }
 
         .tag-list {
             font-family: monospace;
-            max-height: 400px;
             overflow-y: auto;
+            background: #1a1a1a;
+            color: #fff;
+            border-radius: 4px;
+            padding: 4px;
+            font-size: 11px;
+        }
+
+        .tag-list:empty::before {
+            content: "Tag counts will appear here";
+            display: block;
+            color: #888;
+            font-style: italic;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .tag-list-placeholder {
+            color: #888;
+            font-style: italic;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
         }
 
         .tag-row {
             display: flex;
             justify-content: space-between;
-            padding: 2px 6px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 11px;
         }
 
         .tag-row:nth-child(odd) {
-            background: #111;
+            background: #2a2a2a;
+        }
+
+        .tag-row:hover {
+            background: #3a3a3a;
+        }
+
+        .sticky-status-bar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: white;
+            border-bottom: 1px solid #e1e5e9;
+            padding: 6px 12px;
+            margin: -12px -12px 8px -12px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .job-status-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 250px;
+            max-width: 400px;
+        }
+
+        .job-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 2px solid #667eea;
+            font-size: 11px;
+        }
+
+        .job-item.running {
+            border-left-color: #ffc107;
+        }
+
+        .job-item.completed {
+            border-left-color: #28a745;
+        }
+
+        .job-item.error {
+            border-left-color: #dc3545;
+        }
+
+        .job-name {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            font-size: 11px;
+        }
+
+        .job-progress {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .job-status-badge {
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .job-status-badge.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .job-status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .job-status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .job-progress-bar {
+            width: 100%;
+            height: 2px;
+            background: #e1e5e9;
+            border-radius: 1px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .job-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .job-progress-fill.running {
+            background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .job-progress-fill.completed {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        }
+
+        .no-jobs {
+            color: #666;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .sticky-tag-panel {
+            position: sticky;
+            top: 32px;
+            z-index: 999;
+            background: #1a1a1a;
+            border-radius: 4px;
+            padding: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            margin-bottom: 8px;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .sticky-tag-panel.collapsed {
+            max-height: 32px;
+            overflow: hidden;
+            padding-bottom: 6px;
+        }
+
+        .sticky-tag-panel.collapsed .tag-list {
+            display: none;
+        }
+
+        .sticky-tag-panel.collapsed h3 {
+            margin-bottom: 0;
+        }
+
+        .sticky-tag-panel h3 {
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 12px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sticky-tag-panel h3:hover {
+            color: #ccc;
+        }
+
+        .tag-toggle-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 0 3px;
+            transition: transform 0.3s ease;
+        }
+
+        .tag-toggle-btn:hover {
+            color: #ccc;
+        }
+
+        .sticky-tag-panel.collapsed .tag-toggle-btn {
+            transform: rotate(180deg);
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .header {
             background: #000;
             color: white;
-            padding: 30px;
+            padding: 8px 12px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.2em;
+            margin-bottom: 2px;
         }
 
         .header p {
-            font-size: 1.1em;
+            font-size: 11px;
             opacity: 0.9;
         }
 
         .nav-links {
-            margin-top: 15px;
+            margin-top: 4px;
         }
 
         .nav-links a {
             color: white;
             text-decoration: none;
-            margin: 0 15px;
-            padding: 8px 16px;
+            margin: 0 4px;
+            padding: 3px 8px;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
+            border-radius: 3px;
             transition: background-color 0.3s ease;
+            font-size: 11px;
         }
 
         .nav-links a:hover {
@@ -80,33 +283,34 @@
         }
 
         .content {
-            padding: 30px;
+            padding: 12px;
         }
 
         .form-section {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 3px;
             font-weight: 600;
             color: #333;
+            font-size: 11px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 4px 6px;
+            border: 1px solid #e1e5e9;
+            border-radius: 3px;
+            font-size: 12px;
             transition: border-color 0.3s ease;
         }
 
@@ -119,17 +323,18 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s ease;
-            margin-right: 10px;
+            margin-right: 4px;
+            margin-bottom: 4px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .btn:disabled {
@@ -139,10 +344,11 @@
         }
 
         .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin-bottom: 6px;
             font-weight: 600;
+            font-size: 11px;
         }
 
         .status.info {
@@ -165,27 +371,27 @@
 
         .images-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
         }
 
         .image-card {
             background: white;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
             overflow: hidden;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .image-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .image-container {
             width: 100%;
-            height: 250px;
+            height: 180px;
             overflow: hidden;
             background: #f8f9fa;
             display: flex;
@@ -212,23 +418,23 @@
         }
 
         .caption-container {
-            padding: 15px;
+            padding: 6px;
         }
 
         .caption-label {
-            font-size: 0.85em;
+            font-size: 10px;
             color: #666;
-            margin-bottom: 8px;
+            margin-bottom: 3px;
             font-weight: 600;
         }
 
         .caption-textarea {
             width: 100%;
-            min-height: 80px;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 6px;
-            font-size: 14px;
+            min-height: 50px;
+            padding: 4px 6px;
+            border: 1px solid #e1e5e9;
+            border-radius: 3px;
+            font-size: 11px;
             font-family: inherit;
             resize: vertical;
             transition: border-color 0.3s ease;
@@ -248,8 +454,8 @@
         }
 
         .save-indicator {
-            font-size: 0.75em;
-            margin-top: 5px;
+            font-size: 9px;
+            margin-top: 2px;
             color: #666;
         }
 
@@ -267,10 +473,10 @@
 
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -291,13 +497,15 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 20px 10px;
             color: #666;
+            font-size: 11px;
         }
 
         .empty-state h3 {
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             color: #333;
+            font-size: 12px;
         }
 
         .image-container img {
@@ -315,7 +523,7 @@
 
         .image-placeholder {
             width: 100%;
-            height: 250px;
+            height: 180px;
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
@@ -328,6 +536,17 @@
 
             100% {
                 background-position: -200% 0;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .sticky-tag-panel {
+                max-height: 180px;
+            }
+
+            .sticky-status-bar {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -353,16 +572,22 @@
                 <div id="statusMessage" class="status hidden" style="margin-top: 15px;"></div>
             </div>
 
-            <div class="form-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div>
-                        <button class="btn" onclick="confirmAndRun('all')">📝 Re-caption All</button>
-                        <button class="btn" onclick="confirmAndRun('empty')">📝 Caption Empty</button>
-                    </div>
-                    <div>
-                        <div id="tagList" class="tag-list"></div>
-                    </div>
+            <div class="sticky-status-bar">
+                <div>
+                    <button class="btn" onclick="confirmAndRun('all')">📝 Re-caption All</button>
+                    <button class="btn" onclick="confirmAndRun('empty')">📝 Caption Empty</button>
                 </div>
+                <div class="job-status-container" id="jobStatusContainer">
+                    <div class="no-jobs" id="noJobsMessage">No running jobs</div>
+                </div>
+            </div>
+
+            <div class="sticky-tag-panel" id="tagPanel">
+                <h3 onclick="toggleTagPanel()">
+                    <span>📊 Tag Counts</span>
+                    <button class="tag-toggle-btn" onclick="event.stopPropagation(); toggleTagPanel()">▼</button>
+                </h3>
+                <div id="tagList" class="tag-list"></div>
             </div>
 
             <div id="imagesContainer" class="hidden">
@@ -392,6 +617,10 @@
         const RETRY_DELAY = 10000; // 10 seconds
         const MAX_RETRIES = 3; // Maximum number of retries per image
         let intersectionObserver = null;
+        
+        // Job tracking
+        let activeJobs = new Map(); // jobId -> { name, status, done, total, startTime, jobId }
+        let jobPollInterval = null;
 
         async function loadImages() {
             const directory = document.getElementById('directoryInput').value.trim();
@@ -889,8 +1118,194 @@
             statusMessage.classList.remove('hidden');
         }
 
+        // Job management functions
+        function addJob(jobId, jobName, mode = 'batch') {
+            activeJobs.set(jobId, {
+                jobId: jobId,
+                name: jobName,
+                status: 'running',
+                done: 0,
+                total: 0,
+                startTime: Date.now(),
+                mode: mode
+            });
+            updateJobStatusDisplay();
+            startJobPolling();
+        }
+
+        function updateJob(jobId, status, done, total, error) {
+            const job = activeJobs.get(jobId);
+            if (job) {
+                job.status = status;
+                if (done !== undefined) job.done = done;
+                if (total !== undefined) job.total = total;
+                if (error) job.error = error;
+                
+                if (status === 'completed' || status === 'error') {
+                    // Remove completed/error jobs after 5 seconds
+                    setTimeout(() => {
+                        activeJobs.delete(jobId);
+                        updateJobStatusDisplay();
+                        if (activeJobs.size === 0) {
+                            stopJobPolling();
+                        }
+                    }, 5000);
+                }
+            }
+            updateJobStatusDisplay();
+        }
+
+        function updateJobStatusDisplay() {
+            const container = document.getElementById('jobStatusContainer');
+            const noJobsMessage = document.getElementById('noJobsMessage');
+            
+            if (activeJobs.size === 0) {
+                noJobsMessage.style.display = 'block';
+                // Remove all job items
+                const jobItems = container.querySelectorAll('.job-item');
+                jobItems.forEach(item => item.remove());
+                return;
+            }
+            
+            noJobsMessage.style.display = 'none';
+            
+            // Remove existing job items
+            const existingItems = container.querySelectorAll('.job-item');
+            existingItems.forEach(item => item.remove());
+            
+            // Add current jobs
+            activeJobs.forEach((job, jobId) => {
+                const jobItem = createJobItem(job);
+                container.appendChild(jobItem);
+            });
+        }
+
+        function createJobItem(job) {
+            const item = document.createElement('div');
+            item.className = `job-item ${job.status}`;
+            item.dataset.jobId = job.jobId;
+            
+            const name = document.createElement('div');
+            name.className = 'job-name';
+            name.textContent = job.name;
+            
+            const statusBadge = document.createElement('span');
+            statusBadge.className = `job-status-badge ${job.status}`;
+            statusBadge.textContent = job.status;
+            
+            const progress = document.createElement('div');
+            progress.className = 'job-progress';
+            
+            let progressText = '';
+            if (job.total > 0) {
+                const percentage = Math.round((job.done / job.total) * 100);
+                progressText = `${job.done}/${job.total} (${percentage}%)`;
+            } else {
+                progressText = 'Starting...';
+            }
+            progress.textContent = progressText;
+            
+            const progressBar = document.createElement('div');
+            progressBar.className = 'job-progress-bar';
+            const progressFill = document.createElement('div');
+            progressFill.className = `job-progress-fill ${job.status}`;
+            
+            if (job.total > 0) {
+                progressFill.style.width = `${(job.done / job.total) * 100}%`;
+            } else {
+                progressFill.style.width = '0%';
+            }
+            
+            progressBar.appendChild(progressFill);
+            
+            item.appendChild(name);
+            item.appendChild(statusBadge);
+            item.appendChild(progress);
+            item.appendChild(progressBar);
+            
+            return item;
+        }
+
+        function startJobPolling() {
+            if (jobPollInterval) return; // Already polling
+            
+            jobPollInterval = setInterval(() => {
+                if (activeJobs.size === 0) {
+                    stopJobPolling();
+                    return;
+                }
+                
+                // Poll each active job
+                activeJobs.forEach((job, jobId) => {
+                    if (job.status === 'running') {
+                        // Try to get job status from backend
+                        // Check if backend supports /api/autotag/status/<job_id>
+                        if (jobId.startsWith('batch_')) {
+                            // For batch jobs without backend job_id, simulate progress
+                            // In a real implementation, you'd poll the backend
+                            // For now, we'll just keep it running until manually updated
+                        } else {
+                            // Try to fetch job status from backend
+                            fetch(`/api/autotag/status/${jobId}`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.status) {
+                                        updateJob(jobId, data.status, data.done || 0, data.total || 0, data.error);
+                                    }
+                                })
+                                .catch(err => {
+                                    // If endpoint doesn't exist or fails, keep job as is
+                                    console.log('Job status check failed:', err);
+                                });
+                        }
+                    }
+                });
+            }, 2000); // Poll every 2 seconds
+        }
+
+        function stopJobPolling() {
+            if (jobPollInterval) {
+                clearInterval(jobPollInterval);
+                jobPollInterval = null;
+            }
+        }
+
+        function toggleTagPanel() {
+            const panel = document.getElementById('tagPanel');
+            panel.classList.toggle('collapsed');
+        }
+
+        function showDummyTags() {
+            const container = document.getElementById('tagList');
+            container.innerHTML = '';
+            
+            const dummyTags = [
+                ['1girl', 45],
+                ['solo', 32],
+                ['long_hair', 28],
+                ['smile', 24],
+                ['standing', 19],
+                ['simple_background', 15],
+                ['blonde_hair', 12],
+                ['blue_eyes', 10],
+                ['dress', 8],
+                ['outfit', 7]
+            ];
+
+            for (const [tag, count] of dummyTags) {
+                const row = document.createElement('div');
+                row.className = 'tag-row';
+                row.textContent = `${tag} — ${count}`;
+                container.appendChild(row);
+            }
+        }
+
         async function updateTotalTags() {
-            if (!currentDirectory) return;
+            if (!currentDirectory) {
+                // Show dummy data when no directory
+                showDummyTags();
+                return;
+            }
 
             try {
                 const response = await fetch(
@@ -898,13 +1313,21 @@
                 );
                 const tags = await response.json();
 
-                if (!response.ok) return;
+                if (!response.ok) {
+                    showDummyTags();
+                    return;
+                }
 
                 const container = document.getElementById('tagList');
                 container.innerHTML = '';
 
                 const sorted = Object.entries(tags)
                     .sort((a, b) => b[1] - a[1]); // highest count first
+
+                if (sorted.length === 0) {
+                    showDummyTags();
+                    return;
+                }
 
                 for (const [tag, count] of sorted) {
                     const row = document.createElement('div');
@@ -914,6 +1337,7 @@
                 }
             } catch (err) {
                 console.error('Error fetching tags:', err);
+                showDummyTags();
             }
         }
 
@@ -930,14 +1354,39 @@
                 : 'Are you sure you want to caption only empty images?';
             if (!confirm(msg)) return;
 
+            const jobName = mode === 'all' ? 'Re-caption All Images' : 'Caption Empty Images';
+            const jobId = 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Add job to tracking
+            addJob(jobId, jobName, 'batch');
+            
             // Start batch job
             fetch(`/api/caption_batch?mode=${mode}`, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Batch job started');
+                    // If backend returns a job_id, use it
+                    if (data.job_id) {
+                        // Update job with backend job_id
+                        const job = activeJobs.get(jobId);
+                        if (job) {
+                            activeJobs.delete(jobId);
+                            job.jobId = data.job_id;
+                            activeJobs.set(data.job_id, job);
+                        }
+                    }
+                    
+                    // Update job with initial status
+                    if (data.total) {
+                        updateJob(data.job_id || jobId, 'running', 0, data.total);
+                    }
+                    
+                    showStatus(data.message || 'Batch job started', 'success');
                     updateTotalTags();
                 })
-                .catch(err => alert('Error starting batch job: ' + err));
+                .catch(err => {
+                    updateJob(jobId, 'error', 0, 0, err.message);
+                    showStatus('Error starting batch job: ' + err.message, 'error');
+                });
         }
 
         // Single caption per image
@@ -953,6 +1402,11 @@
                     const imageData = JSON.parse(textarea.parentElement.previousElementSibling.querySelector('img').getAttribute('data-image-data'));
                     //const imageData = JSON.parse(textarea.previousElementSibling.querySelector('img').dataset.imageData);
 
+                    const jobId = 'single_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    const jobName = `Caption: ${imageData.filename}`;
+                    addJob(jobId, jobName, 'single');
+                    updateJob(jobId, 'running', 0, 1);
+
                     fetch('/api/caption_single', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -966,9 +1420,15 @@
                             textarea.value = data.caption;
                             saveCaption(imageData.caption_filename, data.caption);
                             refreshAfterSaveOrAutotag();
+                            updateJob(jobId, 'completed', 1, 1);
+                        } else {
+                            updateJob(jobId, 'error', 0, 1, 'No caption returned');
                         }
                     })
-                    .catch(err => console.error(err));
+                    .catch(err => {
+                        console.error(err);
+                        updateJob(jobId, 'error', 0, 1, err.message);
+                    });
                 };
                 textarea.parentNode.appendChild(btn);
             });
@@ -1012,6 +1472,11 @@
                 console.error('Error refreshing captions:', err);
             }
         }
+
+        // Initialize with dummy data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showDummyTags();
+        });
     </script>
 </body>
 
