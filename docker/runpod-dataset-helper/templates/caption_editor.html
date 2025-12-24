@@ -1092,6 +1092,9 @@
                             }
                         }, 2000);
                     }
+
+                    // Refresh tag counts after saving
+                    updateTotalTags();
                 } else {
                     throw new Error(data.error || 'Failed to save caption');
                 }
@@ -1238,26 +1241,25 @@
                 // Poll each active job
                 activeJobs.forEach((job, jobId) => {
                     if (job.status === 'running') {
-                        // Try to get job status from backend
-                        // Check if backend supports /api/autotag/status/<job_id>
-                        if (jobId.startsWith('batch_')) {
-                            // For batch jobs without backend job_id, simulate progress
-                            // In a real implementation, you'd poll the backend
-                            // For now, we'll just keep it running until manually updated
-                        } else {
-                            // Try to fetch job status from backend
-                            fetch(`/api/autotag/status/${jobId}`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.status) {
-                                        updateJob(jobId, data.status, data.done || 0, data.total || 0, data.error);
+                        // Fetch job status from backend
+                        fetch(`/api/autotag/status/${jobId}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.status) {
+                                    // Map backend status "done" to frontend "completed"
+                                    let frontendStatus = data.status;
+                                    if (data.status === 'done' || data.status === 'completed') {
+                                        frontendStatus = 'completed';
+                                        // Refresh tags when job completes
+                                        updateTotalTags();
                                     }
-                                })
-                                .catch(err => {
-                                    // If endpoint doesn't exist or fails, keep job as is
-                                    console.log('Job status check failed:', err);
-                                });
-                        }
+                                    updateJob(jobId, frontendStatus, data.done || 0, data.total || 0, data.error);
+                                }
+                            })
+                            .catch(err => {
+                                // If endpoint doesn't exist or fails, keep job as is
+                                console.log('Job status check failed:', err);
+                            });
                     }
                 });
             }, 2000); // Poll every 2 seconds
@@ -1349,42 +1351,39 @@
 
         // Confirm and run batch caption
         function confirmAndRun(mode) {
+            if (!currentDirectory) {
+                showStatus('Please load a directory first', 'error');
+                return;
+            }
+
             const msg = mode === 'all'
                 ? 'Are you sure you want to re-caption all images?'
                 : 'Are you sure you want to caption only empty images?';
             if (!confirm(msg)) return;
 
             const jobName = mode === 'all' ? 'Re-caption All Images' : 'Caption Empty Images';
-            const jobId = 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const backendMode = mode === 'all' ? 'all' : 'missing';
             
-            // Add job to tracking
-            addJob(jobId, jobName, 'batch');
-            
-            // Start batch job
-            fetch(`/api/caption_batch?mode=${mode}`, { method: 'POST' })
+            // Start batch job using autotag/start endpoint
+            fetch('/api/autotag/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: currentDirectory,
+                    mode: backendMode
+                })
+            })
                 .then(res => res.json())
                 .then(data => {
-                    // If backend returns a job_id, use it
                     if (data.job_id) {
-                        // Update job with backend job_id
-                        const job = activeJobs.get(jobId);
-                        if (job) {
-                            activeJobs.delete(jobId);
-                            job.jobId = data.job_id;
-                            activeJobs.set(data.job_id, job);
-                        }
+                        // Add job to tracking with backend job_id
+                        addJob(data.job_id, jobName, 'batch');
+                        showStatus('Batch job started', 'success');
+                    } else {
+                        showStatus('Error: No job_id returned', 'error');
                     }
-                    
-                    // Update job with initial status
-                    if (data.total) {
-                        updateJob(data.job_id || jobId, 'running', 0, data.total);
-                    }
-                    
-                    showStatus(data.message || 'Batch job started', 'success');
-                    updateTotalTags();
                 })
                 .catch(err => {
-                    updateJob(jobId, 'error', 0, 0, err.message);
                     showStatus('Error starting batch job: ' + err.message, 'error');
                 });
         }

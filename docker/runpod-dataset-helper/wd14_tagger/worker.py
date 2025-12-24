@@ -46,7 +46,7 @@ def autotag_worker(job_id, path, mode="all"):
                 autotag_jobs[job_id]["results"][img_path] = caption
 
         with autotag_lock:
-            autotag_jobs[job_id]["status"] = "done"
+            autotag_jobs[job_id]["status"] = "completed"
 
     except Exception as e:
         with autotag_lock:
