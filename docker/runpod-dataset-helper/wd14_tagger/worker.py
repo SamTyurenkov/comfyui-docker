@@ -11,6 +11,18 @@ FIXED_MODELS = {
     "wd-convnext-tagger-v3": {"threshold": 0.35, "character_threshold": 0.85}
 }
 
+# Initialize WD14Tagger instance
+# Model directory path (matches entry.sh symlink)
+MODEL_DIR = "/home/comfyuser/wd14_tagger/models"
+_tagger_instance = None
+
+def get_tagger():
+    """Get or create WD14Tagger instance"""
+    global _tagger_instance
+    if _tagger_instance is None:
+        _tagger_instance = WD14Tagger(MODEL_DIR)
+    return _tagger_instance
+
 def autotag_worker(job_id, path, mode="all"):
     """
     Worker for autotagging using tag_multi for all images.
@@ -35,7 +47,8 @@ def autotag_worker(job_id, path, mode="all"):
                 continue
 
             image = Image.open(img_path).convert("RGB")
-            tags = WD14Tagger.tag_multi(image, FIXED_MODELS, replace_underscore=True)
+            tagger = get_tagger()
+            tags = tagger.tag_multi(image, FIXED_MODELS, replace_underscore=True)
 
             caption = ", ".join(tags)
             with open(txt_path, "w", encoding="utf-8") as f:

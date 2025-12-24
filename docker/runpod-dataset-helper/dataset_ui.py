@@ -10,9 +10,6 @@ import queue
 import uuid
 from io import BytesIO
 
-from wd14_tagger.tagger import WD14Tagger
-from wd14_tagger.model_manager import download_model
-from wd14_tagger.utils import iter_images
 from wd14_tagger.worker import autotag_worker   # ✅ REQUIRED
 from wd14_tagger.jobs import autotag_jobs, autotag_lock
 from tag_counter import count_tags_in_directory
@@ -346,12 +343,20 @@ def caption_single():
         autotag_worker(job_id, img_path, mode="all")
         with autotag_lock:
             result = autotag_jobs[job_id]["results"].get(img_path, "")
+            if not result:
+                # Check if there was an error
+                error = autotag_jobs[job_id].get("error")
+                if error:
+                    return jsonify({"error": error}), 500
         return jsonify({"caption": result})
     except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback.print_exc()  # Print full traceback to console
         with autotag_lock:
             autotag_jobs[job_id]["status"] = "error"
-            autotag_jobs[job_id]["error"] = str(e)
-        return jsonify({"error": str(e)}), 500
+            autotag_jobs[job_id]["error"] = error_msg
+        return jsonify({"error": error_msg}), 500
 
 @app.post("/api/autotag/start")
 def start_autotag():
