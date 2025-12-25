@@ -305,6 +305,18 @@ def list_images():
                             except Exception as e:
                                 caption_text = f'Error reading caption: {str(e)}'
                         
+                        # Look for corresponding mask file with -masklabel suffix
+                        # Try same extension first, then .png
+                        mask_path = None
+                        mask_candidates = [
+                            os.path.join(root, name + '-masklabel' + ext),  # Same extension
+                            os.path.join(root, name + '-masklabel.png')      # Always try PNG
+                        ]
+                        for candidate in mask_candidates:
+                            if os.path.exists(candidate) and os.path.isfile(candidate):
+                                mask_path = candidate
+                                break
+                        
                         # Get relative path from the root directory for display
                         rel_path = os.path.relpath(root, directory)
                         if rel_path == '.':
@@ -312,12 +324,18 @@ def list_images():
                         else:
                             display_path = os.path.join(rel_path, filename)
                         
-                        images.append({
+                        image_data = {
                             'filename': display_path,
                             'caption_filename': os.path.join(rel_path, name + '.txt') if rel_path != '.' else (name + '.txt'),
                             'caption': caption_text,
                             'image_path': filepath
-                        })
+                        }
+                        
+                        # Add mask path if found
+                        if mask_path:
+                            image_data['mask_path'] = mask_path
+                        
+                        images.append(image_data)
         
         # Sort by filename
         images.sort(key=lambda x: x['filename'])

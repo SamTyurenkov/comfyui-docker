@@ -373,6 +373,11 @@
             transform: none;
         }
 
+        .btn.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
         .status {
             padding: 4px 8px;
             border-radius: 3px;
@@ -437,6 +442,24 @@
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 0;
+        }
+
+        .image-container .mask-overlay {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0.5;
+            pointer-events: none;
+            display: none;
+            z-index: 1;
+        }
+
+        .image-container.show-masks .mask-overlay {
+            display: block;
         }
 
         .image-placeholder {
@@ -460,7 +483,7 @@
 
         .caption-textarea {
             width: 100%;
-            min-height: 50px;
+            min-height: 350px;
             padding: 4px 6px;
             border: 1px solid #e1e5e9;
             border-radius: 3px;
@@ -622,6 +645,7 @@
                 <div>
                     <button class="btn" onclick="confirmAndRun('all')">📝 Re-caption All</button>
                     <button class="btn" onclick="confirmAndRun('empty')">📝 Caption Empty</button>
+                    <button class="btn" id="maskToggleBtn" onclick="toggleMasks()">🎭 Show Masks</button>
                 </div>
                 <div class="job-status-container" id="jobStatusContainer">
                     <div class="no-jobs" id="noJobsMessage">No running jobs</div>
@@ -667,6 +691,7 @@
         const RETRY_DELAY = 10000; // 10 seconds
         const MAX_RETRIES = 3; // Maximum number of retries per image
         let intersectionObserver = null;
+        let showMasks = false; // Toggle state for mask display
         
         // Job tracking
         let activeJobs = new Map(); // jobId -> { name, status, done, total, startTime, jobId }
@@ -842,8 +867,23 @@
                 img.style.objectFit = 'contain';
                 // Don't set onload/onerror here - they'll be set in loadImage()
 
+                // Create mask overlay if mask exists
+                let maskOverlay = null;
+                if (image.mask_path) {
+                    maskOverlay = document.createElement('img');
+                    maskOverlay.className = 'mask-overlay';
+                    maskOverlay.dataset.maskPath = image.mask_path;
+                    maskOverlay.style.width = '100%';
+                    maskOverlay.style.height = '100%';
+                    maskOverlay.style.objectFit = 'contain';
+                    maskOverlay.alt = 'Mask overlay';
+                }
+
                 imageContainer.appendChild(placeholder);
                 imageContainer.appendChild(img);
+                if (maskOverlay) {
+                    imageContainer.appendChild(maskOverlay);
+                }
 
                 // Create caption container
                 const captionContainer = document.createElement('div');
@@ -1051,6 +1091,18 @@
                         const fullImg = new Image();
                         fullImg.onload = () => {
                             imgElement.src = fullImageUrl;
+                            
+                            // Also load full mask if masks are enabled
+                            if (showMasks && imageData.mask_path) {
+                                const container = imgElement.closest('.image-container');
+                                if (container) {
+                                    const maskOverlay = container.querySelector('.mask-overlay');
+                                    if (maskOverlay) {
+                                        const fullMaskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}`;
+                                        maskOverlay.src = fullMaskUrl;
+                                    }
+                                }
+                            }
                         };
                         fullImg.onerror = () => {
                             // Keep thumbnail if full image fails - don't retry full image
@@ -1113,6 +1165,52 @@
 
             // Start loading
             imgElement.src = thumbnailUrl;
+            
+            // Load mask if it exists and masks are enabled
+            if (showMasks && imageData.mask_path) {
+                const container = imgElement.closest('.image-container');
+                if (container) {
+                    const maskOverlay = container.querySelector('.mask-overlay');
+                    if (maskOverlay) {
+                        const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300`;
+                        maskOverlay.src = maskUrl;
+                    }
+                }
+            }
+        }
+        
+        function toggleMasks() {
+            showMasks = !showMasks;
+            const btn = document.getElementById('maskToggleBtn');
+            if (showMasks) {
+                btn.textContent = '🎭 Hide Masks';
+                btn.classList.add('active');
+            } else {
+                btn.textContent = '🎭 Show Masks';
+                btn.classList.remove('active');
+            }
+            
+            // Toggle mask visibility for all image containers
+            const containers = document.querySelectorAll('.image-container');
+            containers.forEach(container => {
+                if (showMasks) {
+                    container.classList.add('show-masks');
+                    // Load masks if they haven't been loaded yet
+                    const maskOverlay = container.querySelector('.mask-overlay');
+                    if (maskOverlay && !maskOverlay.src) {
+                        const img = container.querySelector('img:not(.mask-overlay)');
+                        if (img && img.dataset.imageData) {
+                            const imageData = JSON.parse(img.dataset.imageData);
+                            if (imageData.mask_path) {
+                                const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300`;
+                                maskOverlay.src = maskUrl;
+                            }
+                        }
+                    }
+                } else {
+                    container.classList.remove('show-masks');
+                }
+            });
         }
 
         function showImageError(imgElement) {
