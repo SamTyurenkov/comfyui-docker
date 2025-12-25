@@ -199,6 +199,36 @@
             display: none;
         }
 
+        .sticky-tag-panel.collapsed .tag-filter {
+            display: none;
+        }
+
+        .tag-filter {
+            margin-bottom: 8px;
+            padding: 4px 8px;
+        }
+
+        .tag-filter input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .tag-filter input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #333;
+        }
+
+        .tag-filter input::placeholder {
+            color: #888;
+        }
+
         .sticky-tag-panel.collapsed h3 {
             margin-bottom: 0;
         }
@@ -603,6 +633,9 @@
                     <span>📊 Tag Counts</span>
                     <button class="tag-toggle-btn" onclick="event.stopPropagation(); toggleTagPanel()">▼</button>
                 </h3>
+                <div class="tag-filter">
+                    <input type="text" id="tagFilterInput" placeholder="Filter tags (e.g., skull)" />
+                </div>
                 <div id="tagList" class="tag-list"></div>
             </div>
 
@@ -622,6 +655,7 @@
         let currentDirectory = '';
         let saveTimeouts = {};
         let allImages = [];
+        let allTags = {}; // Store all tags for filtering
         let loadedImages = new Set();
         let pendingLoads = [];
         let loadingQueue = [];
@@ -1329,6 +1363,9 @@
             const container = document.getElementById('tagList');
             container.innerHTML = '';
             
+            // Clear stored tags when showing dummy data
+            allTags = {};
+            
             const dummyTags = [
                 ['1girl', 45],
                 ['solo', 32],
@@ -1368,28 +1405,62 @@
                     return;
                 }
 
-                const container = document.getElementById('tagList');
-                container.innerHTML = '';
+                // Store all tags for filtering
+                allTags = tags;
 
-                const sorted = Object.entries(tags)
-                    .sort((a, b) => b[1] - a[1]); // highest count first
-
-                if (sorted.length === 0) {
-                    showDummyTags();
-                    return;
-                }
-
-                for (const [tag, count] of sorted) {
-                    const row = document.createElement('div');
-                    row.className = 'tag-row';
-                    row.textContent = `${tag} — ${count}`;
-                    container.appendChild(row);
-                }
+                // Apply current filter if any
+                applyTagFilter();
             } catch (err) {
                 console.error('Error fetching tags:', err);
                 showDummyTags();
             }
         }
+
+        function applyTagFilter() {
+            const container = document.getElementById('tagList');
+            const filterInput = document.getElementById('tagFilterInput');
+            const filterValue = filterInput ? filterInput.value.toLowerCase().trim() : '';
+
+            container.innerHTML = '';
+
+            if (Object.keys(allTags).length === 0) {
+                showDummyTags();
+                return;
+            }
+
+            const sorted = Object.entries(allTags)
+                .sort((a, b) => b[1] - a[1]); // highest count first
+
+            // Filter tags if filter value is provided
+            const filtered = filterValue
+                ? sorted.filter(([tag]) => tag.toLowerCase().includes(filterValue))
+                : sorted;
+
+            if (filtered.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'tag-list-placeholder';
+                noResults.textContent = filterValue 
+                    ? `No tags found matching "${filterInput.value}"`
+                    : 'No tags found';
+                container.appendChild(noResults);
+                return;
+            }
+
+            for (const [tag, count] of filtered) {
+                const row = document.createElement('div');
+                row.className = 'tag-row';
+                row.textContent = `${tag} — ${count}`;
+                container.appendChild(row);
+            }
+        }
+
+        // Set up filter input event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterInput = document.getElementById('tagFilterInput');
+            if (filterInput) {
+                filterInput.addEventListener('input', applyTagFilter);
+            }
+        });
 
         // Call after save or autotag
         async function refreshAfterSaveOrAutotag() {
