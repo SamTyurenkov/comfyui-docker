@@ -292,6 +292,9 @@ def list_images():
                 if os.path.isfile(filepath):
                     name, ext = os.path.splitext(filename)
                     if ext.lower() in image_extensions:
+                        # Skip images with '-masklabel' in filename
+                        if '-masklabel' in filename:
+                            continue
                         # Look for corresponding caption file in the same directory
                         caption_path = os.path.join(root, name + '.txt')
                         caption_text = ''
