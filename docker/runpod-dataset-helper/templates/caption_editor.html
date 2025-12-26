@@ -605,10 +605,6 @@
             pointer-events: none;
         }
 
-        .modal-mask-overlay {
-            display: none;
-        }
-
         .image-modal-actions {
             display: flex;
             align-items: center;
@@ -922,7 +918,6 @@
                 <div class="modal-viewer">
                     <div class="modal-image-container" id="modalImageContainer">
                         <img id="modalBaseImage" alt="Selected image">
-                        <img id="modalMaskOverlay" class="modal-mask-overlay" alt="Mask overlay">
                         <canvas id="maskCanvas"></canvas>
                     </div>
                 </div>
@@ -950,7 +945,6 @@
         let showMasks = false; // Toggle state for mask display
         const maskModal = document.getElementById('imageModal');
         const modalBaseImage = document.getElementById('modalBaseImage');
-        const modalMaskOverlay = document.getElementById('modalMaskOverlay');
         const modalContainer = document.getElementById('modalImageContainer');
         const modalTitle = document.getElementById('modalTitle');
         const maskCanvas = document.getElementById('maskCanvas');
@@ -1032,11 +1026,10 @@
         }
 
         function updateMaskPreviewFromCanvas(force = false) {
-            if (!modalMaskOverlay || !maskCanvas) return;
+            if (!maskCanvas) return;
             const now = performance.now();
             if (!force && now - maskEditorState.lastPreviewUpdate < MASK_PREVIEW_DELAY) return;
             maskEditorState.lastPreviewUpdate = now;
-            modalMaskOverlay.src = maskCanvas.toDataURL('image/png');
         }
 
         function loadBaseImageForModal(imagePath) {
@@ -1051,8 +1044,6 @@
                     const h = modalBaseImage.naturalHeight || 512;
                     clearMaskCanvas(w, h);
                     syncCanvasToImage();
-                    modalMaskOverlay.width = w;
-                    modalMaskOverlay.height = h;
                     updateMaskStatus('Image loaded');
                     resolve();
                 };
