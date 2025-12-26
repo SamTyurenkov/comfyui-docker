@@ -588,6 +588,91 @@ def api_tags_count():
 
     return jsonify(count_tags_in_directory(directory))
 
+def _replace_tag_in_line(line, from_tag, to_tag, case_sensitive=False):
+    """Replace a single tag within a comma-separated line; returns new line and replacements made."""
+    parts = [tag.strip() for tag in line.strip().split(",") if tag.strip()]
+    from_key = from_tag if case_sensitive else from_tag.lower()
+
+    seen = set()
+    changed = False
+    updated_parts = []
+    for tag in parts:
+        key = tag if case_sensitive else tag.lower()
+        new_tag = to_tag if key == from_key else tag
+        if key == from_key:
+            changed = True
+        # Deduplicate using comparison key to avoid double entries after replace
+        dedupe_key = new_tag if case_sensitive else new_tag.lower()
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        updated_parts.append(new_tag)
+
+    # Preserve original trailing newline if present
+    suffix = "\n" if line.endswith("\n") else ""
+    return ", ".join(updated_parts) + suffix, (1 if changed else 0)
+
+
+@app.post("/api/replace_tag")
+def replace_tag():
+    data = request.get_json() or {}
+    directory = (data.get("directory") or "").strip()
+    from_tag = (data.get("from_tag") or "").strip()
+    to_tag = (data.get("to_tag") or "").strip()
+    case_sensitive = bool(data.get("case_sensitive", False))
+
+    if not directory or not from_tag:
+        return jsonify({"error": "directory and from_tag are required"}), 400
+
+    if not os.path.isdir(directory):
+        return jsonify({"error": "invalid directory"}), 400
+
+    files_updated = 0
+    replacements = 0
+    errors = []
+
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            lower = filename.lower()
+            if not lower.endswith(".txt") or "-checkpoint.txt" in lower:
+                continue
+
+            path = os.path.join(root, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+            except Exception as exc:
+                errors.append({"file": path, "error": str(exc)})
+                continue
+
+            new_lines = []
+            file_changed = False
+            for line in lines:
+                new_line, changed = _replace_tag_in_line(
+                    line, from_tag, to_tag, case_sensitive=case_sensitive
+                )
+                if changed:
+                    file_changed = True
+                    replacements += 1
+                new_lines.append(new_line)
+
+            if file_changed:
+                try:
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.writelines(new_lines)
+                    files_updated += 1
+                except Exception as exc:
+                    errors.append({"file": path, "error": str(exc)})
+
+    return jsonify(
+        {
+            "success": True,
+            "files_updated": files_updated,
+            "replacements": replacements,
+            "errors": errors,
+        }
+    )
+
 @app.post("/api/count_tokens")
 def count_tokens():
     """Count CLIP tokens in a caption text - REQUIRES tokenizer"""
