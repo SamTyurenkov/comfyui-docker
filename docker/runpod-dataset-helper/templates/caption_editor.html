@@ -433,6 +433,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            cursor: zoom-in;
         }
 
         .image-container img {
@@ -453,13 +454,178 @@
             top: 0;
             left: 0;
             opacity: 0.5;
-            pointer-events: none;
+            pointer-events: auto;
             display: none;
             z-index: 1;
         }
 
         .image-container.show-masks .mask-overlay {
             display: block;
+        }
+
+        .image-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+
+        .image-modal.show {
+            display: flex;
+        }
+
+        .image-modal-content {
+            background: #111;
+            color: #fff;
+            width: 95vw;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+        }
+
+        .image-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid #222;
+            background: #181818;
+            gap: 8px;
+        }
+
+        .image-modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .image-modal-body {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+            padding: 12px;
+            height: 100%;
+            min-height: 0;
+            flex: 1;
+        }
+
+        .modal-viewer {
+            background: #0d0d0d;
+            border: 1px solid #222;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .modal-image-container {
+            position: relative;
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        .modal-image-container img {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .modal-mask-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0.5;
+            pointer-events: none;
+            object-fit: contain;
+            width: 100%;
+            height: 100%;
+        }
+
+        .image-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-editor {
+            background: #0d0d0d;
+            border: 1px solid #222;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .mask-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-bottom: 1px solid #222;
+            background: #181818;
+        }
+
+        .mask-toolbar label {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .mask-toolbar input[type="range"] {
+            width: 120px;
+        }
+
+        .mask-toolbar .pill-btn {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 14px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .mask-toolbar .pill-btn.active {
+            background: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .mask-toolbar .pill-btn.danger {
+            background: #2d0f0f;
+            border-color: #5c1a1a;
+        }
+
+        .mask-toolbar .pill-btn.secondary {
+            background: #123;
+            border-color: #1f3a5f;
+        }
+
+        #maskCanvas {
+            background: #fff;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: block;
+            min-height: 0;
+        }
+
+        .mask-hint {
+            padding: 8px 10px;
+            border-top: 1px solid #222;
+            color: #999;
+            font-size: 11px;
+            background: #181818;
         }
 
         .image-placeholder {
@@ -675,6 +841,38 @@
         </div>
     </div>
 
+    <div id="imageModal" class="image-modal hidden">
+        <div class="image-modal-content">
+            <div class="image-modal-header">
+                <div class="image-modal-title" id="modalTitle">Preview</div>
+                <div class="image-modal-actions">
+                    <button class="pill-btn secondary" id="maskResetBtn" type="button">Reset</button>
+                    <button class="pill-btn danger" id="maskDeleteBtn" type="button">Delete Mask</button>
+                    <button class="pill-btn" id="maskSaveBtn" type="button">Save Mask</button>
+                    <button class="pill-btn" id="modalCloseBtn" type="button">Close</button>
+                </div>
+            </div>
+            <div class="image-modal-body">
+                <div class="modal-viewer">
+                    <div class="modal-image-container" id="modalImageContainer">
+                        <img id="modalBaseImage" alt="Selected image">
+                        <img id="modalMaskOverlay" class="modal-mask-overlay" alt="Mask overlay">
+                    </div>
+                </div>
+                <div class="modal-editor">
+                    <div class="mask-toolbar">
+                        <button class="pill-btn active" id="maskPaintBtn" type="button">Mask</button>
+                        <button class="pill-btn" id="maskEraseBtn" type="button">Unmask</button>
+                        <label>Brush <input id="brushSizeInput" type="range" min="2" max="64" value="14"> <span id="brushSizeValue">14</span></label>
+                        <span id="maskStatus" style="margin-left: auto; font-size: 12px; color: #ccc;">Ready</span>
+                    </div>
+                    <canvas id="maskCanvas"></canvas>
+                    <div class="mask-hint">Black = masked, White = unmasked. Edits instantly update the preview (50% opacity).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentDirectory = '';
         let saveTimeouts = {};
@@ -692,6 +890,333 @@
         const MAX_RETRIES = 3; // Maximum number of retries per image
         let intersectionObserver = null;
         let showMasks = false; // Toggle state for mask display
+        const maskModal = document.getElementById('imageModal');
+        const modalBaseImage = document.getElementById('modalBaseImage');
+        const modalMaskOverlay = document.getElementById('modalMaskOverlay');
+        const modalContainer = document.getElementById('modalImageContainer');
+        const modalTitle = document.getElementById('modalTitle');
+        const maskCanvas = document.getElementById('maskCanvas');
+        const maskCtx = maskCanvas.getContext('2d');
+        const maskStatus = document.getElementById('maskStatus');
+        const brushSizeInput = document.getElementById('brushSizeInput');
+        const brushSizeValue = document.getElementById('brushSizeValue');
+        const maskPaintBtn = document.getElementById('maskPaintBtn');
+        const maskEraseBtn = document.getElementById('maskEraseBtn');
+        const maskSaveBtn = document.getElementById('maskSaveBtn');
+        const maskDeleteBtn = document.getElementById('maskDeleteBtn');
+        const maskResetBtn = document.getElementById('maskResetBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        let maskEditorState = {
+            drawing: false,
+            brushMode: 'mask',
+            brushSize: Number(brushSizeInput?.value || 14),
+            imageData: null,
+            imageIndex: null,
+            lastPreviewUpdate: 0
+        };
+        const MASK_PREVIEW_DELAY = 120; // ms
+
+        function setBrushMode(mode) {
+            maskEditorState.brushMode = mode;
+            if (maskPaintBtn && maskEraseBtn) {
+                maskPaintBtn.classList.toggle('active', mode === 'mask');
+                maskEraseBtn.classList.toggle('active', mode === 'erase');
+            }
+        }
+
+        function setBrushSize(size) {
+            maskEditorState.brushSize = Math.max(1, Number(size) || 14);
+            if (brushSizeInput) {
+                brushSizeInput.value = maskEditorState.brushSize;
+            }
+            if (brushSizeValue) {
+                brushSizeValue.textContent = maskEditorState.brushSize;
+            }
+        }
+
+        function updateMaskStatus(text) {
+            if (maskStatus) {
+                maskStatus.textContent = text;
+            }
+        }
+
+        function clearMaskCanvas(width, height) {
+            if (!maskCtx) return;
+            maskCanvas.width = width;
+            maskCanvas.height = height;
+            maskCtx.fillStyle = '#ffffff';
+            maskCtx.fillRect(0, 0, width, height);
+        }
+
+        function applyBinaryMask() {
+            if (!maskCtx) return;
+            const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const v = data[i];
+                const value = v >= 128 ? 255 : 0;
+                data[i] = value;
+                data[i + 1] = value;
+                data[i + 2] = value;
+                data[i + 3] = 255;
+            }
+            maskCtx.putImageData(imageData, 0, 0);
+        }
+
+        function updateMaskPreviewFromCanvas(force = false) {
+            if (!modalMaskOverlay || !maskCanvas) return;
+            const now = performance.now();
+            if (!force && now - maskEditorState.lastPreviewUpdate < MASK_PREVIEW_DELAY) return;
+            maskEditorState.lastPreviewUpdate = now;
+            modalMaskOverlay.src = maskCanvas.toDataURL('image/png');
+        }
+
+        function loadBaseImageForModal(imagePath) {
+            return new Promise((resolve, reject) => {
+                if (!modalBaseImage) {
+                    resolve();
+                    return;
+                }
+                const src = `/api/get_image?path=${encodeURIComponent(imagePath)}`;
+                modalBaseImage.onload = () => {
+                    const w = modalBaseImage.naturalWidth || 512;
+                    const h = modalBaseImage.naturalHeight || 512;
+                    clearMaskCanvas(w, h);
+                    modalMaskOverlay.width = w;
+                    modalMaskOverlay.height = h;
+                    updateMaskStatus('Image loaded');
+                    resolve();
+                };
+                modalBaseImage.onerror = () => {
+                    updateMaskStatus('Failed to load image');
+                    reject(new Error('Failed to load image'));
+                };
+                modalBaseImage.src = src;
+            });
+        }
+
+        async function loadMaskIntoCanvas(maskPath) {
+            if (!maskCanvas) return;
+            const targetW = modalBaseImage?.naturalWidth || maskCanvas.width || 512;
+            const targetH = modalBaseImage?.naturalHeight || maskCanvas.height || 512;
+            clearMaskCanvas(targetW, targetH);
+
+            if (!maskPath) {
+                maskDeleteBtn?.setAttribute('disabled', 'disabled');
+                updateMaskPreviewFromCanvas(true);
+                updateMaskStatus('No mask yet - paint to create one');
+                return;
+            }
+
+            maskDeleteBtn?.removeAttribute('disabled');
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    maskCtx.drawImage(img, 0, 0, targetW, targetH);
+                    applyBinaryMask();
+                    updateMaskPreviewFromCanvas(true);
+                    updateMaskStatus('Mask loaded');
+                    resolve();
+                };
+                img.onerror = () => {
+                    updateMaskPreviewFromCanvas(true);
+                    updateMaskStatus('Mask missing - starting blank');
+                    resolve();
+                };
+                img.src = `/api/get_image?path=${encodeURIComponent(maskPath)}`;
+            });
+        }
+
+        async function openImageModal(imageData, imageIndex) {
+            if (!maskModal || !imageData) return;
+            maskEditorState.imageData = { ...imageData };
+            maskEditorState.imageIndex = imageIndex;
+            maskModal.classList.add('show');
+            maskModal.classList.remove('hidden');
+            modalTitle.textContent = imageData.filename || 'Preview';
+            maskSaveBtn?.removeAttribute('disabled');
+            setBrushMode(maskEditorState.brushMode);
+            setBrushSize(maskEditorState.brushSize);
+            updateMaskStatus('Loading...');
+            try {
+                await loadBaseImageForModal(imageData.image_path);
+                await loadMaskIntoCanvas(imageData.mask_path);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function closeImageModal() {
+            if (!maskModal) return;
+            maskModal.classList.remove('show');
+            maskModal.classList.add('hidden');
+            maskEditorState.imageData = null;
+            maskEditorState.imageIndex = null;
+            maskEditorState.drawing = false;
+            maskSaveBtn?.setAttribute('disabled', 'disabled');
+            maskDeleteBtn?.setAttribute('disabled', 'disabled');
+        }
+
+        async function resetMaskFromSource() {
+            if (!maskEditorState.imageData) return;
+            updateMaskStatus('Resetting...');
+            await loadMaskIntoCanvas(maskEditorState.imageData.mask_path);
+        }
+
+        async function saveCurrentMask() {
+            if (!maskEditorState.imageData) return;
+            try {
+                updateMaskStatus('Saving...');
+                const payload = {
+                    image_path: maskEditorState.imageData.image_path,
+                    mask_data: maskCanvas.toDataURL('image/png')
+                };
+                if (maskEditorState.imageData.mask_path) {
+                    payload.mask_path = maskEditorState.imageData.mask_path;
+                }
+
+                const response = await fetch('/api/save_mask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to save mask');
+                }
+                maskEditorState.imageData.mask_path = data.mask_path;
+                maskDeleteBtn?.removeAttribute('disabled');
+                syncImageData(maskEditorState.imageIndex, maskEditorState.imageData);
+                refreshCardMask(data.mask_path, maskEditorState.imageIndex, true);
+                updateMaskStatus('Mask saved');
+            } catch (err) {
+                console.error(err);
+                updateMaskStatus(err.message || 'Error saving mask');
+            }
+        }
+
+        async function deleteCurrentMask() {
+            if (!maskEditorState.imageData) return;
+            if (!confirm('Delete this mask?')) return;
+            try {
+                updateMaskStatus('Deleting...');
+                const response = await fetch('/api/delete_mask', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_path: maskEditorState.imageData.image_path,
+                        mask_path: maskEditorState.imageData.mask_path
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to delete mask');
+                }
+                maskEditorState.imageData.mask_path = null;
+                maskDeleteBtn?.setAttribute('disabled', 'disabled');
+                clearMaskCanvas(maskCanvas.width, maskCanvas.height);
+                updateMaskPreviewFromCanvas(true);
+                syncImageData(maskEditorState.imageIndex, maskEditorState.imageData);
+                refreshCardMask(null, maskEditorState.imageIndex);
+                updateMaskStatus('Mask deleted');
+            } catch (err) {
+                console.error(err);
+                updateMaskStatus(err.message || 'Error deleting mask');
+            }
+        }
+
+        function syncImageData(index, updated) {
+            if (index === null || index === undefined) return;
+            allImages[index] = updated;
+            const container = document.querySelector(`.image-container[data-image-index="${index}"]`);
+            const img = container?.querySelector('img:not(.mask-overlay)');
+            if (img) {
+                img.dataset.imageData = JSON.stringify(updated);
+            }
+        }
+
+        function refreshCardMask(maskPath, imageIndex, bustCache = false) {
+            const container = document.querySelector(`.image-container[data-image-index="${imageIndex}"]`);
+            if (!container) return;
+            let maskOverlay = container.querySelector('.mask-overlay');
+            if (maskPath) {
+                const maskUrl = `/api/get_image?path=${encodeURIComponent(maskPath)}&thumbnail=true&size=300${bustCache ? `&_=${Date.now()}` : ''}`;
+                if (!maskOverlay) {
+                    maskOverlay = document.createElement('img');
+                    maskOverlay.className = 'mask-overlay';
+                    maskOverlay.alt = 'Mask overlay';
+                    maskOverlay.style.width = '100%';
+                    maskOverlay.style.height = '100%';
+                    maskOverlay.style.objectFit = 'contain';
+                    container.appendChild(maskOverlay);
+                }
+                maskOverlay.dataset.maskPath = maskPath;
+                maskOverlay.src = maskUrl;
+                if (showMasks) {
+                    container.classList.add('show-masks');
+                }
+            } else if (maskOverlay) {
+                maskOverlay.remove();
+                container.classList.remove('show-masks');
+            }
+        }
+
+        function startMaskDraw(event) {
+            if (!maskCanvas || !maskCtx || !maskEditorState.imageData) return;
+            maskEditorState.drawing = true;
+            drawMaskStroke(event);
+        }
+
+        function drawMaskStroke(event) {
+            if (!maskEditorState.drawing || !maskCanvas || !maskCtx) return;
+            const rect = maskCanvas.getBoundingClientRect();
+            const scaleX = maskCanvas.width / rect.width;
+            const scaleY = maskCanvas.height / rect.height;
+            const x = (event.clientX - rect.left) * scaleX;
+            const y = (event.clientY - rect.top) * scaleY;
+            maskCtx.fillStyle = maskEditorState.brushMode === 'mask' ? '#000000' : '#ffffff';
+            maskCtx.beginPath();
+            maskCtx.arc(x, y, maskEditorState.brushSize / 2, 0, Math.PI * 2);
+            maskCtx.fill();
+            applyBinaryMask();
+            updateMaskPreviewFromCanvas();
+        }
+
+        function endMaskDraw() {
+            if (!maskEditorState.drawing) return;
+            maskEditorState.drawing = false;
+            updateMaskPreviewFromCanvas(true);
+        }
+
+        function setupMaskEditor() {
+            if (!maskCanvas) return;
+            setBrushSize(maskEditorState.brushSize);
+            setBrushMode('mask');
+            maskSaveBtn?.setAttribute('disabled', 'disabled');
+            maskDeleteBtn?.setAttribute('disabled', 'disabled');
+
+            maskCanvas.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                startMaskDraw(e);
+            });
+            maskCanvas.addEventListener('pointermove', drawMaskStroke);
+            maskCanvas.addEventListener('pointerup', endMaskDraw);
+            maskCanvas.addEventListener('pointerleave', endMaskDraw);
+            maskCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            maskPaintBtn?.addEventListener('click', () => setBrushMode('mask'));
+            maskEraseBtn?.addEventListener('click', () => setBrushMode('erase'));
+            brushSizeInput?.addEventListener('input', (e) => setBrushSize(e.target.value));
+            maskSaveBtn?.addEventListener('click', saveCurrentMask);
+            maskDeleteBtn?.addEventListener('click', deleteCurrentMask);
+            maskResetBtn?.addEventListener('click', resetMaskFromSource);
+            modalCloseBtn?.addEventListener('click', closeImageModal);
+            maskModal?.addEventListener('click', (e) => {
+                if (e.target === maskModal) {
+                    closeImageModal();
+                }
+            });
+        }
         
         // Job tracking
         let activeJobs = new Map(); // jobId -> { name, status, done, total, startTime, jobId }
@@ -883,6 +1408,16 @@
                 imageContainer.appendChild(img);
                 if (maskOverlay) {
                     imageContainer.appendChild(maskOverlay);
+                }
+
+                const openModal = (event) => {
+                    event?.stopPropagation();
+                    const imageData = JSON.parse(img.dataset.imageData);
+                    openImageModal(imageData, index);
+                };
+                imageContainer.addEventListener('click', openModal);
+                if (maskOverlay) {
+                    maskOverlay.addEventListener('click', openModal);
                 }
 
                 // Create caption container
@@ -1762,6 +2297,7 @@
 
         // Initialize with dummy data on page load
         document.addEventListener('DOMContentLoaded', function() {
+            setupMaskEditor();
             showDummyTags();
         });
     </script>

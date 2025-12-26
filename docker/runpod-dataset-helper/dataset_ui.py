@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import base64
 import subprocess
 import threading
 import time
@@ -261,6 +262,37 @@ class ProcessManager:
 
 process_manager = ProcessManager()
 
+
+def derive_mask_path(image_path):
+    """Return the canonical mask path for an image."""
+    if not image_path:
+        return None
+    base, _ = os.path.splitext(image_path)
+    return f"{base}-masklabel.png"
+
+
+def write_binary_mask(mask_bytes, target_path):
+    """Write mask bytes to disk ensuring binary output when PIL is available."""
+    target_dir = os.path.dirname(target_path)
+    if target_dir:
+        os.makedirs(target_dir, exist_ok=True)
+
+    if PIL_AVAILABLE:
+        try:
+            mask_img = Image.open(BytesIO(mask_bytes))
+            mask_img = mask_img.convert("L")
+            # Threshold to binary (255 = mask, 0 = background)
+            mask_img = mask_img.point(lambda p: 255 if p >= 128 else 0, "L")
+            mask_img.save(target_path, format="PNG")
+            return
+        except Exception:
+            # Fallback to raw write if PIL fails on the provided bytes
+            pass
+
+    with open(target_path, "wb") as f:
+        f.write(mask_bytes)
+
+
 @app.route('/')
 def index():
     return render_template('caption_editor.html')
@@ -422,6 +454,53 @@ def get_image():
             return send_file(img_io, mimetype='image/jpeg')
         else:
             return send_file(image_path)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/save_mask', methods=['POST'])
+def save_mask():
+    """Create or update a mask file for an image."""
+    data = request.get_json() or {}
+    image_path = data.get('image_path')
+    mask_data = data.get('mask_data')
+    mask_path = data.get('mask_path') or derive_mask_path(image_path)
+
+    if not image_path or not mask_data:
+        return jsonify({'error': 'image_path and mask_data are required'}), 400
+    if not mask_path:
+        return jsonify({'error': 'Unable to determine mask path'}), 400
+
+    try:
+        # Accept data URLs or raw base64 strings
+        if isinstance(mask_data, str) and mask_data.startswith('data:'):
+            mask_data = mask_data.split(',', 1)[1]
+        mask_bytes = base64.b64decode(mask_data)
+        write_binary_mask(mask_bytes, mask_path)
+
+        return jsonify({
+            'success': True,
+            'mask_path': mask_path
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/delete_mask', methods=['DELETE'])
+def delete_mask():
+    """Delete an existing mask file."""
+    data = request.get_json(force=True, silent=True) or {}
+    image_path = data.get('image_path')
+    mask_path = data.get('mask_path') or derive_mask_path(image_path)
+
+    if not mask_path:
+        return jsonify({'error': 'mask_path or image_path is required'}), 400
+
+    try:
+        if os.path.exists(mask_path):
+            os.remove(mask_path)
+            return jsonify({'success': True, 'mask_path': mask_path})
+        return jsonify({'error': 'Mask not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
