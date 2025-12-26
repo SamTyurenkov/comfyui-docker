@@ -606,13 +606,7 @@
         }
 
         .modal-mask-overlay {
-            position: absolute;
-            inset: 0;
-            opacity: 0.5;
-            pointer-events: none;
-            object-fit: contain;
-            width: 100%;
-            height: 100%;
+            display: none;
         }
 
         .image-modal-actions {
@@ -667,9 +661,13 @@
 
         #maskCanvas {
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
             pointer-events: auto;
             touch-action: none;
             background: transparent;
