@@ -661,13 +661,6 @@
 
         #maskCanvas {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
             pointer-events: auto;
             touch-action: none;
             background: transparent;
@@ -1009,10 +1002,18 @@
             if (!maskCtx) return;
             maskCanvas.width = width;
             maskCanvas.height = height;
-            maskCanvas.style.width = '100%';
-            maskCanvas.style.height = '100%';
             maskCtx.fillStyle = '#ffffff';
             maskCtx.fillRect(0, 0, width, height);
+        }
+
+        function syncCanvasToImage() {
+            if (!maskCanvas || !modalBaseImage || !modalContainer) return;
+            const imgRect = modalBaseImage.getBoundingClientRect();
+            const containerRect = modalContainer.getBoundingClientRect();
+            maskCanvas.style.width = `${imgRect.width}px`;
+            maskCanvas.style.height = `${imgRect.height}px`;
+            maskCanvas.style.left = `${imgRect.left - containerRect.left}px`;
+            maskCanvas.style.top = `${imgRect.top - containerRect.top}px`;
         }
 
         function applyBinaryMask() {
@@ -1049,6 +1050,7 @@
                     const w = modalBaseImage.naturalWidth || 512;
                     const h = modalBaseImage.naturalHeight || 512;
                     clearMaskCanvas(w, h);
+                    syncCanvasToImage();
                     modalMaskOverlay.width = w;
                     modalMaskOverlay.height = h;
                     updateMaskStatus('Image loaded');
@@ -1080,6 +1082,7 @@
                 const img = new Image();
                 img.onload = () => {
                     maskCtx.drawImage(img, 0, 0, targetW, targetH);
+                    syncCanvasToImage();
                     applyBinaryMask();
                     updateMaskPreviewFromCanvas(true);
                     updateMaskStatus('Mask loaded');
@@ -1278,6 +1281,7 @@
             maskDeleteBtn?.addEventListener('click', deleteCurrentMask);
             maskResetBtn?.addEventListener('click', resetMaskFromSource);
             modalCloseBtn?.addEventListener('click', closeImageModal);
+            window.addEventListener('resize', syncCanvasToImage);
             maskModal?.addEventListener('click', (e) => {
                 if (e.target === maskModal) {
                     closeImageModal();
