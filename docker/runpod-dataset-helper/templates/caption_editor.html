@@ -1084,7 +1084,8 @@
                     updateMaskStatus('Mask missing - starting blank');
                     resolve();
                 };
-                img.src = `/api/get_image?path=${encodeURIComponent(maskPath)}`;
+                const cacheBust = Date.now();
+                img.src = `/api/get_image?path=${encodeURIComponent(maskPath)}&v=${cacheBust}`;
             });
         }
 
@@ -1196,12 +1197,13 @@
             }
         }
 
-        function refreshCardMask(maskPath, imageIndex, bustCache = false) {
+        function refreshCardMask(maskPath, imageIndex) {
             const container = document.querySelector(`.image-container[data-image-index="${imageIndex}"]`);
             if (!container) return;
             let maskOverlay = container.querySelector('.mask-overlay');
             if (maskPath) {
-                const maskUrl = `/api/get_image?path=${encodeURIComponent(maskPath)}&thumbnail=true&size=300${bustCache ? `&_=${Date.now()}` : ''}`;
+                const cacheBust = Date.now();
+                const maskUrl = `/api/get_image?path=${encodeURIComponent(maskPath)}&thumbnail=true&size=300&v=${cacheBust}`;
                 if (!maskOverlay) {
                     maskOverlay = document.createElement('img');
                     maskOverlay.className = 'mask-overlay';
