@@ -1697,7 +1697,7 @@
                                 if (container) {
                                     const maskOverlay = container.querySelector('.mask-overlay');
                                     if (maskOverlay) {
-                                        const fullMaskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}`;
+                        const fullMaskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&v=${Date.now()}`;
                                         maskOverlay.src = fullMaskUrl;
                                     }
                                 }
@@ -1771,7 +1771,7 @@
                 if (container) {
                     const maskOverlay = container.querySelector('.mask-overlay');
                     if (maskOverlay) {
-                        const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300`;
+                        const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300&v=${Date.now()}`;
                         maskOverlay.src = maskUrl;
                     }
                 }
@@ -1801,7 +1801,7 @@
                         if (img && img.dataset.imageData) {
                             const imageData = JSON.parse(img.dataset.imageData);
                             if (imageData.mask_path) {
-                                const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300`;
+                                const maskUrl = `/api/get_image?path=${encodeURIComponent(imageData.mask_path)}&thumbnail=true&size=300&v=${Date.now()}`;
                                 maskOverlay.src = maskUrl;
                             }
                         }
