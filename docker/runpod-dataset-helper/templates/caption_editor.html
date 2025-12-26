@@ -508,9 +508,9 @@
         }
 
         .image-modal-body {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             padding: 12px;
             height: 100%;
             min-height: 0;
@@ -527,18 +527,25 @@
             align-items: center;
             justify-content: center;
             min-height: 0;
+            flex: 1;
         }
 
         .modal-image-container {
             position: relative;
-            max-height: 100%;
-            max-width: 100%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
         }
 
         .modal-image-container img {
             display: block;
             max-width: 100%;
             max-height: 100%;
+            object-fit: contain;
+            pointer-events: none;
         }
 
         .modal-mask-overlay {
@@ -555,16 +562,6 @@
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-
-        .modal-editor {
-            background: #0d0d0d;
-            border: 1px solid #222;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-height: 0;
         }
 
         .mask-toolbar {
@@ -612,12 +609,15 @@
         }
 
         #maskCanvas {
-            background: #fff;
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
-            flex: 1;
-            display: block;
-            min-height: 0;
+            pointer-events: auto;
+            touch-action: none;
+            background: transparent;
+            opacity: 0.6;
+            cursor: crosshair;
         }
 
         .mask-hint {
@@ -853,22 +853,20 @@
                 </div>
             </div>
             <div class="image-modal-body">
+                <div class="mask-toolbar">
+                    <button class="pill-btn active" id="maskPaintBtn" type="button">Mask</button>
+                    <button class="pill-btn" id="maskEraseBtn" type="button">Unmask</button>
+                    <label>Brush <input id="brushSizeInput" type="range" min="2" max="64" value="14"> <span id="brushSizeValue">14</span></label>
+                    <span id="maskStatus" style="margin-left: auto; font-size: 12px; color: #ccc;">Ready</span>
+                </div>
                 <div class="modal-viewer">
                     <div class="modal-image-container" id="modalImageContainer">
                         <img id="modalBaseImage" alt="Selected image">
                         <img id="modalMaskOverlay" class="modal-mask-overlay" alt="Mask overlay">
+                        <canvas id="maskCanvas"></canvas>
                     </div>
                 </div>
-                <div class="modal-editor">
-                    <div class="mask-toolbar">
-                        <button class="pill-btn active" id="maskPaintBtn" type="button">Mask</button>
-                        <button class="pill-btn" id="maskEraseBtn" type="button">Unmask</button>
-                        <label>Brush <input id="brushSizeInput" type="range" min="2" max="64" value="14"> <span id="brushSizeValue">14</span></label>
-                        <span id="maskStatus" style="margin-left: auto; font-size: 12px; color: #ccc;">Ready</span>
-                    </div>
-                    <canvas id="maskCanvas"></canvas>
-                    <div class="mask-hint">Black = masked, White = unmasked. Edits instantly update the preview (50% opacity).</div>
-                </div>
+                <div class="mask-hint">Black = masked, White = unmasked. Edits instantly update the preview (50% opacity).</div>
             </div>
         </div>
     </div>
@@ -944,6 +942,8 @@
             if (!maskCtx) return;
             maskCanvas.width = width;
             maskCanvas.height = height;
+            maskCanvas.style.width = '100%';
+            maskCanvas.style.height = '100%';
             maskCtx.fillStyle = '#ffffff';
             maskCtx.fillRect(0, 0, width, height);
         }
