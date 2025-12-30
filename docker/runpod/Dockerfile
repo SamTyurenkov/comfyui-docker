@@ -144,6 +144,7 @@ RUN git clone --depth 1 https://github.com/AMTPorn/comfyui_amt /home/comfyuser/C
 
 RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-fork /home/comfyuser/lora-metadata-viewer-fork
 
+
 RUN pip install --upgrade pip && pip install jupyter ninja
 
 RUN mkdir -p /root/.jupyter && \
