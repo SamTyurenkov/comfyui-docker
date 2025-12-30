@@ -146,7 +146,6 @@ RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-for
 
 RUN pip install --upgrade pip && pip install jupyter ninja
 
-
 RUN mkdir -p /root/.jupyter && \
     echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \
     > /root/.jupyter/jupyter_notebook_config.py
