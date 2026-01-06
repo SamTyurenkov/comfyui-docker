@@ -22,7 +22,7 @@ RUN git clone https://github.com/rgthree/rgthree-comfy /home/comfyuser/ComfyUI/c
 
 RUN git clone https://github.com/cubiq/ComfyUI_essentials /home/comfyuser/ComfyUI/custom_nodes/comfyui_essentials
 
-RUN git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
+RUN git clone https://github.com/SamTyurenkov/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
 
 RUN git clone https://github.com/yolain/ComfyUI-Easy-Use /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use
 

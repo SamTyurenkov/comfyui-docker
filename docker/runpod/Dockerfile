@@ -86,7 +86,7 @@ RUN git clone --depth 1 https://github.com/rgthree/rgthree-comfy /home/comfyuser
 RUN git clone --depth 1 https://github.com/cubiq/ComfyUI_essentials /home/comfyuser/ComfyUI/custom_nodes/comfyui_essentials
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-LBMWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-LBMWrapper
 RUN git clone --depth 1 https://github.com/sipherxyz/comfyui-art-venture /home/comfyuser/ComfyUI/custom_nodes/comfyui-art-venture
-RUN git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
+RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-VideoHelperSuite /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite
 # RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-videohelpersuite && git checkout a7ce59e381934733bfae03b1be029756d6ce936d
 RUN git clone --depth 1 https://github.com/SamTyurenkov/comfyui_chatgpt /home/comfyuser/ComfyUI/custom_nodes/comfyui_chatgpt
 RUN git clone --depth 1 https://github.com/SamTyurenkov/comfyui-vace-preprocessors /home/comfyuser/ComfyUI/custom_nodes/comfyui-vace-preprocessors
