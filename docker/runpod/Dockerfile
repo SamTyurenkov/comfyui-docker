@@ -67,7 +67,7 @@ RUN git clone --depth 1 https://github.com/WASasquatch/was-node-suite-comfyui /h
 RUN git clone --depth 1 https://github.com/bash-j/mikey_nodes /home/comfyuser/ComfyUI/custom_nodes/mikey_nodes
 
 # Copied from Generic Colab
-RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /home/comfyuser/ComfyUI/custom_nodes/comfyui-manager
+# RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Manager /home/comfyuser/ComfyUI/custom_nodes/comfyui-manager
 RUN git clone --depth 1 https://github.com/chrisgoringe/cg-use-everywhere /home/comfyuser/ComfyUI/custom_nodes/cg-use-everywhere
 RUN git clone --depth 1 https://github.com/Fannovel16/comfyui_controlnet_aux /home/comfyuser/ComfyUI/custom_nodes/comfyui_controlnet_aux
 RUN git clone --depth 1 https://github.com/cubiq/ComfyUI_IPAdapter_plus /home/comfyuser/ComfyUI/custom_nodes/comfyui_ipadapter_plus
@@ -104,7 +104,7 @@ RUN git clone --depth 1 https://github.com/cdb-boop/ComfyUI-Bringing-Old-Photos-
 RUN git clone --depth 1 https://github.com/cdb-boop/comfyui-image-round /home/comfyuser/ComfyUI/custom_nodes/comfyui-image-round
 RUN git clone --depth 1 https://github.com/pythongosssss/ComfyUI-Custom-Scripts /home/comfyuser/ComfyUI/custom_nodes/comfyui-custom-scripts
 COPY autocomplete.txt /home/comfyuser/ComfyUI/custom_nodes/comfyui-custom-scripts/user/autocomplete.txt
-RUN git clone --depth 1 https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MagCache
+# RUN git clone --depth 1 https://github.com/Zehong-Ma/ComfyUI-MagCache /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-MagCache
 RUN git clone --depth 1 https://github.com/ssitu/ComfyUI_UltimateSDUpscale /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-WanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-WanVideoWrapper
 RUN git clone --depth 1 https://github.com/kijai/ComfyUI-HunyuanVideoWrapper /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-HunyuanVideoWrapper
