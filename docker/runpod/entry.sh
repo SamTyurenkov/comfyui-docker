@@ -74,6 +74,21 @@ which pip
 cp /home/comfyuser/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 cp /home/comfyuser/docker/nginx/site-conf/default.conf /etc/nginx/conf.d/default.conf
 
+# Setup basic auth if credentials are provided
+if [ -n "$NGINX_AUTH_USER" ] && [ -n "$NGINX_AUTH_PASSWORD" ]; then
+  echo "Setting up basic authentication..."
+  # Create password file using openssl (htpasswd may not be available)
+  HTPASSWD_FILE="/etc/nginx/.htpasswd"
+  # Generate password hash using openssl
+  PASSWORD_HASH=$(openssl passwd -apr1 "$NGINX_AUTH_PASSWORD")
+  echo "${NGINX_AUTH_USER}:${PASSWORD_HASH}" > "$HTPASSWD_FILE"
+  chmod 644 "$HTPASSWD_FILE"
+else
+  # Create empty password file if credentials not provided (auth will fail but nginx won't crash)
+  touch /etc/nginx/.htpasswd
+  chmod 644 /etc/nginx/.htpasswd
+fi
+
 
 rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node/scripts/reactor_sfw.py
 
