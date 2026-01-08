@@ -62,7 +62,7 @@ COPY extra_model_paths.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
 RUN git clone --depth 1 https://github.com/shinich39/comfyui-get-meta /home/comfyuser/ComfyUI/custom_nodes/comfyui-get-meta
 RUN git clone --depth 1 https://github.com/JPS-GER/ComfyUI_JPS-Nodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_JPS-Nodes
 RUN git clone --depth 1 https://github.com/aria1th/ComfyUI-LogicUtils /home/comfyuser/ComfyUI/custom_nodes/comfyui-logicutils
-RUN git clone --depth 1 https://github.com/welltop-cn/ComfyUI-TeaCache.git /home/comfyuser/ComfyUI/custom_nodes/teacache
+# RUN git clone --depth 1 https://github.com/welltop-cn/ComfyUI-TeaCache.git /home/comfyuser/ComfyUI/custom_nodes/teacache
 RUN git clone --depth 1 https://github.com/WASasquatch/was-node-suite-comfyui /home/comfyuser/ComfyUI/custom_nodes/was-node-suite-comfyui
 RUN git clone --depth 1 https://github.com/bash-j/mikey_nodes /home/comfyuser/ComfyUI/custom_nodes/mikey_nodes
 
