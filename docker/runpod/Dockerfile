@@ -146,6 +146,7 @@ RUN git clone --depth 1 https://github.com/SamTyurenkov/lora-metadata-viewer-for
 
 RUN git clone --depth 1 https://github.com/AHEKOT/ComfyUI_VNCCS_Utils /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_VNCCS_Utils
 RUN git clone --depth 1 https://github.com/jtydhr88/ComfyUI-qwenmultiangle /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-qwenmultiangle
+RUN git clone --depth 1 https://github.com/wallen0322/ComfyUI-Wan22FMLF /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Wan22FMLF
 
 RUN pip install --upgrade pip && pip install jupyter ninja
 
