@@ -213,7 +213,8 @@ else
   rm -rf /home/comfyuser/ComfyUI/models/interpolation && ln -s /workspace/models/interpolation /home/comfyuser/ComfyUI/models/interpolation
   rm -rf /home/comfyuser/ComfyUI/models/model_patches && ln -s /workspace/models/model_patches /home/comfyuser/ComfyUI/models/model_patches
   rm -rf /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/ckpts && ln -s /workspace/models/rife/ckpts /home/comfyuser/ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/ckpts
-  rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/wildcards && ln -s /workspace/wildcards /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/wildcards
+  rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/wildcards && ln -s /workspace/comfyui-easy-use/wildcards /home/comfyuser/ComfyUI/custom_nodes/comfyui-easy-use/wildcards
+  rm -rf /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/wildcards && ln -s /workspace/comfyui-impact-pack/wildcards /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack/wildcards
 fi
 
 # Start cloudflared in the background
