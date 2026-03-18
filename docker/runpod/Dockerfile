@@ -150,6 +150,7 @@ RUN git clone --depth 1 https://github.com/wallen0322/ComfyUI-Wan22FMLF /home/co
 
 RUN pip install --upgrade pip && pip install jupyter ninja
 
+
 RUN mkdir -p /root/.jupyter && \
     echo "c.FileCheckpoints.checkpoint_dir = '/tmp/jupyter_checkpoints'" \
     > /root/.jupyter/jupyter_notebook_config.py
