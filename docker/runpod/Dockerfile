@@ -53,8 +53,8 @@ COPY ssl/self-signed/privkey.pem /home/comfyuser/docker/nginx/ssl/privkey.pem
 # RUN python -m venv --copies /opt/venv
 # ENV PATH="/opt/venv/bin:$PATH"
 
-RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
-#RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI && cd /home/comfyuser/ComfyUI && git checkout v0.17.2
+#RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI && cd /home/comfyuser/ComfyUI && git checkout v0.17.2
 COPY extra_model_paths.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
 
 # Copied from WAN Colab
