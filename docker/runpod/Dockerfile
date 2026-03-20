@@ -54,7 +54,7 @@ COPY ssl/self-signed/privkey.pem /home/comfyuser/docker/nginx/ssl/privkey.pem
 # ENV PATH="/opt/venv/bin:$PATH"
 
 RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI
-
+#RUN git clone https://github.com/comfyanonymous/ComfyUI /home/comfyuser/ComfyUI && cd /home/comfyuser/ComfyUI && git checkout v0.17.2
 COPY extra_model_paths.yaml /home/comfyuser/ComfyUI/extra_model_paths.yaml
 
 # Copied from WAN Colab
@@ -75,7 +75,7 @@ RUN git clone --depth 1 https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg /ho
 RUN git clone https://github.com/Gourieff/ComfyUI-ReActor /home/comfyuser/ComfyUI/custom_nodes/comfyui-reactor-node
 RUN git clone --depth 1 https://github.com/SamTyurenkov/ComfyUI-Inpaint-CropAndStitch /home/comfyuser/ComfyUI/custom_nodes/comfyui-inpaint-cropandstitch
 RUN git clone https://github.com/SamTyurenkov/ComfyUI-Impact-Pack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack
-RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack && git checkout preview-bridge-video
+RUN cd /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-pack && git checkout preview-bridge-video-1.42.3-frontend
 RUN git clone --depth 1 https://github.com/ltdrdata/ComfyUI-Impact-Subpack /home/comfyuser/ComfyUI/custom_nodes/comfyui-impact-subpack
 RUN git clone --depth 1 https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes /home/comfyuser/ComfyUI/custom_nodes/ComfyUI_Comfyroll_CustomNodes
 RUN git clone --depth 1 https://github.com/PowerHouseMan/ComfyUI-AdvancedLivePortrait /home/comfyuser/ComfyUI/custom_nodes/comfyui-advancedliveportrait
