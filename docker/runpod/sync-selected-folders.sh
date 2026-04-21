@@ -21,13 +21,7 @@ RCLONE_LOG="${RCLONE_LOG:-/var/log/rclone_sync.log}"
 # Example:
 #   FOLDERS_TO_SYNC="models/loras/wan models/vae models/text_encoders"
 FOLDERS_TO_SYNC="${FOLDERS_TO_SYNC:-}"
-# Space-separated list of file paths to sync.
-# Example:
-#   FILES_TO_SYNC="models/loras/wan/file1.safetensors comfyui-impact-pack/wildcards/foo.txt"
 FILES_TO_SYNC="${FILES_TO_SYNC:-}"
-# Space-separated paths to skip (still listed in FOLDERS_TO_SYNC / FILES_TO_SYNC). Matches exact path or anything under path/.
-# If FOLDERS_TO_SYNC lists a parent (e.g. models) and EXCLUDE has a subpath (e.g. models/patches), that subtree is excluded from that sync.
-# Example: EXCLUDE_FROM_SYNC="models/text_encoders comfyui-impact-pack"
 EXCLUDE_FROM_SYNC="${EXCLUDE_FROM_SYNC:-}"
 
 if [[ -z "${SRC_BUCKET}" || -z "${RUNPOD_USERID}" || -z "${RUNPOD_TOKEN}" ]]; then
@@ -88,6 +82,7 @@ sync_one_folder() {
     done
   fi
 
+
   mkdir -p "${local_path}"
   echo "Syncing folder: ${folder}"
   echo "  Source: runpod:${SRC_BUCKET}/${folder}"
@@ -95,10 +90,10 @@ sync_one_folder() {
 
   /usr/bin/rclone sync "runpod:${SRC_BUCKET}/${folder}" "${local_path}" \
     --config "${CONFIG_DIR}/rclone.conf" \
-    --exclude '*.sha256' \
-    "${subtree_ex[@]}" \
     --log-level DEBUG \
     --buffer-size 64M \
+    --exclude '*.sha256' \
+    "${subtree_ex[@]}" \
     --use-server-modtime \
     --stats 5s \
     --stats-one-line \
@@ -111,26 +106,21 @@ sync_one_file() {
   local file_path="$1"
   local local_file_path
   local local_parent_dir
-  local remote_parent
-  local file_name
+  local remote_parent_dir
+  local filename
 
   local_file_path="${LOCAL_ROOT%/}/${file_path}"
   local_parent_dir="$(dirname "${local_file_path}")"
-  remote_parent="$(dirname "${file_path}")"
-  file_name="$(basename "${file_path}")"
+  remote_parent_dir="$(dirname "${file_path}")"
+  filename="$(basename "${file_path}")"
   mkdir -p "${local_parent_dir}"
   echo "Syncing file: ${file_path}"
   echo "  Source: runpod:${SRC_BUCKET}/${file_path}"
   echo "  Dest:   ${local_file_path}"
 
-  if [[ "${remote_parent}" == "." ]]; then
-    remote_parent=""
-  fi
-
-  /usr/bin/rclone copy "runpod:${SRC_BUCKET}/${remote_parent}" "${local_parent_dir}/" \
+  /usr/bin/rclone copy "runpod:${SRC_BUCKET}/${remote_parent_dir}" "${local_parent_dir}/" \
     --config "${CONFIG_DIR}/rclone.conf" \
-    --include "${file_name}" \
-    --exclude "*" \
+    --include "${filename}" \
     --log-level DEBUG \
     --buffer-size 64M \
     --use-server-modtime \
@@ -155,13 +145,12 @@ fi
 
 if [[ -n "${FILES_TO_SYNC}" ]]; then
   for file_path in ${FILES_TO_SYNC}; do
-    if path_excluded "${file_path}"; then
-      echo "Skipping file (EXCLUDE_FROM_SYNC): ${file_path}"
-      continue
-    fi
     sync_one_file "${file_path}" || sync_errors=$((sync_errors + 1))
   done
 fi
+
+# chmod +x /workspace/venv_cc12_cuda129/bin/python
+# find /workspace/venv_cc12_cuda129/bin -maxdepth 1 -type f -exec chmod +x {} \;
 
 if [[ "${sync_errors}" -eq 0 ]]; then
   echo "Sync complete."
